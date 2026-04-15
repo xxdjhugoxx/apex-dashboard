@@ -1,86 +1,163 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import { ChatPanel } from './ChatPanel'
 
 const supabase = createClient(
   'https://jbumilopcidspfujphiq.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpidW1pb3BwY2lkc3BmdWpwYWhpcSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNjQxNzYyMDI4LCJleHAiOjE5NTczMzgwMjh9.ZopNUt9bD7_P6qCyBdN7pHCDc9y0qTyegH1p2n8kHNs'
 )
 
-// ─── Pixel art office floor (canvas-based) ────────────────────────────────
-const TILE = 32       // pixels per tile
-const FLOOR_COLS = 20  // grid width
-const FLOOR_ROWS = 14  // grid height
+const TILE = 48
+const FLOOR_COLS = 24
+const FLOOR_ROWS = 16
 
 const DEPTS = {
-  ceo:      { name: 'Leadership',  color: '#EF4444', dark: '#450a0a', emoji: '🦁', desk: { col: 8, row: 1 }, accent: '#7f1d1d' },
-  sales:    { name: 'Sales',       color: '#FF6B35', dark: '#431407', emoji: '🦊', desk: { col: 2, row: 6 }, accent: '#7c2d12' },
-  marketing:{ name: 'Marketing',   color: '#A855F7', dark: '#3b0764', emoji: '🦚', desk: { col: 17, row: 6 }, accent: '#581c87' },
-  ops:      { name: 'Operations',  color: '#10B981', dark: '#022c22', emoji: '🦡', desk: { col: 2, row: 10 }, accent: '#064e3b' },
-  finance:  { name: 'Finance',     color: '#F59E0B', dark: '#451a03', emoji: '🐻', desk: { col: 17, row: 10 }, accent: '#78350f' },
+  ceo:      { name: 'Hugo',     emoji: '🦁', color: '#EF4444', dark: '#450a0a', accent: '#7f1d1d', cx: 12, cy: 3, deskW: 6 },
+  sales:    { name: 'Felix',    emoji: '🦊', color: '#FF6B35', dark: '#431407', accent: '#7c2d12', cx: 3,  cy: 10, deskW: 4 },
+  marketing:{ name: 'Phoenix',  emoji: '🦚', color: '#A855F7', dark: '#3b0764', accent: '#581c87', cx: 9,  cy: 10, deskW: 4 },
+  ops:      { name: 'Axel',     emoji: '🦡', color: '#10B981', dark: '#022c22', accent: '#064e3b', cx: 15, cy: 10, deskW: 4 },
+  finance:  { name: 'Bruno',    emoji: '🐻', color: '#F59E0B', dark: '#451a03', accent: '#78350f', cx: 21, cy: 10, deskW: 4 },
 }
 
-// ─── Pixel sprites for each agent (8-frame walk cycle) ────────────────────
-const SPRITE_COLORS = {
-  ceo:      { body: '#F59E0B', mane: '#D97706', tie: '#EF4444', skin: '#FDE68A' },
-  sales:    { body: '#FF6B35', suit: '#FF6B35', skin: '#FDE68A' },
-  marketing:{ body: '#A855F7', wings: '#C084FC', skin: '#FDE68A' },
-  ops:      { body: '#10B981', hat: '#059669', skin: '#FDE68A' },
-  finance:  { body: '#F59E0B', bear: '#D97706', skin: '#92400E' },
+// ─── Draw a large detailed desk with monitor ─────────────────────────────
+function drawDesk(ctx, cx, cy, deskW, dept) {
+  const x = cx * TILE - (deskW * TILE) / 2
+  const y = cy * TILE
+  const w = deskW * TILE
+  const h = TILE * 2
+
+  // Desk shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.3)'
+  ctx.fillRect(x + 4, y + 4, w, h)
+
+  // Desk surface
+  ctx.fillStyle = '#1e1e2e'
+  ctx.fillRect(x, y, w, h)
+  // Desk edge (top highlight)
+  ctx.fillStyle = dept.color
+  ctx.fillRect(x, y, w, 4)
+  ctx.fillRect(x, y, w, 2)
+
+  // Monitor stand
+  ctx.fillStyle = '#333'
+  ctx.fillRect(cx * TILE - 6, y - 12, 12, 12)
+  // Monitor
+  ctx.fillStyle = '#0a0a0f'
+  ctx.fillRect(cx * TILE - 36, y - 60, 72, 44)
+  ctx.fillStyle = dept.color + '50'
+  ctx.fillRect(cx * TILE - 33, y - 57, 66, 38)
+  // Monitor top highlight
+  ctx.fillStyle = dept.color + '30'
+  ctx.fillRect(cx * TILE - 36, y - 60, 72, 4)
+
+  // Keyboard
+  ctx.fillStyle = '#252535'
+  ctx.fillRect(cx * TILE - 28, y + 4, 56, 14)
+  ctx.fillStyle = dept.color + '40'
+  ctx.fillRect(cx * TILE - 26, y + 6, 52, 10)
+
+  // Coffee mug
+  ctx.fillStyle = dept.color
+  ctx.fillRect(x + w - 20, y + 6, 14, 14)
+  ctx.fillStyle = '#0a0a0f'
+  ctx.fillRect(x + w - 18, y + 8, 10, 10)
+
+  // Dept label
+  ctx.fillStyle = dept.color
+  ctx.font = 'bold 14px monospace'
+  ctx.textAlign = 'center'
+  ctx.fillText(dept.emoji + ' ' + dept.name, cx * TILE, y + h + 18)
+  ctx.textAlign = 'left'
 }
 
-// ─── Walk cycle frames (16×16 pixel art, each frame = 4×16 strip) ───────────
-function drawAgent(ctx, agentId, frame, direction, working, x, y) {
-  const c = SPRITE_COLORS[agentId]
+// ─── Draw pixel agent character (large, 24×24) ──────────────────────────
+function drawAgent(ctx, id, cx, cy, frame, working, color) {
+  const x = cx * TILE - 12
+  const y = cy * TILE - 52
   const f = frame % 4
-  const flip = direction === 'left'
-  ctx.save()
-  ctx.translate(x + 12, y + 16)
-  if (flip) ctx.scale(-1, 1)
-  ctx.translate(-12, -16)
+  const bobY = working ? [0, -2, 0, -2][f] : 0
 
-  if (!working) {
-    // ── Idle at desk ────────────────────────────────────────────────────────
-    // Body / torso
-    ctx.fillStyle = c.body; ctx.fillRect(4, 8, 8, 8)
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.3)'
+  ctx.fillRect(cx * TILE - 10, cy * TILE - 4, 20, 6)
+
+  if (id === 'ceo') {
+    // Crown
+    ctx.fillStyle = '#F59E0B'; ctx.fillRect(x+4, y+bobY-8, 16, 8)
+    ctx.fillStyle = '#D97706'; ctx.fillRect(x+4, y+bobY-8, 4, 8); ctx.fillRect(x+16, y+bobY-8, 4, 8)
+    ctx.fillStyle = '#FBBF24'; ctx.fillRect(x+6, y+bobY-10, 12, 4)
     // Head
-    ctx.fillStyle = c.skin || '#FDE68A'; ctx.fillRect(5, 1, 6, 6)
+    ctx.fillStyle = '#FDE68A'; ctx.fillRect(x+4, y+bobY, 16, 14)
     // Eyes
-    ctx.fillStyle = '#1a1a2e'; ctx.fillRect(7, 3, 1, 1); ctx.fillRect(9, 3, 1, 1)
-    // Legs
-    ctx.fillStyle = c.body; ctx.fillRect(5, 16, 3, 4); ctx.fillRect(8, 16, 3, 4)
-  } else {
-    // ── Walking ────────────────────────────────────────────────────────────
-    const bobY = [0, -1, 0, -1][f]
-    const leftLeg = [0, 2, 0, -2][f]
-    const rightLeg = [0, -2, 0, 2][f]
-    const swingArm = [1, 0, -1, 0][f]
-
+    ctx.fillStyle = '#1a1a2e'; ctx.fillRect(x+7, y+bobY+4, 3, 3); ctx.fillRect(x+14, y+bobY+4, 3, 3)
+    // Mouth
+    ctx.fillStyle = '#92400E'; ctx.fillRect(x+9, y+bobY+9, 6, 2)
     // Body
-    ctx.fillStyle = c.body; ctx.fillRect(4, 6 + bobY, 8, 8)
+    ctx.fillStyle = color; ctx.fillRect(x+2, y+bobY+14, 20, 16)
+    // Tie
+    ctx.fillStyle = '#EF4444'; ctx.fillRect(x+10, y+bobY+14, 4, 10)
+    // Legs
+    ctx.fillStyle = '#1e1e2e'; ctx.fillRect(x+4, y+bobY+30, 6, 8); ctx.fillRect(x+14, y+bobY+30, 6, 8)
+  } else if (id === 'sales') {
     // Head
-    ctx.fillStyle = c.skin || '#FDE68A'; ctx.fillRect(5, 0 + bobY, 6, 6)
-    // Eyes (looking forward)
-    ctx.fillStyle = '#1a1a2e'; ctx.fillRect(7, 2 + bobY, 1, 1); ctx.fillRect(9, 2 + bobY, 1, 1)
-    // Arm swing
-    ctx.fillStyle = c.body
-    ctx.fillRect(1, 7 + bobY + swingArm, 3, 2)
-    ctx.fillRect(12, 7 + bobY - swingArm, 3, 2)
-    // Legs with walk motion
-    ctx.fillRect(5, 14 + leftLeg, 3, 5)
-    ctx.fillRect(8, 14 + rightLeg, 3, 5)
+    ctx.fillStyle = '#FF6B35'; ctx.fillRect(x+2, y+bobY-4, 20, 16)
+    // Ears
+    ctx.fillStyle = '#FF6B35'; ctx.fillRect(x-2, y+bobY, 4, 10); ctx.fillRect(x+22, y+bobY, 4, 10)
+    ctx.fillStyle = '#FDE68A'; ctx.fillRect(x-2, y+bobY+2, 4, 6); ctx.fillRect(x+22, y+bobY+2, 4, 6)
+    // Eyes
+    ctx.fillStyle = '#1a1a2e'; ctx.fillRect(x+6, y+bobY+2, 3, 3); ctx.fillRect(x+15, y+bobY+2, 3, 3)
+    // Body
+    ctx.fillStyle = '#1e1e2e'; ctx.fillRect(x+2, y+bobY+12, 20, 18)
+    ctx.fillStyle = '#FF6B35'; ctx.fillRect(x+9, y+bobY+12, 6, 18)
+    // Legs
+    ctx.fillStyle = '#1e1e2e'; ctx.fillRect(x+4, y+bobY+30, 6, 8); ctx.fillRect(x+14, y+bobY+30, 6, 8)
+  } else if (id === 'marketing') {
+    // Peacock feathers (top)
+    ctx.fillStyle = '#A855F7'; ctx.fillRect(x+4, y+bobY-16, 4, 14); ctx.fillRect(x+10, y+bobY-20, 4, 18); ctx.fillRect(x+16, y+bobY-16, 4, 14)
+    ctx.fillStyle = '#10B981'; ctx.fillRect(x+5, y+bobY-18, 2, 4); ctx.fillRect(x+11, y+bobY-22, 2, 4); ctx.fillRect(x+17, y+bobY-18, 2, 4)
+    // Head
+    ctx.fillStyle = '#A855F7'; ctx.fillRect(x+4, y+bobY, 16, 14)
+    ctx.fillStyle = '#FDE68A'; ctx.fillRect(x+7, y+bobY+4, 3, 3); ctx.fillRect(x+14, y+bobY+4, 3, 3)
+    // Body (wings spread)
+    ctx.fillStyle = '#10B981'; ctx.fillRect(x-4, y+bobY+14, 8, 14); ctx.fillRect(x+20, y+bobY+14, 8, 14)
+    ctx.fillStyle = '#A855F7'; ctx.fillRect(x+4, y+bobY+14, 16, 16)
+    // Legs
+    ctx.fillStyle = '#1e1e2e'; ctx.fillRect(x+6, y+bobY+30, 5, 8); ctx.fillRect(x+13, y+bobY+30, 5, 8)
+  } else if (id === 'ops') {
+    // Hard hat
+    ctx.fillStyle = '#10B981'; ctx.fillRect(x+2, y+bobY-6, 20, 8)
+    ctx.fillStyle = '#059669'; ctx.fillRect(x, y+bobY-4, 24, 4)
+    // Head
+    ctx.fillStyle = '#FDE68A'; ctx.fillRect(x+4, y+bobY+2, 16, 14)
+    // Eyes
+    ctx.fillStyle = '#1a1a2e'; ctx.fillRect(x+7, y+bobY+6, 3, 3); ctx.fillRect(x+14, y+bobY+6, 3, 3)
+    // Body (wider, strong)
+    ctx.fillStyle = '#10B981'; ctx.fillRect(x, y+bobY+16, 24, 18)
+    ctx.fillStyle = '#059669'; ctx.fillRect(x+4, y+bobY+18, 16, 14)
+    // Legs
+    ctx.fillStyle = '#1e1e2e'; ctx.fillRect(x+3, y+bobY+34, 7, 6); ctx.fillRect(x+14, y+bobY+34, 7, 6)
+  } else if (id === 'finance') {
+    // Ears
+    ctx.fillStyle = '#F59E0B'; ctx.fillRect(x-2, y+bobY, 6, 10); ctx.fillRect(x+20, y+bobY, 6, 10)
+    ctx.fillStyle = '#92400E'; ctx.fillRect(x-2, y+bobY+2, 6, 6); ctx.fillRect(x+20, y+bobY+2, 6, 6)
+    // Head
+    ctx.fillStyle = '#F59E0B'; ctx.fillRect(x+2, y+bobY+2, 20, 16)
+    // Eyes
+    ctx.fillStyle = '#1a1a2e'; ctx.fillRect(x+6, y+bobY+6, 3, 3); ctx.fillRect(x+15, y+bobY+6, 3, 3)
+    // Body
+    ctx.fillStyle = '#F59E0B'; ctx.fillRect(x+2, y+bobY+18, 20, 18)
+    ctx.fillStyle = '#92400E'; ctx.fillRect(x+6, y+bobY+20, 12, 12)
+    // Legs
+    ctx.fillStyle = '#1e1e2e'; ctx.fillRect(x+4, y+bobY+36, 6, 6); ctx.fillRect(x+14, y+bobY+36, 6, 6)
   }
-
-  ctx.restore()
 }
 
 // ─── Draw office background ────────────────────────────────────────────────
 function drawOffice(ctx, W, H) {
-  // Floor — slightly lighter so pixel art is visible
-  ctx.fillStyle = '#16162a'
+  // Floor
+  ctx.fillStyle = '#0d0d1a'
   ctx.fillRect(0, 0, W, H)
 
-  // Subtle tile grid
+  // Grid
   ctx.strokeStyle = 'rgba(255,255,255,0.04)'
   ctx.lineWidth = 1
   for (let x = 0; x < FLOOR_COLS; x++) {
@@ -89,97 +166,36 @@ function drawOffice(ctx, W, H) {
     }
   }
 
-  // Draw desks
-  Object.entries(DEPTS).forEach(([id, dept]) => {
-    const dx = dept.desk.col * TILE
-    const dy = dept.desk.row * TILE
-
-    // Department area tint
-    ctx.fillStyle = dept.dark + '30'
-    ctx.fillRect(dx - 8, dy - 8, TILE * 3 + 16, TILE * 2 + 16)
-
-    // Desk
-    ctx.fillStyle = '#1e1e2e'
-    ctx.fillRect(dx + 8, dy + 20, TILE * 2, TILE - 4)
-    // Desk edge
-    ctx.fillStyle = dept.color
-    ctx.fillRect(dx + 8, dy + 20, TILE * 2, 3)
-    // Monitor
-    ctx.fillStyle = '#0a0a0f'
-    ctx.fillRect(dx + TILE - 4, dy + 8, TILE + 8, 14)
-    ctx.fillStyle = dept.color + '60'
-    ctx.fillRect(dx + TILE - 2, dy + 10, TILE + 4, 10)
-    // Chair
-    ctx.fillStyle = dept.dark
-    ctx.fillRect(dx + TILE, dy + 22, TILE, 8)
-
-    // Department label
-    ctx.fillStyle = dept.color
-    ctx.font = 'bold 10px monospace'
-    ctx.fillText(dept.emoji, dx + 16, dy + 6)
-  })
-
-  // Office walls / border
-  ctx.strokeStyle = 'rgba(255,255,255,0.08)'
-  ctx.lineWidth = 2
+  // Wall border
+  ctx.strokeStyle = 'rgba(255,107,53,0.3)'
+  ctx.lineWidth = 3
   ctx.strokeRect(4, 4, W - 8, H - 8)
 
-  // Decorative elements — plants, water cooler, coffee station
-  const decor = [
-    { type: 'plant', col: 0, row: 0 }, { type: 'plant', col: 19, row: 0 },
-    { type: 'coffee', col: 9, row: 0 }, { type: 'water', col: 10, row: 0 },
-    { type: 'plant', col: 0, row: 13 }, { type: 'plant', col: 19, row: 13 },
-  ]
-  decor.forEach(d => {
-    const px = d.col * TILE + 8
-    const py = d.row * TILE + 8
-    if (d.type === 'plant') {
-      ctx.fillStyle = '#065f46'; ctx.fillRect(px, py, 16, 16)
-      ctx.fillStyle = '#10B981'; ctx.fillRect(px + 2, py - 4, 12, 10)
-    } else if (d.type === 'coffee') {
-      ctx.fillStyle = '#78350f'; ctx.fillRect(px, py, 16, 16)
-      ctx.fillStyle = '#92400e'; ctx.fillRect(px + 2, py + 2, 12, 8)
-    } else {
-      ctx.fillStyle = '#1e40af'; ctx.fillRect(px, py, 16, 16)
-      ctx.fillStyle = '#3b82f6'; ctx.fillRect(px + 2, py + 2, 12, 12)
-    }
+  // Ceiling lights (horizontal lines)
+  ctx.fillStyle = 'rgba(255,107,53,0.08)'
+  ctx.fillRect(2 * TILE, 0, 8 * TILE, 4)
+  ctx.fillRect(14 * TILE, 0, 8 * TILE, 4)
+
+  // Draw all desks
+  Object.entries(DEPTS).forEach(([id, dept]) => {
+    drawDesk(ctx, dept.cx, dept.cy, dept.deskW, dept)
   })
+
+  // Floor label "APEX HQ"
+  ctx.fillStyle = 'rgba(255,255,255,0.08)'
+  ctx.font = 'bold 20px monospace'
+  ctx.textAlign = 'center'
+  ctx.fillText('APEX HQ', W / 2, H - 16)
+  ctx.textAlign = 'left'
 }
 
-// ─── Speech bubble ─────────────────────────────────────────────────────────
-function SpeechBubble({ text, agentId, visible }) {
-  if (!visible || !text) return null
-  const dept = DEPTS[agentId]
-  return (
-    <div
-      className="absolute pointer-events-none transition-all duration-300"
-      style={{
-        bottom: '100%',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        marginBottom: 4,
-      }}
-    >
-      <div
-        className="px-3 py-1.5 rounded-2xl text-xs text-white font-medium whitespace-nowrap animate-fade-up"
-        style={{ backgroundColor: dept.color, boxShadow: `0 0 12px ${dept.color}60` }}
-      >
-        <span className="mr-1">{dept.emoji}</span>
-        {text}
-      </div>
-    </div>
-  )
-}
-
-// ─── Main Animated Office Canvas ──────────────────────────────────────────
 export function AnimatedOffice({ agentStatuses, onAgentClick }) {
   const canvasRef = useRef(null)
   const containerRef = useRef(null)
-  const [debug, setDebug] = useState('init')
   const agentsRef = useRef({})
   const rafRef = useRef(null)
-  const [canvasSize, setCanvasSize] = useState({ w: 640, h: 448 })
-  const [bubbles, setBubbles] = useState({}) // agentId -> { text, visible }
+  const [canvasSize, setCanvasSize] = useState({ w: 1152, h: 768 })
+  const [bubbles, setBubbles] = useState({})
 
   // Agent state machine
   const [agents, setAgents] = useState(() => {
@@ -187,66 +203,49 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
     Object.keys(DEPTS).forEach(id => {
       const dept = DEPTS[id]
       initial[id] = {
-        id,
-        x: dept.desk.col * TILE,
-        y: dept.desk.row * TILE,
-        targetX: dept.desk.col * TILE,
-        targetY: dept.desk.row * TILE,
-        state: 'idle',   // idle | walking | talking | back
-        dest: null,       // { col, row }
-        frame: 0,
-        frameTimer: 0,
-        facing: 'right',
-        status: 'idle',
-        speech: '',
-        speechTimer: 0,
+        id, x: dept.cx * TILE, y: dept.cy * TILE,
+        targetX: dept.cx * TILE, targetY: dept.cy * TILE,
+        state: 'idle', frame: 0, frameTimer: 0, facing: 'right',
+        status: 'idle', speech: '', speechTimer: 0,
       }
     })
     return initial
   })
 
-  // Sync agent status from Supabase
+  // Sync Supabase status
   useEffect(() => {
     Object.entries(agentStatuses).forEach(([id, s]) => {
       if (agentsRef.current[id]) {
         agentsRef.current[id].status = s.status
-        if (s.status === 'working' && agentsRef.current[id].state === 'idle') {
-          // Start random walk
-          const depts = DEPTS[id]
-          const targets = [
-            { col: depts.desk.col + 4, row: depts.desk.row },
-            { col: depts.desk.col - 3, row: depts.desk.row },
-            { col: depts.desk.col, row: depts.desk.row - 2 },
-            { col: depts.desk.col, row: depts.desk.row + 2 },
-          ]
-          const t = targets[Math.floor(Math.random() * targets.length)]
-          agentsRef.current[id].targetX = t.col * TILE
-          agentsRef.current[id].targetY = t.row * TILE
+        if (s.status === 'working' && agentsRef.current[id].state === 'idle' && Math.random() < 0.01) {
+          const dept = DEPTS[id]
+          const angle = Math.random() * Math.PI * 2
+          const r = 2 + Math.random() * 3
+          agentsRef.current[id].targetX = (dept.cx + Math.cos(angle) * r) * TILE
+          agentsRef.current[id].targetY = (dept.cy + Math.sin(angle) * r) * TILE
           agentsRef.current[id].state = 'walking'
         }
       }
     })
   }, [agentStatuses])
 
-  // Canvas resize — fixed grid sizing, no ResizeObserver dependency
+  // Canvas resize
   useEffect(() => {
     const update = () => {
       const container = containerRef.current
       if (!container) return
       const cw = container.clientWidth
-      if (cw < 10) return
-      // Fixed 20-column grid, height proportional
+      if (cw < 100) return
       const scale = cw / (FLOOR_COLS * TILE)
       setCanvasSize({ w: Math.floor(FLOOR_COLS * TILE * scale), h: Math.floor(FLOOR_ROWS * TILE * scale) })
     }
     update()
-    // Fallback: resize after short delay
     const t = setTimeout(update, 200)
     window.addEventListener('resize', update)
     return () => { clearTimeout(t); window.removeEventListener('resize', update) }
   }, [])
 
-  // Main render loop
+  // Render loop
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -259,75 +258,43 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
 
       // Update agents
       Object.values(agentsRef.current).forEach(agent => {
-        const speed = 60  // pixels per second
         const dx = agent.targetX - agent.x
         const dy = agent.targetY - agent.y
         const dist = Math.sqrt(dx * dx + dy * dy)
-
-        if (dist > 2) {
-          agent.x += (dx / dist) * speed * (dt / 1000)
-          agent.y += (dy / dist) * speed * (dt / 1000)
+        if (dist > 3) {
+          agent.x += (dx / dist) * 80 * (dt / 1000)
+          agent.y += (dy / dist) * 80 * (dt / 1000)
           agent.facing = dx > 0 ? 'right' : 'left'
           agent.frameTimer += dt
-          if (agent.frameTimer > 120) { agent.frame++; agent.frameTimer = 0 }
-        } else {
-          if (agent.state === 'walking') {
-            agent.state = 'idle'
-            agent.frame = 0
-          }
-          // Random walk when working
-          if (agent.status === 'working' && agent.state === 'idle' && Math.random() < 0.002) {
-            const id = agent.id
-            const depts = DEPTS[id]
-            const targets = [
-              { col: depts.desk.col + 4, row: depts.desk.row },
-              { col: depts.desk.col - 3, row: depts.desk.row },
-              { col: depts.desk.col, row: depts.desk.row - 2 },
-              { col: depts.desk.col, row: depts.desk.row + 2 },
-              { col: Math.floor(Math.random() * FLOOR_COLS), row: Math.floor(Math.random() * FLOOR_ROWS) },
-            ]
-            const t = targets[Math.floor(Math.random() * targets.length)]
-            agent.targetX = t.col * TILE
-            agent.targetY = t.row * TILE
-            agent.state = 'walking'
-          }
+          if (agent.frameTimer > 150) { agent.frame++; agent.frameTimer = 0 }
+        } else if (agent.state === 'walking') {
+          agent.state = 'idle'
+          agent.frame = 0
         }
-
-        // Speech timer
         if (agent.speechTimer > 0) {
           agent.speechTimer -= dt
-          if (agent.speechTimer <= 0) {
-            agent.speech = ''
-          }
+          if (agent.speechTimer <= 0) agent.speech = ''
         }
       })
 
-      // Draw — guard against zero dimensions
-      const scale = canvasSize.w > 0 ? canvasSize.w / (FLOOR_COLS * TILE) : 1
-      ctx.clearRect(0, 0, Math.max(canvasSize.w, 640), Math.max(canvasSize.h, 448))
+      // Draw
+      const scale = canvasSize.w / (FLOOR_COLS * TILE)
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.save()
       ctx.scale(scale, scale)
-
       drawOffice(ctx, FLOOR_COLS * TILE, FLOOR_ROWS * TILE)
 
-      // Draw agents sorted by Y (painter's algorithm)
-      const sortedAgents = Object.values(agentsRef.current).sort((a, b) => a.y - b.y)
-      sortedAgents.forEach(agent => {
+      const sorted = Object.values(agentsRef.current).sort((a, b) => a.y - b.y)
+      sorted.forEach(agent => {
         const working = agent.state === 'walking' || agent.status === 'working'
-        drawAgent(ctx, agent.id, agent.frame, agent.facing, working, agent.x, agent.y)
+        drawAgent(ctx, agent.id, agent.x / TILE, agent.y / TILE, agent.frame, working, DEPTS[agent.id]?.color || '#fff')
       })
 
       ctx.restore()
 
-      // Update bubbles state for React
       const newBubbles = {}
-      Object.values(agentsRef.current).forEach(a => {
-        if (a.speech) newBubbles[a.id] = { text: a.speech, visible: true }
-      })
-      setBubbles(prev => {
-        const changed = JSON.stringify(prev) !== JSON.stringify(newBubbles)
-        return changed ? newBubbles : prev
-      })
+      Object.values(agentsRef.current).forEach(a => { if (a.speech) newBubbles[a.id] = { text: a.speech, visible: true } })
+      setBubbles(prev => JSON.stringify(prev) !== JSON.stringify(newBubbles) ? newBubbles : prev)
 
       rafRef.current = requestAnimationFrame(render)
     }
@@ -336,12 +303,8 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
     return () => cancelAnimationFrame(rafRef.current)
   }, [canvasSize])
 
-  // Sync agents state to ref for animation loop
-  useEffect(() => {
-    agentsRef.current = agents
-  }, [agents])
+  useEffect(() => { agentsRef.current = agents }, [agents])
 
-  // Agent click handler — start talking
   const handleCanvasClick = useCallback((e) => {
     const rect = canvasRef.current.getBoundingClientRect()
     const scaleX = (FLOOR_COLS * TILE) / rect.width
@@ -349,44 +312,40 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
     const clickX = (e.clientX - rect.left) * scaleX
     const clickY = (e.clientY - rect.top) * scaleY
 
-    // Find clicked agent
-    const CLICK_RADIUS = 24
     let clicked = null
     Object.values(agentsRef.current).forEach(agent => {
-      const ax = agent.x + 12
-      const ay = agent.y + 12
-      const d = Math.sqrt((clickX - ax) ** 2 + (clickY - ay) ** 2)
-      if (d < CLICK_RADIUS) clicked = agent
+      const d = Math.sqrt((clickX - agent.x) ** 2 + (clickY - agent.y) ** 2)
+      if (d < 30) clicked = agent
     })
 
     if (clicked) {
       onAgentClick && onAgentClick(clicked.id)
-      // Random speech bubble
       const speeches = {
-        ceo: ['Approving Q3 strategy now', 'Team morale: excellent', 'Budget approved', 'Let\'s scale faster'],
-        sales: ['Closing deal with TechCorp', '3 new leads today', 'Pipeline looks strong', 'Felix out here grinding'],
-        marketing: ['New reel hitting 50K views', 'Brand awareness up 200%', 'Content calendar synced', 'Phoenix on fire'],
-        ops: ['All systems operational', 'Task queue cleared', 'Automation running smooth', 'Zero issues today'],
-        finance: ['Invoice #15 just paid', 'Revenue up 18% this month', 'Budgets all balanced', 'Bruno keeping us steady'],
+        ceo: ['Q3 strategy is GO — execute.', 'Team, I\'m watching. Make it happen.', 'No excuses. Just results.', 'The vision is clear. Follow it.'],
+        sales: ['Felix is CLOSING today!', 'Pipeline update — let\'s go!', '3 new leads just hit my desk.', 'Felix ready to crush it!'],
+        marketing: ['Phoenix has the FLOOR.', 'Content is KING today.', 'Socials are about to blow up.', 'Brand game: STRONG.'],
+        ops: ['Axel has everything under control.', 'All systems: GREEN.', 'Efficiency up 15% this week.', 'Zero issues. Maximum output.'],
+        finance: ['Bruno watching every penny.', 'Revenue tracking: healthy.', 'Invoices cleared, budgets locked.', 'Books are BALANCED.'],
       }
       const opts = speeches[clicked.id] || ['']
       const speech = opts[Math.floor(Math.random() * opts.length)]
       agentsRef.current[clicked.id].speech = speech
-      agentsRef.current[clicked.id].speechTimer = 3000
+      agentsRef.current[clicked.id].speechTimer = 3500
     }
   }, [onAgentClick])
 
   return (
-    <div ref={containerRef} className="relative rounded-2xl overflow-hidden bg-[#16162a]" style={{ minHeight: '320px', flex: '1', border: '2px solid #FF6B35' }}>
+    <div ref={containerRef} className="relative flex-1 flex flex-col" style={{ minHeight: 0 }}>
       <canvas
         ref={canvasRef}
         width={canvasSize.w}
         height={canvasSize.h}
-        className="cursor-pointer w-full block"
+        className="cursor-pointer w-full h-full rounded-2xl"
+        style={{ display: 'block', border: '2px solid rgba(255,107,53,0.4)', background: '#0d0d1a' }}
         onClick={handleCanvasClick}
       />
 
-      {/* Speech bubbles overlay */}
+      {/* Speech bubbles */}
       {Object.entries(bubbles).map(([id, { text }]) => {
         const agent = agents[id]
         if (!agent) return null
@@ -396,25 +355,28 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
             key={id}
             className="absolute pointer-events-none"
             style={{
-              left: agent.x * scale,
-              top: agent.y * scale - 8,
-              width: 80,
+              left: (agent.x / TILE * scale) - 40,
+              top: (agent.y / TILE * scale) - 60,
+              width: 100,
               textAlign: 'center',
             }}
           >
-            <SpeechBubble text={text} agentId={id} visible />
+            <div className="px-3 py-1.5 rounded-2xl text-xs font-bold text-white whitespace-nowrap animate-fade-up"
+              style={{ backgroundColor: DEPTS[id]?.color, boxShadow: `0 0 12px ${DEPTS[id]?.color}60` }}>
+              {DEPTS[id]?.emoji} {text}
+            </div>
           </div>
         )
       })}
 
       <style>{`
         @keyframes fade-up {
-          0% { opacity: 0; transform: translateX(-50%) translateY(8px); }
-          20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+          0% { opacity: 0; transform: translateY(8px); }
+          20% { opacity: 1; transform: translateY(0); }
           80% { opacity: 1; }
-          100% { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+          100% { opacity: 0; }
         }
-        .animate-fade-up { animation: fade-up 3s ease-out forwards; }
+        .animate-fade-up { animation: fade-up 3.5s ease-out forwards; }
       `}</style>
     </div>
   )

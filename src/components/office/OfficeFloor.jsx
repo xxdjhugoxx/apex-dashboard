@@ -11,18 +11,18 @@ const supabase = createClient(
 )
 
 const AGENTS = [
-  { id: 'ceo',      name: 'Leo',     emoji: '🦁', color: '#EF4444' },
-  { id: 'sales',    name: 'Felix',  emoji: '🦊', color: '#FF6B35' },
-  { id: 'marketing',name: 'Phoenix',emoji: '🦚', color: '#A855F7' },
-  { id: 'ops',      name: 'Axel',   emoji: '🦡', color: '#10B981' },
-  { id: 'finance',  name: 'Bruno',  emoji: '🐻', color: '#F59E0B' },
+  { id: 'ceo',      name: 'Hugo (Leo)', emoji: '🦁', color: '#EF4444' },
+  { id: 'sales',    name: 'Felix',   emoji: '🦊', color: '#FF6B35' },
+  { id: 'marketing',name: 'Phoenix',  emoji: '🦚', color: '#A855F7' },
+  { id: 'ops',      name: 'Axel',    emoji: '🦡', color: '#10B981' },
+  { id: 'finance',  name: 'Bruno',   emoji: '🐻', color: '#F59E0B' },
 ]
 
 const MOCK_STATS = {
-  revenue: { value: 12840, target: 15000, label: 'Revenue' },
-  leads:   { value: 24,    target: 30,    label: 'Leads'    },
-  posts:   { value: 12,    target: 15,    label: 'Posts'    },
-  tasks:   { value: 31,    target: 40,    label: 'Tasks'    },
+  revenue: { value: 12840, target: 15000 },
+  leads:   { value: 24,    target: 30    },
+  posts:   { value: 12,    target: 15    },
+  tasks:   { value: 31,    target: 40    },
 }
 
 export function OfficeFloor() {
@@ -30,7 +30,6 @@ export function OfficeFloor() {
     AGENTS.reduce((acc, a) => ({ ...acc, [a.id]: { status: 'idle', task: null } }), {})
   )
   const [activeChatAgent, setActiveChatAgent] = useState('ceo')
-  const [stats] = useState(MOCK_STATS)
   const [presenceStatus, setPresenceStatus] = useState('away')
 
   useEffect(() => {
@@ -46,7 +45,6 @@ export function OfficeFloor() {
           .from('agent_status')
           .select('agent_id, status, current_task')
           .in('agent_id', AGENTS.map(a => a.id))
-
         if (data && data.length > 0) {
           const mapped = {}
           data.forEach(row => { mapped[row.agent_id] = { status: row.status || 'idle', task: row.current_task } })
@@ -70,7 +68,7 @@ export function OfficeFloor() {
               <span className="font-bold text-xs">AX</span>
             </div>
             <div>
-              <h1 className="font-bold text-sm tracking-wider">APEX</h1>
+              <h1 className="font-bold text-sm tracking-widest">APEX</h1>
               <p className="text-[10px] text-white/40">AI Command Center</p>
             </div>
           </div>
@@ -79,14 +77,10 @@ export function OfficeFloor() {
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               <span className="text-xs text-white/60">5 Online</span>
             </div>
-            <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
-              presenceStatus === 'in_office'
-                ? 'bg-green-400/20 text-green-400'
-                : 'bg-orange-400/20 text-orange-400'
+            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+              presenceStatus === 'in_office' ? 'bg-green-400/20 text-green-400' : 'bg-orange-400/20 text-orange-400'
             }`}>
-              <div className={`w-1.5 h-1.5 rounded-full ${
-                presenceStatus === 'in_office' ? 'bg-green-400 animate-pulse' : 'bg-orange-400'
-              }`} />
+              <div className={`w-1.5 h-1.5 rounded-full ${presenceStatus === 'in_office' ? 'bg-green-400 animate-pulse' : 'bg-orange-400'}`} />
               {presenceStatus === 'in_office' ? 'In Office' : 'Away'}
             </div>
           </div>
@@ -94,20 +88,20 @@ export function OfficeFloor() {
       </header>
 
       {/* Stats Bar */}
-      <StatsBar stats={stats} />
+      <StatsBar stats={MOCK_STATS} />
 
-      {/* Main: Office + Chat side by side, always */}
+      {/* Main: Office + Chat */}
       <div className="flex-1 flex shrink-0 min-h-0">
 
-        {/* Office Canvas — 65% width */}
-        <div className="flex-1 flex flex-col min-w-0 p-3" style={{ minHeight: 0 }}>
+        {/* Office Canvas — fills available space */}
+        <div className="flex-1 flex flex-col min-w-0 min-h-0 p-3">
           <AnimatedOffice
             agentStatuses={agentStatuses}
             onAgentClick={(id) => setActiveChatAgent(id)}
           />
         </div>
 
-        {/* Chat Panel — 35% width, min 320px max 480px */}
+        {/* Chat Panel */}
         <div className="shrink-0 border-l border-white/5 w-80 xl:w-96 min-h-0">
           <ChatPanel
             activeAgent={activeChatAgent}
