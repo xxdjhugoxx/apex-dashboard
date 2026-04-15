@@ -28,8 +28,8 @@
         50% { transform: translateY(-10px); }
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-Dg6FViyL.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-BCm8GgAO.css">
+    <script type="module" crossorigin src="./assets/index-q30Utdt1.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DLg04s2K.css">
   </head>
   <body>
     <!-- Shows INSTANTLY before React loads — no JS needed -->
@@ -43,14 +43,14 @@
       </div>
     </div>
     <script>
-      // Fade out and remove loader once React app takes over
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          var l = document.getElementById('loader');
-          if (l) { l.style.opacity = '0'; l.style.transition = 'opacity 0.4s'; }
-          setTimeout(function() { if (l) l.remove(); }, 500);
-        }, 600);
-      });
+      // Loader stays until React explicitly removes it
+      window.removeLoader = function() {
+        var l = document.getElementById('loader');
+        if (l) { l.style.opacity = '0'; l.style.transition = 'opacity 0.4s'; }
+        setTimeout(function() { if (l) l.remove(); }, 400);
+      };
+      // Safety fallback: if React hasn't mounted in 5s, remove loader anyway
+      setTimeout(function() { window.removeLoader(); }, 5000);
     </script>
     <div id="root"></div>
   </body>

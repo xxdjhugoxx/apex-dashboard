@@ -41,14 +41,14 @@
       </div>
     </div>
     <script>
-      // Fade out and remove loader once React app takes over
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          var l = document.getElementById('loader');
-          if (l) { l.style.opacity = '0'; l.style.transition = 'opacity 0.4s'; }
-          setTimeout(function() { if (l) l.remove(); }, 500);
-        }, 600);
-      });
+      // Loader stays until React explicitly removes it
+      window.removeLoader = function() {
+        var l = document.getElementById('loader');
+        if (l) { l.style.opacity = '0'; l.style.transition = 'opacity 0.4s'; }
+        setTimeout(function() { if (l) l.remove(); }, 400);
+      };
+      // Safety fallback: if React hasn't mounted in 5s, remove loader anyway
+      setTimeout(function() { window.removeLoader(); }, 5000);
     </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
