@@ -4,7 +4,7 @@ import { StatusTicker } from './components/StatusTicker'
 import { ActivityFeed } from './components/ActivityFeed'
 import { createClient } from '@supabase/supabase-js'
 
-// APEX Supabase connection (reuse specOPS credentials for now)
+// APEX Supabase connection (same project as specOPS - separate tables)
 const supabase = createClient(
   'https://jbumilopcidspfujphiq.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpidW1pb3BwY2lkc3BmdWpwYWhpcSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNjQxNzYyMDI4LCJleHAiOjE5NTczMzgwMjh9.ZopNUt9bD7_P6qCyBdN7pHCDc9y0qTyegH1p2n8kHNs'
