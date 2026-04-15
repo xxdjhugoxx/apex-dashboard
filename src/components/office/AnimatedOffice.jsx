@@ -174,9 +174,11 @@ function SpeechBubble({ text, agentId, visible }) {
 // ─── Main Animated Office Canvas ──────────────────────────────────────────
 export function AnimatedOffice({ agentStatuses, onAgentClick }) {
   const canvasRef = useRef(null)
+  const containerRef = useRef(null)
+  const [debug, setDebug] = useState('init')
   const agentsRef = useRef({})
   const rafRef = useRef(null)
-  const [canvasSize, setCanvasSize] = useState({ w: 640, h: 320 })
+  const [canvasSize, setCanvasSize] = useState({ w: 640, h: 448 })
   const [bubbles, setBubbles] = useState({}) // agentId -> { text, visible }
 
   // Agent state machine
@@ -226,17 +228,23 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
     })
   }, [agentStatuses])
 
-  // Canvas resize
+  // Canvas resize — uses ResizeObserver for reliable cross-device sizing
   useEffect(() => {
     const update = () => {
-      const containerW = canvasRef.current?.parentElement?.clientWidth || window.innerWidth
-      const maxW = Math.min(containerW - 16, FLOOR_COLS * TILE)
-      const scale = maxW / (FLOOR_COLS * TILE)
-      setCanvasSize({ w: Math.max(320, FLOOR_COLS * TILE * scale), h: Math.max(224, FLOOR_ROWS * TILE * scale) })
+      const container = containerRef.current
+      if (!container) return
+      const cw = container.clientWidth
+      const ch = container.clientHeight
+      setDebug(`container: ${cw}x${ch}`)
+      if (cw < 10 || ch < 10) return
+      const scale = cw / (FLOOR_COLS * TILE)
+      setCanvasSize({ w: Math.floor(FLOOR_COLS * TILE * scale), h: Math.floor(FLOOR_ROWS * TILE * scale) })
     }
     update()
+    const ro = new ResizeObserver(update)
+    if (containerRef.current) ro.observe(containerRef.current)
     window.addEventListener('resize', update)
-    return () => window.removeEventListener('resize', update)
+    return () => { ro.disconnect(); window.removeEventListener('resize', update) }
   }, [])
 
   // Main render loop
@@ -370,7 +378,7 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
   }, [onAgentClick])
 
   return (
-    <div className="relative rounded-2xl overflow-hidden" style={{ minHeight: '420px', backgroundColor: '#0f0f1a', border: '2px solid #333' }}>
+    <div ref={containerRef} className="relative rounded-2xl overflow-hidden" style={{ height: '420px', backgroundColor: '#16162a', border: '2px solid #FF6B35' }}>
       <canvas
         ref={canvasRef}
         width={canvasSize.w}
