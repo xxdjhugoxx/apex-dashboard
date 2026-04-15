@@ -4,10 +4,52 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>APEX — AI Command Center</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      /* Prevent flash of white/unstyled content */
+      html, body { background: #0a0a0f; margin: 0; padding: 0; overflow: hidden; }
+      /* Instant loader — renders before any JS */
+      #loader {
+        position: fixed; inset: 0; z-index: 99999;
+        background: #0a0a0f;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #FF6B35;
+        transition: opacity 0.3s ease;
+      }
+      #loader-title { font-size: 28px; font-weight: 900; letter-spacing: 6px; margin-bottom: 8px; }
+      #loader-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin-bottom: 32px; letter-spacing: 2px; }
+      #loader-dots { display: flex; gap: 10px; }
+      .dot { width: 10px; height: 10px; background: #FF6B35; border-radius: 50%; animation: bounce 1s infinite; }
+      .dot:nth-child(2) { animation-delay: 0.15s; opacity: 0.65; }
+      .dot:nth-child(3) { animation-delay: 0.3s; opacity: 0.35; }
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+      }
+    </style>
   </head>
   <body>
+    <!-- Shows INSTANTLY before React loads — no JS needed -->
+    <div id="loader">
+      <div id="loader-title">APEX</div>
+      <div id="loader-sub">AI COMMAND CENTER</div>
+      <div id="loader-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+    <script>
+      // Fade out and remove loader once React app takes over
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          var l = document.getElementById('loader');
+          if (l) { l.style.opacity = '0'; l.style.transition = 'opacity 0.4s'; }
+          setTimeout(function() { if (l) l.remove(); }, 500);
+        }, 600);
+      });
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
