@@ -31,11 +31,11 @@ export function OfficeFloor() {
   )
   const [activeChatAgent, setActiveChatAgent] = useState('ceo')
   const [stats] = useState(MOCK_STATS)
-  const [hugoPresence, setHugoPresence] = useState('away')
+  const [presenceStatus, setPresenceStatus] = useState('away')
 
   useEffect(() => {
     hugoPresence.setInOffice()
-    const unsub = hugoPresence.onStatusChange(setHugoPresence)
+    const unsub = hugoPresence.onStatusChange(setPresenceStatus)
     return () => { unsub(); hugoPresence.setAway() }
   }, [])
 
@@ -80,14 +80,14 @@ export function OfficeFloor() {
               <span className="text-xs text-white/60">5 Online</span>
             </div>
             <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
-              hugoPresence === 'in_office'
+              presenceStatus === 'in_office'
                 ? 'bg-green-400/20 text-green-400'
                 : 'bg-orange-400/20 text-orange-400'
             }`}>
               <div className={`w-1.5 h-1.5 rounded-full ${
-                hugoPresence === 'in_office' ? 'bg-green-400 animate-pulse' : 'bg-orange-400'
+                presenceStatus === 'in_office' ? 'bg-green-400 animate-pulse' : 'bg-orange-400'
               }`} />
-              {hugoPresence === 'in_office' ? 'In Office' : 'Away'}
+              {presenceStatus === 'in_office' ? 'In Office' : 'Away'}
             </div>
           </div>
         </div>
@@ -112,7 +112,7 @@ export function OfficeFloor() {
           <ChatPanel
             activeAgent={activeChatAgent}
             onAgentSelect={setActiveChatAgent}
-            hugoPresence={hugoPresence}
+            hugoPresence={presenceStatus}
           />
         </div>
       </div>
