@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { AnimatedOffice } from './AnimatedOffice'
 import { ChatPanel } from './ChatPanel'
 import { StatsBar } from './StatsBar'
+import { hugoPresence } from '../../lib/hugoPresence'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -31,6 +32,14 @@ export function OfficeFloor() {
   const [activeChatAgent, setActiveChatAgent] = useState('ceo')
   const [activeTab, setActiveTab] = useState('office') // 'office' | 'chat'
   const [stats] = useState(MOCK_STATS)
+  const [hugoPresence, setHugoPresence] = useState('away') // 'in_office' | 'away'
+
+  // Track Hugo's presence — he's in office when UI is open
+  useEffect(() => {
+    hugoPresence.setInOffice()
+    const unsub = hugoPresence.onStatusChange(setHugoPresence)
+    return () => { unsub(); hugoPresence.setAway() }
+  }, [])
 
   // Poll Supabase for real agent status
   useEffect(() => {
@@ -73,6 +82,17 @@ export function OfficeFloor() {
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               <span className="text-xs text-white/60">5 Online</span>
+            </div>
+            {/* Hugo's presence indicator */}
+            <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+              hugoPresence === 'in_office'
+                ? 'bg-green-400/20 text-green-400'
+                : 'bg-orange-400/20 text-orange-400'
+            }`}>
+              <div className={`w-1.5 h-1.5 rounded-full ${
+                hugoPresence === 'in_office' ? 'bg-green-400 animate-pulse' : 'bg-orange-400'
+              }`} />
+              {hugoPresence === 'in_office' ? 'In Office' : 'Away'}
             </div>
             <span className="text-xs text-white/30 hidden sm:block">@theapexagents_bot</span>
           </div>
@@ -132,6 +152,7 @@ export function OfficeFloor() {
             <ChatPanel
               activeAgent={activeChatAgent}
               onAgentSelect={setActiveChatAgent}
+              hugoPresence={hugoPresence}
             />
           </div>
         </div>

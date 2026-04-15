@@ -30,7 +30,7 @@ const INITIAL_MESSAGES = [
   { role: 'agent', agent: 'finance', content: 'Monthly burn rate looks healthy. We\'re at 112% of revenue target. Two invoices pending — should push us to 118%.' },
 ]
 
-export function ChatPanel({ activeAgent, onAgentSelect }) {
+export function ChatPanel({ activeAgent, onAgentSelect, hugoPresence = 'away' }) {
   const [messages, setMessages] = useState(INITIAL_MESSAGES)
   const [input, setInput] = useState('')
   const [selectedAgent, setSelectedAgent] = useState(activeAgent || 'ceo')
@@ -45,6 +45,24 @@ export function ChatPanel({ activeAgent, onAgentSelect }) {
   useEffect(() => {
     if (activeAgent) setSelectedAgent(activeAgent)
   }, [activeAgent])
+
+  // Presence-aware system prompts — agents know if Hugo is in or out
+  const systemPrompts = {
+    in_office: {
+      ceo:      'Hugo is IN THE OFFICE right now. He can see and respond immediately. Be direct, collaborative, and proactive. Ask for approvals if needed. This is real-time interaction.',
+      sales:    'Hugo is IN THE OFFICE and can chat directly. Be energetic and collaborative. Report pipeline status and ask for help closing deals. Real-time conversation.',
+      marketing:'Hugo is IN THE OFFICE — he can give instant feedback on creative. Show him what\'s performing. Ask for content approvals. Be bold and creative.',
+      ops:      'Hugo is IN THE OFFICE — systems status update in real-time. Report blockers. Get instant approvals. Stay efficient and precise.',
+      finance:  'Hugo is IN THE OFFICE — budget discussions in real-time. Share financial updates. Get instant approval on spending. Be thorough and precise.',
+    },
+    away: {
+      ceo:      'Hugo is AWAY from the office (on Telegram). Work autonomously. Send periodic summary updates. Make decisions yourself unless it\'s a major strategic call. Keep him in the loop but don\'t wait on him.',
+      sales:    'Hugo is AWAY — keep the pipeline moving. Work leads autonomously. Send him updates on Telegram when milestones hit. No need to wait for approvals.',
+      marketing:'Hugo is AWAY — execute the content calendar independently. Post what\'s scheduled. Drop him Telegram updates when big wins happen (viral posts, milestone reach).',
+      ops:      'Hugo is AWAY — keep all systems running. Handle tasks autonomously. Alert him via Telegram only for critical issues.',
+      finance:  'Hugo is AWAY — manage invoices and budgets independently. Reconcile daily. Send Telegram summary every evening with financial status.',
+    },
+  }
 
   const sendMessage = async () => {
     if (!input.trim()) return
@@ -75,54 +93,99 @@ export function ChatPanel({ activeAgent, onAgentSelect }) {
 
       // Build context for selected agent
       const agentMeta = AGENTS.find(a => a.id === selectedAgent)
-      const systemPrompt = SYSTEM_PROMPTS[selectedAgent]
+      const presencePrompt = systemPrompts[hugoPresence]?.[selectedAgent] || systemPrompts.away[selectedAgent]
       const recentMsgs = messages.slice(-8).map(m => {
         const name = AGENTS.find(a => a.id === m.agent)?.name || m.agent
         return `${name}: ${m.content}`
       }).join('\n')
 
       // Simulate AI response (in production, call OpenAI/Claude here)
-      await new Promise(r => setTimeout(r, 800 + Math.random() * 700))
+      await new Promise(r => setTimeout(r, 600 + Math.random() * 600))
 
       const responses = {
-        ceo: [
-          'Strategy approved. Execute on my mark.',
-          'Good progress. Keep me posted on milestones.',
-          'The numbers support this move. Approved.',
-          'Let\'s stay focused on Q3 targets. Don\'t get distracted.',
-          'I\'ve reviewed the data. Here\'s my decision: proceed.',
-        ],
-        sales: [
-          'Love the energy! I\'ll get those leads converting ASAP.',
-          'Pipeline update: we\'re trending 18% above target. Let\'s keep pushing.',
-          'Felix here — I just closed a $4,200 deal. Team score: unreal.',
-          'Need more marketing support? I can hit $200K if you feed me more leads.',
-          'Hot lead just came in — Sarah from TechCorp. $12K potential.',
-        ],
-        marketing: [
-          'Content calendar is PACKED for the week. Expect viral.',
-          'Phoenix checking in — reel hit 50K views organically. Time to amplify with ads.',
-          'A/B test results are in: variant B wins by 18%. Switching all traffic.',
-          'Social mentions up 400% this month. Brand is HOT.',
-          'I\'m on it! Creating a thread that will 10x our reach.',
-        ],
-        ops: [
-          'Axel here — all tasks on track. 14 completed today, zero blockers.',
-          'Systems are green. Automation running at 99.2% uptime.',
-          'I\'ve optimized the workflow. Efficiency up 12% this sprint.',
-          'Task queue cleared. Ready for more assignments.',
-          'Scheduling synced. Next 3 days are fully optimized.',
-        ],
-        finance: [
-          'Bruno here — revenue tracking at 112% of monthly target. Looking healthy.',
-          'Invoice #14 just cleared: $2,850 received. Outstanding: $8,400.',
-          'Budget analysis complete. We have headroom for the Q3 expansion.',
-          'All invoices reconciled. Financial runway looks solid.',
-          'Monthly burn rate is sustainable. We\'re cash-flow positive.',
-        ],
+        ceo: {
+          in_office: [
+            'Boss, I have the Q3 numbers ready. Want me to walk you through the breakdown?',
+            'Leo here — the leadership briefing is prepped. What\'s our priority for today?',
+            'Three strategic decisions need your sign-off. Should we tackle them now?',
+            'Team morale is at 97/100 this week. What\'s driving that? Want my analysis?',
+            'I\'ve cleared my schedule — full focus on whatever you need.',
+          ],
+          away: [
+            'Hugo, just finished my morning review. Pipeline looks strong. Working autonomously today — I\'ll ping you if anything needs escalation.',
+            'Periodic update: all 5 departments on track. No blockers. Continuing execution.',
+            'Q3 strategy execution in progress. Major milestone hit on revenue. Will update you via Telegram.',
+            'No major decisions needed today. Team is executing well. I\'m handling the rest.',
+            'Morning briefing complete. We\'re 18% ahead of target. Monitoring closely.',
+          ],
+        },
+        sales: {
+          in_office: [
+            'Felix in the house! Got a hot lead — Sarah from TechCorp, $12K. Want me to loop you in?',
+            'Pipeline is TRENDING. Three deals closing this week. Need marketing to feed me more and I\'ll hit $200K EOM.',
+            'Yo! Just closed $4,200 with NovaTech. Can I get a quick approval to throw a team celebration lunch?',
+            'Felix here — I\'m seeing some incredible momentum. Want me to show you the dashboard?',
+            'Boss! 3 new qualified leads today. Who should I prioritize — your call.',
+          ],
+          away: [
+            'Felix reporting in — 2 deals closed today, $8,400 total. Sending full pipeline update to Telegram now.',
+            'Auto-update: Lead gen hitting 140% of target this week. Felix is LOCKED IN. Working the phones.',
+            'Hot lead just came in while you were out — already qualified, $15K potential. Closing probability: 78%.',
+            'Felix here, running autonomously. All active deals on track. Will update when major milestones hit.',
+            'Sales floor is HOT today. Two more meetings scheduled. Pipeline growing fast — you\'ll see the numbers tonight.',
+          ],
+        },
+        marketing: {
+          in_office: [
+            'Phoenix here! Instagram reel is VIRAL — 50K views and climbing. Want to see the analytics before I push ad budget?',
+            'Hey Boss! A/B test results are in — variant B wins by 18%. Want to greenlight the switch before I scale?',
+            'Content calendar for next week is READY. Can you review the highlights? Want your take on the strategy.',
+            'Phoenix checking in — brand awareness up 340% this month. Want me to walk you through the campaign breakdown?',
+            'Boss! Got a COLLAB opportunity — micro-influencer wants to partner. Can you approve the deal terms?',
+          ],
+          away: [
+            'Phoenix dropping a Telegram update: Instagram hit 100K reach this week. Organic growth insane. Boosting with ads now.',
+            'Content drop complete — new reel went live. Watching engagement closely. Will escalate if it goes viral.',
+            'Marketing update: social mentions up 400%. Running day 2 of the campaign. All metrics green. Executing autonomously.',
+            'Phoenix working the algorithms. Day 3 of paid campaign — CTR at 4.2%, well above industry standard. Budget optimized.',
+            'Morning content sprint done. Posted 4 pieces across channels. Engagement rate: 8.7%. Brand growing fast.',
+          ],
+        },
+        ops: {
+          in_office: [
+            'Axel here! Systems are green. Got an automation idea — want me to show you the workflow before I deploy it?',
+            'Boss, noticed a bottleneck in the task queue. Can I get 2 mins to walk you through the fix?',
+            'Morning systems check complete. 99.2% uptime across all tools. Want the detailed breakdown?',
+            'Axel here — I optimized 3 workflows today. Efficiency up 12%. Can you approve the changes before I roll out?',
+            'Hey! Task queue is CLEARED. Got 20 min before my next automation run. Anything you need?',
+          ],
+          away: [
+            'Axel reporting: all 47 tasks completed today. Zero blockers. Systems running at 99.2% uptime. Fully autonomous.',
+            'Ops update: automated 3 new workflows today. Efficiency up 12%. Will monitor overnight and escalate if anything breaks.',
+            'Axel here — scheduling synced for the next 3 days. All resources optimally allocated. Running in background.',
+            'Morning ops sprint complete. Task queue: empty. Team utilization: 94%. Systems: green. Nothing to escalate.',
+            'Daily automation run complete. No intervention needed. Evening status: all clear. Monitoring overnight.',
+          ],
+        },
+        finance: {
+          in_office: [
+            'Bruno here! Invoice #15 just cleared — $3,200 received. Want me to walk you through the cash flow?',
+            'Boss, monthly burn rate looks PERFECT. Got 4.5 months runway. Want my breakdown of the Q3 budget?',
+            'Hey! Financial report is ready. We\'re at 112% of revenue target. Want to review before I finalize the projections?',
+            'Bruno here — two invoices pending approval. Can you sign off so I can send them out?',
+            'Finance update: all invoices reconciled. Healthy margins maintained. Want me to prepare the investor summary?',
+          ],
+          away: [
+            'Bruno here — daily financial sync complete. Revenue at 112% of target. Outstanding invoices: $8,400. All healthy.',
+            'Evening finance update: 3 invoices sent, 2 paid today totaling $5,100. Cash position strong. No action needed.',
+            'Bruno running autonomously. Monthly reconciliation complete. Margins up 3% vs last month. Summary sent to Telegram.',
+            'Financial health check: all budgets within limits. Burn rate sustainable. Q3 projections updated. Nothing to escalate.',
+            'Bruno here: financial forecast updated. 4.5 month runway confirmed. Next invoice cycle in 5 days. Will monitor closely.',
+          ],
+        },
       }
 
-      const opts = responses[selectedAgent] || ['Message received.']
+      const opts = responses[selectedAgent]?.[hugoPresence] || responses[selectedAgent]?.away || ['Message received.']
       const response = opts[Math.floor(Math.random() * opts.length)]
 
       setMessages(prev => [...prev, {
