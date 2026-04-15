@@ -30,18 +30,15 @@ export function OfficeFloor() {
     AGENTS.reduce((acc, a) => ({ ...acc, [a.id]: { status: 'idle', task: null } }), {})
   )
   const [activeChatAgent, setActiveChatAgent] = useState('ceo')
-  const [activeTab, setActiveTab] = useState('office') // 'office' | 'chat'
   const [stats] = useState(MOCK_STATS)
-  const [hugoPresence, setHugoPresence] = useState('away') // 'in_office' | 'away'
+  const [hugoPresence, setHugoPresence] = useState('away')
 
-  // Track Hugo's presence — he's in office when UI is open
   useEffect(() => {
     hugoPresence.setInOffice()
     const unsub = hugoPresence.onStatusChange(setHugoPresence)
     return () => { unsub(); hugoPresence.setAway() }
   }, [])
 
-  // Poll Supabase for real agent status
   useEffect(() => {
     const fetchStatus = async () => {
       try {
@@ -63,13 +60,13 @@ export function OfficeFloor() {
   }, [])
 
   return (
-    <div className="h-screen bg-[#0a0a0f] text-white overflow-hidden flex flex-col">
+    <div className="h-screen bg-[#0a0a0f] text-white flex flex-col overflow-hidden">
 
-      {/* ── Header ───────────────────────────────────────────────────────── */}
-      <header className="z-10 border-b border-white/10 bg-[#0f0f14]/95 backdrop-blur-sm shrink-0">
+      {/* Header */}
+      <header className="shrink-0 border-b border-white/10 bg-[#0f0f14]">
         <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#FF8855] flex items-center justify-center shadow-lg shadow-[#FF6B35]/30">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#FF8855] flex items-center justify-center">
               <span className="font-bold text-xs">AX</span>
             </div>
             <div>
@@ -77,13 +74,11 @@ export function OfficeFloor() {
               <p className="text-[10px] text-white/40">AI Command Center</p>
             </div>
           </div>
-
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               <span className="text-xs text-white/60">5 Online</span>
             </div>
-            {/* Hugo's presence indicator */}
             <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
               hugoPresence === 'in_office'
                 ? 'bg-green-400/20 text-green-400'
@@ -94,74 +89,35 @@ export function OfficeFloor() {
               }`} />
               {hugoPresence === 'in_office' ? 'In Office' : 'Away'}
             </div>
-            <span className="text-xs text-white/30 hidden sm:block">@theapexagents_bot</span>
           </div>
         </div>
       </header>
 
-      {/* ── Tab Toggle ────────────────────────────────────────────────────── */}
-      <div className="z-10 bg-[#0f0f14]/80 border-b border-white/5 shrink-0">
-        <div className="flex px-4 gap-1">
-          {[
-            { id: 'office', label: '🏢 Office', short: 'Office' },
-            { id: 'chat',   label: '💬 Team Chat', short: 'Chat' },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`
-                px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all
-                ${activeTab === tab.id
-                  ? 'bg-[#FF6B35] text-white'
-                  : 'text-white/40 hover:text-white/70'
-                }
-              `}
-            >
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.short}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Stats Bar ────────────────────────────────────────────────────── */}
+      {/* Stats Bar */}
       <StatsBar stats={stats} />
 
-      {/* ── Main Content ─────────────────────────────────────────────────── */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Main: Office + Chat side by side, always */}
+      <div className="flex-1 flex shrink-0 min-h-0">
 
-        {/* Left: Office Canvas */}
-        <div className={`flex-1 overflow-hidden transition-all ${activeTab === 'chat' ? 'hidden lg:flex' : 'flex flex-col'}`}>
-          <div className="flex-1 overflow-y-auto p-4 flex items-center justify-center">
-            <div className="w-full max-w-3xl">
-            <AnimatedOffice
-              agentStatuses={agentStatuses}
-              onAgentClick={(id) => {
-                setActiveChatAgent(id)
-                setActiveTab('chat')
-              }}
-            />
-            </div>
-          </div>
+        {/* Office Canvas — 65% width */}
+        <div className="flex-1 flex flex-col min-w-0 min-h-0 p-3">
+          <AnimatedOffice
+            agentStatuses={agentStatuses}
+            onAgentClick={(id) => setActiveChatAgent(id)}
+          />
         </div>
 
-        {/* Right: Chat Panel */}
-        <div className={`
-          w-full lg:w-96 shrink-0 border-l border-white/5
-          ${activeTab === 'chat' ? 'flex' : 'hidden lg:flex'}
-        `}>
-          <div className="flex-1 flex flex-col overflow-hidden" style={{ height: 'calc(100dvh - 130px)' }}>
-            <ChatPanel
-              activeAgent={activeChatAgent}
-              onAgentSelect={setActiveChatAgent}
-              hugoPresence={hugoPresence}
-            />
-          </div>
+        {/* Chat Panel — 35% width, min 320px max 480px */}
+        <div className="shrink-0 border-l border-white/5 w-80 xl:w-96 min-h-0">
+          <ChatPanel
+            activeAgent={activeChatAgent}
+            onAgentSelect={setActiveChatAgent}
+            hugoPresence={hugoPresence}
+          />
         </div>
-
       </div>
 
-      {/* ── Footer ───────────────────────────────────────────────────────── */}
+      {/* Footer */}
       <footer className="shrink-0 border-t border-white/5 py-2 text-center">
         <p className="text-[10px] text-white/15 tracking-widest font-bold">
           APEX AI COMPANY — POWERED BY NEXUS
