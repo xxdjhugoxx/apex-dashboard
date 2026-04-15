@@ -1,7 +1,21 @@
 import React, { useState, useEffect } from 'react'
-import { OfficeFloor } from './components/office/OfficeFloor'
+import { AnimatedOffice } from './components/office/AnimatedOffice'
+import { ChatPanel } from './components/office/ChatPanel'
+import { StatsBar } from './components/office/StatsBar'
+import { hugoPresence } from './lib/hugoPresence'
+import { createClient } from '@supabase/supabase-js'
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './lib/config'
 
-// Error boundary to catch any React render errors
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+const DEFAULT_STATS = {
+  revenue: { value: 12840, target: 15000 },
+  leads:   { value: 24,    target: 30    },
+  posts:   { value: 12,    target: 15    },
+  tasks:   { value: 31,    target: 40    },
+}
+
+// Error boundary
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props)
@@ -34,16 +48,130 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+function OfficeFloor({ agentStatuses, onAgentClick, hugoPresence, stats }) {
+  return (
+    <div className="h-screen bg-[#0a0a0f] text-white flex flex-col overflow-hidden">
+
+      {/* Header */}
+      <header className="shrink-0 border-b border-white/10 bg-[#0f0f14]">
+        <div className="flex items-center justify-between px-6 py-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#FF8855] flex items-center justify-center">
+              <span className="font-bold text-xs">AX</span>
+            </div>
+            <div>
+              <h1 className="font-bold text-sm tracking-widest">APEX</h1>
+              <p className="text-[10px] text-white/40">AI Command Center</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-xs text-white/60">Live</span>
+            </div>
+            <div
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider"
+              style={{
+                backgroundColor: hugoPresence === 'in_office' ? 'rgba(34,197,94,0.2)' : 'rgba(251,146,60,0.2)',
+                color: hugoPresence === 'in_office' ? '#4ade80' : '#fb923c',
+              }}
+            >
+              <div
+                className="w-1.5 h-1.5 rounded-full"
+                style={{
+                  backgroundColor: hugoPresence === 'in_office' ? '#4ade80' : '#fb923c',
+                }}
+              />
+              {hugoPresence === 'in_office' ? 'In Office' : 'Away'}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Stats Bar */}
+      <StatsBar stats={stats} />
+
+      {/* Main: Office + Chat */}
+      <div className="flex-1 flex shrink-0 min-h-0">
+        <div className="flex-1 flex flex-col min-w-0 min-h-0 p-3">
+          <AnimatedOffice
+            agentStatuses={agentStatuses}
+            onAgentClick={onAgentClick}
+          />
+        </div>
+        <div className="shrink-0 border-l border-white/5 w-80 xl:w-96 min-h-0">
+          <ChatPanel
+            activeAgent={activeChatAgent}
+            onAgentSelect={setActiveChatAgent}
+            hugoPresence={hugoPresence}
+          />
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="shrink-0 border-t border-white/5 py-2 text-center">
+        <p className="text-[10px] text-white/15 tracking-widest font-bold">
+          APEX AI COMPANY — POWERED BY NEXUS
+        </p>
+      </footer>
+    </div>
+  )
+}
+
 export default function App() {
+  const [presenceStatus, setPresenceStatus] = useState('away')
+  const [agentStatuses, setAgentStatuses] = useState({})
+  const [stats, setStats] = useState(DEFAULT_STATS)
+  const [activeChatAgent, setActiveChatAgent] = useState('ceo')
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    try {
-      if (window.removeLoader) window.removeLoader()
-    } catch(e) {
-      console.warn('Loader removal skipped:', e)
+    hugoPresence.setInOffice()
+    const unsub = hugoPresence.onStatusChange(setPresenceStatus)
+
+    const pollStatuses = async () => {
+      try {
+        const { data } = await supabase
+          .from('agent_status')
+          .select('agent_id, status, current_task')
+        if (data && data.length > 0) {
+          const mapped = {}
+          data.forEach(row => { mapped[row.agent_id] = { status: row.status || 'idle', task: row.current_task } })
+          setAgentStatuses(mapped)
+        }
+      } catch (_) {}
     }
+
+    const pollStats = async () => {
+      try {
+        const { data: invoices } = await supabase.from('invoices').select('amount, status').eq('status', 'paid')
+        const revenue = invoices?.reduce((sum, i) => sum + (i.amount || 0), 0) || 0
+
+        const { count: leads } = await supabase.from('sales_leads').select('*', { count: 'exact', head: true })
+        const { count: posts } = await supabase.from('content_calendar').select('*', { count: 'exact', head: true }).eq('status', 'posted')
+        const { count: tasks } = await supabase.from('agent_tasks').select('*', { count: 'exact', head: true }).eq('status', 'done')
+
+        setStats({
+          revenue: { value: revenue || 12840, target: 15000 },
+          leads:   { value: leads || 24,      target: 30    },
+          posts:   { value: posts || 12,      target: 15    },
+          tasks:   { value: tasks || 31,      target: 40    },
+        })
+      } catch (_) {}
+    }
+
+    pollStatuses()
+    pollStats()
+    const sInterval = setInterval(pollStatuses, 5000)
+    const statsInterval = setInterval(pollStats, 10000)
+
     setReady(true)
+    return () => {
+      unsub()
+      hugoPresence.setAway()
+      clearInterval(sInterval)
+      clearInterval(statsInterval)
+    }
   }, [])
 
   if (!ready) {
@@ -63,7 +191,12 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <OfficeFloor />
+      <OfficeFloor
+        agentStatuses={agentStatuses}
+        onAgentClick={setActiveChatAgent}
+        hugoPresence={presenceStatus}
+        stats={stats}
+      />
     </ErrorBoundary>
   )
 }

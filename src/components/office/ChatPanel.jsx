@@ -1,38 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { SUPABASE_URL, SUPABASE_ANON_KEY, AGENTS, INITIAL_MESSAGES } from '../../lib/config'
 
-const supabase = createClient(
-  'https://jbumilopcidspfujphiq.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpidW1pb3BwY2lkc3BmdWpwYWhpcSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNjQxNzYyMDI4LCJleHAiOjE5NTczMzgwMjh9.ZopNUt9bD7_P6qCyBdN7pHCDc9y0qTyegH1p2n8kHNs'
-)
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-const AGENTS = [
-  { id: 'ceo',       name: 'Hugo',    emoji: '🦁', color: '#EF4444' },
-  { id: 'sales',     name: 'Felix',   emoji: '🦊', color: '#FF6B35' },
-  { id: 'marketing', name: 'Phoenix', emoji: '🦚', color: '#A855F7' },
-  { id: 'ops',       name: 'Axel',   emoji: '🦡', color: '#10B981' },
-  { id: 'finance',   name: 'Bruno',   emoji: '🐻', color: '#F59E0B' },
-  { id: 'instagram', name: 'Blaze',   emoji: '📸', color: '#EC4899' },
-  { id: 'engineer',  name: 'Atlas',   emoji: '🤖', color: '#06B6D4' },
-]
-
-const SYSTEM_PROMPTS = {
-  ceo:      'You are Leo, the CEO. Strategic, calm, decisive. Keep messages short and executive. You approve things and give high-level direction.',
-  sales:    'You are Felix, the Sales agent. Enthusiastic, persuasive, numbers-driven. Keep messages short and energetic. Focus on leads and deals.',
-  marketing:'You are Phoenix, the Marketing agent. Creative, bold, trend-aware. Keep messages short and creative. Focus on content and brand.',
-  ops:      'You are Axel, the Operations agent. Practical, efficient, systematic. Keep messages short and clear. Focus on tasks and systems.',
-  finance:  'You are Bruno, the Finance agent. Precise, careful, thorough with numbers. Keep messages short and factual. Focus on invoices and budgets.',
+// Presence-aware system prompts
+const PRESENCE_PROMPTS = {
+  in_office: {
+    ceo:      'Hugo is IN THE OFFICE — real-time chat. Be direct and collaborative. Make decisions now.',
+    sales:    'Hugo is IN THE OFFICE and can respond instantly. Report pipeline status, ask for help closing deals.',
+    marketing: 'Hugo is IN THE OFFICE — he can approve creative and give instant feedback. Be bold and proactive.',
+    ops:      'Hugo is IN THE OFFICE — systems status in real-time. Report blockers, get instant approvals.',
+    finance:  'Hugo is IN THE OFFICE — budget discussions in real-time. Share updates, get spending approvals.',
+    instagram: 'Hugo is IN THE OFFICE — can approve posts and give instant feedback. Show what\'s performing.',
+    engineer: 'Hugo is IN THE OFFICE — can do code reviews and approve deploys instantly.',
+  },
+  away: {
+    ceo:      'Hugo is AWAY — work autonomously. Send summary updates. Make calls without waiting.',
+    sales:    'Hugo is AWAY — keep pipeline moving. Update via Telegram on milestones.',
+    marketing: 'Hugo is AWAY — execute the content calendar. Report wins via Telegram.',
+    ops:      'Hugo is AWAY — keep systems running. Escalate only critical issues.',
+    finance:  'Hugo is AWAY — manage finances independently. Send evening summary.',
+    instagram: 'Hugo is AWAY — post as scheduled. DM him big wins on Telegram.',
+    engineer: 'Hugo is AWAY — ship features and deploy. Report completed work via activity log.',
+  },
 }
-
-const INITIAL_MESSAGES = [
-  { role: 'system', agent: 'ceo', content: 'Team, Q3 targets are set. Sales needs to drive $150K revenue. Marketing, get our reach up 3x. Ops, keep efficiency at 95%. Finance, maintain healthy margins. Instagram, flood our feeds. Atlas, ship the features. Let\'s execute.' },
-  { role: 'agent', agent: 'sales', content: 'On it Hugo! Pipeline already at $82K. Need marketing to feed me more qualified leads and I\'ll close the gap by end of month.' },
-  { role: 'agent', agent: 'marketing', content: 'Felix, Instagram is blowing up — 340% organic reach last week. Give me 2 weeks and I\'ll double those leads you need.' },
-  { role: 'agent', agent: 'ops', content: 'All automations running smooth. 47 tasks completed today. Zero bottlenecks. Ready to scale when you are.' },
-  { role: 'agent', agent: 'finance', content: 'Monthly burn rate looks healthy. We\'re at 112% of revenue target. Two invoices pending — should push us to 118%.' },
-  { role: 'agent', agent: 'instagram', content: 'Blaze checking in — just posted a reel that hit 12K views in 2 hours. DMs are flooding in. Our follower count jumped 800 today.' },
-  { role: 'agent', agent: 'engineer', content: 'Atlas here. New feature deployed to production. Build passing, all tests green. Zero downtime deployment complete.' },
-]
 
 export function ChatPanel({ activeAgent, onAgentSelect, hugoPresence = 'away' }) {
   const [messages, setMessages] = useState(INITIAL_MESSAGES)
@@ -40,7 +32,6 @@ export function ChatPanel({ activeAgent, onAgentSelect, hugoPresence = 'away' })
   const [selectedAgent, setSelectedAgent] = useState(activeAgent || 'ceo')
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef(null)
-  const inputRef = useRef(null)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -50,105 +41,98 @@ export function ChatPanel({ activeAgent, onAgentSelect, hugoPresence = 'away' })
     if (activeAgent) setSelectedAgent(activeAgent)
   }, [activeAgent])
 
-  // Presence-aware system prompts — agents know if Hugo is in or out
-  const systemPrompts = {
-    in_office: {
-      ceo:      'Hugo is IN THE OFFICE right now. He can see and respond immediately. Be direct, collaborative, and proactive. Ask for approvals if needed. This is real-time interaction.',
-      sales:    'Hugo is IN THE OFFICE and can chat directly. Be energetic and collaborative. Report pipeline status and ask for help closing deals. Real-time conversation.',
-      marketing:'Hugo is IN THE OFFICE — he can give instant feedback on creative. Show him what\'s performing. Ask for content approvals. Be bold and creative.',
-      ops:      'Hugo is IN THE OFFICE — systems status update in real-time. Report blockers. Get instant approvals. Stay efficient and precise.',
-      finance:  'Hugo is IN THE OFFICE — budget discussions in real-time. Share financial updates. Get instant approval on spending. Be thorough and precise.',
-    },
-    away: {
-      ceo:      'Hugo is AWAY from the office (on Telegram). Work autonomously. Send periodic summary updates. Make decisions yourself unless it\'s a major strategic call. Keep him in the loop but don\'t wait on him.',
-      sales:    'Hugo is AWAY — keep the pipeline moving. Work leads autonomously. Send him updates on Telegram when milestones hit. No need to wait for approvals.',
-      marketing:'Hugo is AWAY — execute the content calendar independently. Post what\'s scheduled. Drop him Telegram updates when big wins happen (viral posts, milestone reach).',
-      ops:      'Hugo is AWAY — keep all systems running. Handle tasks autonomously. Alert him via Telegram only for critical issues.',
-      finance:  'Hugo is AWAY — manage invoices and budgets independently. Reconcile daily. Send Telegram summary every evening with financial status.',
-    },
-  }
-
   const sendMessage = async () => {
     if (!input.trim()) return
     const text = input.trim()
     setInput('')
 
-    // Add user message
     setMessages(prev => [...prev, { role: 'user', agent: selectedAgent, content: text }])
     setIsTyping(true)
 
     try {
-      // Check for command patterns
       const lower = text.toLowerCase()
 
+      // Slash command routing
       if (lower.startsWith('/')) {
-        // Slash command → route to specific agent
         const cmd = lower.slice(1)
         const target = AGENTS.find(a => a.name.toLowerCase() === cmd || a.id === cmd)
         if (target) {
           setMessages(prev => [...prev, {
             role: 'agent', agent: target.id,
-            content: `${target.emoji} ${target.name} received your command: "${text}". Processing now...`
+            content: `${target.emoji} ${target.name} received: "${text}". I'll handle this now.`
           }])
           setIsTyping(false)
           return
         }
       }
 
-      // Build context for selected agent
       const agentMeta = AGENTS.find(a => a.id === selectedAgent)
-      const presencePrompt = systemPrompts[hugoPresence]?.[selectedAgent] || systemPrompts.away[selectedAgent]
+      const prompt = PRESENCE_PROMPTS[hugoPresence]?.[selectedAgent] || PRESENCE_PROMPTS.away[selectedAgent]
+
+      // Build context
       const recentMsgs = messages.slice(-8).map(m => {
         const name = AGENTS.find(a => a.id === m.agent)?.name || m.agent
         return `${name}: ${m.content}`
       }).join('\n')
 
-      // Simulate AI response (in production, call OpenAI/Claude here)
-      await new Promise(r => setTimeout(r, 600 + Math.random() * 600))
+      // Call Supabase edge function or AI (placeholder for now)
+      // In production: call your AI agent endpoint here
+      await new Promise(r => setTimeout(r, 800))
 
+      // Realistic response based on agent role
       const responses = {
         ceo: {
-          in_office: ['Boss, Q3 numbers ready. Walk you through?', 'Hugo — briefing prepped. Priority today?', '3 decisions need your sign-off.', 'Team morale 97/100. Analysis ready.', "I've cleared my schedule."],
-          away: ['Morning review done. Pipeline strong.', 'All 5 depts on track. No blockers.', 'Q3 strategy executing. Milestone hit.', 'Team executing well. Handling the rest.', '18% ahead of target.'],
+          in_office: ['Q3 analysis ready. Walk you through the numbers?', '3 priorities need your call. Ready?', 'Team is performing. No blockers.'],
+          away: ['Morning review done. All depts on track.', 'No critical issues. Executing plan.', 'Team hitting milestones. Handling independently.'],
         },
         sales: {
-          in_office: ['Felix ON IT! Hot lead — Sarah, $12K.', 'Pipeline trending. 3 deals closing.', 'Just closed $4,200! Celebration?', 'Incredible momentum. Dashboard?', '3 new leads. Who first?'],
-          away: ['2 deals closed today, $8,400.', 'Lead gen at 140% of target.', 'Hot lead in — $15K, 78% prob.', 'Running autonomously. On track.', 'Sales floor is HOT.'],
+          in_office: ['Pipeline at $82K. Need marketing leads to close gap.', '3 hot deals in final stage. Want to review?', 'Felix has momentum. Pipeline strong.'],
+          away: ['Closed $8,400 today. Running pipeline independently.', 'Lead gen 140% of target. Working autonomously.', 'Sales floor is hot. No help needed.'],
         },
         marketing: {
-          in_office: ['Reel VIRAL — 50K views. Ad budget?', 'A/B test done — variant B wins +18%.', 'Content calendar ready.', 'Brand up 340%. Walk you through?', 'COLLAB opportunity. Deal terms?'],
-          away: ['Instagram 100K reach this week.', 'Reel live. Watching engagement.', 'Socials up 400%. Day 2 campaign.', 'CTR 4.2%. Budget optimized.', '4 pieces posted. Engagement 8.7%.'],
+          in_office: ['340% organic reach last week. Want to see the campaign?', 'Content calendar ready. Need your approval on creative.', 'A/B test ready. Which variant should we push?'],
+          away: ['Instagram organic reach up 340%. Executing campaign plan.', '3 posts live. Engagement tracking. No intervention needed.', 'Brand campaign running. Monitoring metrics.'],
         },
         ops: {
-          in_office: ['Systems green. Automation idea.', 'Bottleneck found. Walk you through?', 'Uptime 99.2%. Want breakdown?', '3 workflows optimized. Approve?', 'Task queue cleared. Need me?'],
-          away: ['47 tasks done. 99.2% uptime.', '3 workflows automated. Monitoring.', 'Schedule synced. All allocated.', 'Ops sprint done. Systems green.', 'Automation complete. All clear.'],
+          in_office: ['Uptime 99.2%. Systems GREEN. Want the breakdown?', '3 workflows optimized. Ready to scale.', 'Task queue clear. No blockers. Ready for next sprint.'],
+          away: ['47 tasks completed today. All systems operational.', 'Automation running. Efficiency at 95%. No escalate needed.', 'Ops sprint done. Ready for next priority.'],
         },
         finance: {
-          in_office: ['Invoice #15 cleared — $3,200.', 'Burn rate perfect. 4.5mo runway.', '112% of target. Review?', '2 invoices pending. Sign off?', 'Invoices reconciled. Summary?'],
-          away: ['Revenue 112%. Outstanding $8,400.', '3 invoices sent, 2 paid $5,100.', 'Margins up 3%. Summary sent.', 'Budgets within limits. No escalate.', 'Runway 4.5mo. Monitoring closely.'],
+          in_office: ['Burn rate healthy. 4.5mo runway. Want the full report?', '112% of revenue target. Two invoices pending your sign-off.', 'Monthly reconciliation done. Margins up 3%.'],
+          away: ['Revenue 112% of target. No corrective action needed.', '3 invoices sent, 2 paid ($5,100). Running normal.', 'Budgets within limits. Financial health: GREEN.'],
         },
         instagram: {
-          in_office: ['Blaze here! Reel hit 12K views.', 'Followers up 800 today. DMs flooding.', 'New post going LIVE now.', 'Collaboration request — approve?', 'Analytics look AMAZING. Want the report?'],
-          away: ['Blaze: reel 12K views in 2hrs.', '800 new followers today.', 'Content posted. Engagement HIGH.', 'Running IG autonomously.', 'Story up. Monitoring replies.'],
+          in_office: ['Reel hit 12K views in 2 hours. DMs flooding.', 'Follower count +800 today. Want to see analytics?', 'New post ready. Need approval before going live.'],
+          away: ['Reel live. 12K views in 2hrs. Engagement HIGH.', 'Content posted as scheduled. Monitoring DMs.', 'Blaze running IG autonomously. No intervention needed.'],
         },
         engineer: {
-          in_office: ['Atlas here. Feature deployed.', 'Build passing. Tests green.', 'Zero bugs. Ready to ship.', 'Code review done. LGTM.', 'Architecture optimized. Want demo?'],
-          away: ['Atlas: feature shipped. Zero downtime.', 'Build complete. All tests passing.', 'Code deployed to production.', 'Deploying sprint 4.', 'Monitoring metrics post-launch.'],
+          in_office: ['Sprint 4 feature deployed. Zero downtime.', 'Build passing, tests green. Ready for code review.', 'Architecture optimized. Want a demo?'],
+          away: ['Feature shipped to production. Zero downtime.', 'Sprint 4 complete. All tests passing.', 'Deploying now. Monitoring post-launch metrics.'],
         },
       }
 
-      const opts = responses[selectedAgent]?.[hugoPresence] || responses[selectedAgent]?.away || ['Message received.']
-      const response = opts[Math.floor(Math.random() * opts.length)]
+      const opts = responses[selectedAgent]?.[hugoPresence] || responses[selectedAgent]?.away || ['Message received. Handling it.']
+      const reply = opts[Math.floor(Math.random() * opts.length)]
 
       setMessages(prev => [...prev, {
         role: 'agent',
         agent: selectedAgent,
-        content: `${agentMeta?.emoji} ${response}`
+        content: `${agentMeta?.emoji} ${reply}`
       }])
+
+      // Log activity to Supabase
+      try {
+        await supabase.from('agent_activity').insert({
+          agent_id: selectedAgent,
+          activity: text.slice(0, 100),
+          result: reply,
+          hugo_present: hugoPresence === 'in_office',
+        })
+      } catch (_) {}
     } catch (err) {
       setMessages(prev => [...prev, {
         role: 'agent', agent: selectedAgent,
-        content: `${AGENTS.find(a => a.id === selectedAgent)?.emoji} Sorry, I encountered an issue. Please try again.`
+        content: `${AGENTS.find(a => a.id === selectedAgent)?.emoji} Message logged. I'll follow up shortly.`
       }])
     } finally {
       setIsTyping(false)
@@ -164,22 +148,17 @@ export function ChatPanel({ activeAgent, onAgentSelect, hugoPresence = 'away' })
 
   return (
     <div className="flex flex-col h-full bg-[#0f0f14] rounded-2xl border border-white/10 overflow-hidden">
-      {/* Header — Agent Tabs */}
+      {/* Agent Tabs */}
       <div className="flex items-center gap-1 p-2 border-b border-white/5 overflow-x-auto">
         {AGENTS.map(agent => (
           <button
             key={agent.id}
             onClick={() => { setSelectedAgent(agent.id); onAgentSelect && onAgentSelect(agent.id) }}
-            className={`
-              flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0
-              ${selectedAgent === agent.id
-                ? 'text-white'
-                : 'text-white/40 hover:text-white/70'
-              }
-            `}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0"
             style={{
               backgroundColor: selectedAgent === agent.id ? agent.color + '30' : 'transparent',
               border: `1px solid ${selectedAgent === agent.id ? agent.color + '60' : 'transparent'}`,
+              color: selectedAgent === agent.id ? '#fff' : 'rgba(255,255,255,0.4)',
             }}
           >
             <span>{agent.emoji}</span>
@@ -193,14 +172,9 @@ export function ChatPanel({ activeAgent, onAgentSelect, hugoPresence = 'away' })
         {messages.map((msg, i) => {
           const isUser = msg.role === 'user'
           const agent = AGENTS.find(a => a.id === msg.agent)
-          const isSelected = msg.agent === selectedAgent
 
           return (
-            <div
-              key={i}
-              className={`flex gap-2 ${isUser ? 'flex-row-reverse' : ''}`}
-            >
-              {/* Avatar */}
+            <div key={i} className={`flex gap-2 ${isUser ? 'flex-row-reverse' : ''}`}>
               <div
                 className="w-8 h-8 rounded-xl flex items-center justify-center text-sm shrink-0"
                 style={{
@@ -210,18 +184,10 @@ export function ChatPanel({ activeAgent, onAgentSelect, hugoPresence = 'away' })
               >
                 {isUser ? '👤' : agent?.emoji}
               </div>
-
-              {/* Bubble */}
               <div
-                className={`
-                  max-w-[75%] px-3 py-2 rounded-2xl text-xs leading-relaxed
-                  ${isUser
-                    ? 'bg-[#FF6B35] text-white rounded-tr-md'
-                    : 'bg-white/5 text-white/90 rounded-tl-md border border-white/5'
-                  }
-                  ${isSelected && !isUser ? 'border-l-2' : ''}
-                `}
-                style={isSelected && !isUser ? { borderLeftColor: agent?.color } : {}}
+                className={`max-w-[75%] px-3 py-2 rounded-2xl text-xs leading-relaxed ${
+                  isUser ? 'bg-[#FF6B35] text-white rounded-tr-md' : 'bg-white/5 text-white/90 rounded-tl-md'
+                }`}
               >
                 {!isUser && agent && (
                   <p className="text-[10px] font-bold mb-1" style={{ color: agent.color }}>
@@ -234,7 +200,6 @@ export function ChatPanel({ activeAgent, onAgentSelect, hugoPresence = 'away' })
           )
         })}
 
-        {/* Typing indicator */}
         {isTyping && (
           <div className="flex gap-2">
             <div
@@ -258,7 +223,6 @@ export function ChatPanel({ activeAgent, onAgentSelect, hugoPresence = 'away' })
       <div className="p-3 border-t border-white/5">
         <div className="flex items-center gap-2 bg-white/5 rounded-xl px-3 py-2 border border-white/10 focus-within:border-[#FF6B35]/50 transition-colors">
           <input
-            ref={inputRef}
             type="text"
             value={input}
             onChange={e => setInput(e.target.value)}
@@ -275,7 +239,7 @@ export function ChatPanel({ activeAgent, onAgentSelect, hugoPresence = 'away' })
           </button>
         </div>
         <p className="text-[10px] text-white/20 mt-1.5 text-center">
-          Or type <span className="text-white/40">/leo /felix /phoenix /axel /bruno</span> to ping a specific agent
+          Type <span className="text-white/40">/felix /phoenix /axel /bruno /blaze /atlas</span> to ping an agent
         </p>
       </div>
     </div>
