@@ -5,66 +5,91 @@ const WORKERS = [
   { id: 'marketing', name: 'Phoenix', emoji: '🦚', color: '#A855F7', bg: '#3b0764' },
   { id: 'ops',       name: 'Axel',   emoji: '🦡', color: '#10B981', bg: '#022c22' },
   { id: 'finance',   name: 'Bruno',   emoji: '🐻', color: '#F59E0B', bg: '#451a03' },
-  { id: 'instagram',  name: 'Blaze',  emoji: '📸', color: '#EC4899', bg: '#500724' },
-  { id: 'engineer',  name: 'Atlas',  emoji: '🤖', color: '#06B6D4', bg: '#083344' },
+  { id: 'instagram', name: 'Blaze',   emoji: '📸', color: '#EC4899', bg: '#500724' },
+  { id: 'engineer', name: 'Atlas',   emoji: '🤖', color: '#06B6D4', bg: '#083344' },
 ]
 
-// ─── Worker desk with monitor ───────────────────────────────────────────────
-function WorkerDesk({ worker }) {
+// ─── Worker sitting at desk (front view — we see back of head + shoulders) ───
+function Worker({ worker }) {
   return (
-    <div className="flex flex-col items-center" style={{ width: 90 }}>
-      {/* Avatar block sitting at desk */}
-      <div
-        className="rounded-xl flex items-center justify-center text-white font-bold shadow-lg relative z-10"
-        style={{
-          width: 44,
-          height: 52,
-          backgroundColor: worker.color,
-          fontSize: 20,
-          marginBottom: -6,
-          borderBottomLeftRadius: 0,
-          borderBottomRightRadius: 0,
-        }}
-      >
-        <span>{worker.emoji}</span>
+    <div className="flex flex-col items-center" style={{ width: 100 }}>
+      {/* Person sitting — back of head + shoulders */}
+      <div style={{ position: 'relative', marginBottom: -8 }}>
+        {/* Head */}
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: '50%',
+            backgroundColor: '#FDE68A',
+            border: `3px solid ${worker.color}`,
+            position: 'relative',
+            zIndex: 2,
+          }}
+        />
+        {/* Shoulders/body */}
+        <div
+          style={{
+            width: 52,
+            height: 20,
+            borderRadius: '50% 50% 0 0 / 100% 100% 0 0',
+            backgroundColor: worker.color,
+            marginTop: -8,
+            marginLeft: -10,
+            position: 'relative',
+            zIndex: 1,
+          }}
+        />
       </div>
 
       {/* Desk surface */}
       <div
-        className="w-full rounded-lg"
         style={{
+          width: 80,
           height: 10,
           backgroundColor: '#e5e7eb',
+          borderRadius: 6,
           border: '2px solid #d1d5db',
-          borderTop: 'none',
           position: 'relative',
-          zIndex: 1,
         }}
       >
-        {/* Monitor on desk */}
+        {/* Monitor */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 -top-20 rounded"
           style={{
-            width: 52,
-            height: 36,
+            position: 'absolute',
+            left: '50%',
+            top: -40,
+            transform: 'translateX(-50%)',
+            width: 56,
+            height: 40,
             backgroundColor: '#1f2937',
-            border: '2px solid #374151',
+            borderRadius: 4,
+            border: `2px solid ${worker.color}`,
+            overflow: 'hidden',
           }}
         >
-          {/* Screen glow */}
           <div
-            className="m-1 rounded-sm"
             style={{
-              width: 'calc(100% - 8px)',
-              height: 'calc(100% - 8px)',
-              backgroundColor: worker.color + '50',
+              margin: 3,
+              width: 'calc(100% - 6px)',
+              height: 'calc(100% - 6px)',
+              backgroundColor: worker.color + '40',
+              borderRadius: 2,
             }}
           />
         </div>
-        {/* Stand */}
+        {/* Keyboard */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 -top-5"
-          style={{ width: 8, height: 8, backgroundColor: '#6b7280' }}
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: -10,
+            transform: 'translateX(-50%)',
+            width: 36,
+            height: 8,
+            backgroundColor: '#d1d5db',
+            borderRadius: 2,
+          }}
         />
       </div>
 
@@ -77,74 +102,179 @@ function WorkerDesk({ worker }) {
   )
 }
 
-// ─── Boss desk ───────────────────────────────────────────────────────────────
-function BossDesk() {
+// ─── Hugo (boss) ─────────────────────────────────────────────────────────────
+function Boss() {
   return (
     <div className="flex flex-col items-center">
       {/* Crown */}
       <div style={{
         width: 0, height: 0,
-        borderLeft: '20px solid transparent',
-        borderRight: '20px solid transparent',
-        borderBottom: '14px solid #F59E0B',
-        marginBottom: -4,
+        borderLeft: '24px solid transparent',
+        borderRight: '24px solid transparent',
+        borderBottom: '18px solid #F59E0B',
+        marginBottom: -6,
         filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+        zIndex: 3,
+        position: 'relative',
       }} />
 
-      {/* Hugo block */}
-      <div
-        className="rounded-xl flex items-center justify-center text-white font-bold shadow-lg"
-        style={{
-          width: 64,
-          height: 72,
-          backgroundColor: '#7f1d1d',
-          fontSize: 32,
-          border: '3px solid #EF4444',
-        }}
-      >
-        🦁
+      {/* Boss — larger seated figure */}
+      <div style={{ position: 'relative', marginBottom: -10 }}>
+        {/* Head */}
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            backgroundColor: '#FDE68A',
+            border: '4px solid #EF4444',
+            position: 'relative',
+            zIndex: 2,
+          }}
+        >
+          {/* 👑 emoji in head */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 18,
+          }}>🦁</div>
+        </div>
+        {/* Shoulders */}
+        <div
+          style={{
+            width: 72,
+            height: 28,
+            borderRadius: '50% 50% 0 0 / 100% 100% 0 0',
+            backgroundColor: '#7f1d1d',
+            border: '3px solid #EF4444',
+            marginTop: -10,
+            marginLeft: -14,
+            position: 'relative',
+            zIndex: 1,
+          }}
+        />
       </div>
 
       {/* Big desk */}
       <div
-        className="w-full rounded-lg mt-0.5"
         style={{
+          width: 120,
           height: 14,
           backgroundColor: '#e5e7eb',
+          borderRadius: 8,
           border: '3px solid #EF4444',
-          borderTop: 'none',
           position: 'relative',
         }}
       >
         {/* Large monitor */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 -top-24 rounded"
           style={{
-            width: 72,
-            height: 50,
+            position: 'absolute',
+            left: '50%',
+            top: -56,
+            transform: 'translateX(-50%)',
+            width: 80,
+            height: 56,
             backgroundColor: '#1f2937',
+            borderRadius: 6,
             border: '3px solid #EF4444',
           }}
         >
           <div
-            className="m-1.5 rounded-sm"
             style={{
-              width: 'calc(100% - 10px)',
-              height: 'calc(100% - 10px)',
+              margin: 4,
+              width: 'calc(100% - 8px)',
+              height: 'calc(100% - 8px)',
               backgroundColor: '#EF444440',
+              borderRadius: 3,
             }}
           />
         </div>
-        {/* Stand */}
+        {/* Keyboard */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 -top-7"
-          style={{ width: 10, height: 10, backgroundColor: '#EF4444' }}
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: -14,
+            transform: 'translateX(-50%)',
+            width: 50,
+            height: 10,
+            backgroundColor: '#d1d5db',
+            borderRadius: 3,
+          }}
         />
       </div>
 
       <div className="mt-2 text-center">
         <div className="text-red-600 font-bold text-sm tracking-wide">HUGO</div>
         <div className="text-red-300 text-[9px]">BOSS</div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Long bench desk ───────────────────────────────────────────────────────
+function BenchDesk() {
+  return (
+    <div style={{
+      width: '100%',
+      padding: '0 8px',
+      boxSizing: 'border-box',
+    }}>
+      {/* Desk surface */}
+      <div style={{
+        width: '100%',
+        height: 12,
+        backgroundColor: '#e5e7eb',
+        borderRadius: 8,
+        border: '3px solid #d1d5db',
+        borderBottom: '4px solid #9ca3af',
+        position: 'relative',
+      }}>
+        {/* 6 monitors evenly spaced */}
+        {WORKERS.map((w, i) => (
+          <div
+            key={w.id}
+            style={{
+              position: 'absolute',
+              left: `${(i * 16.66) + 6}%`,
+              top: -48,
+              width: 56,
+              height: 40,
+              backgroundColor: '#1f2937',
+              borderRadius: 4,
+              border: `2px solid ${w.color}`,
+              transform: 'translateX(-50%)',
+            }}
+          >
+            <div style={{
+              margin: 3,
+              width: 'calc(100% - 6px)',
+              height: 'calc(100% - 6px)',
+              backgroundColor: w.color + '35',
+              borderRadius: 2,
+            }} />
+          </div>
+        ))}
+        {/* Keyboards */}
+        {WORKERS.map((w, i) => (
+          <div
+            key={`kb-${w.id}`}
+            style={{
+              position: 'absolute',
+              left: `${(i * 16.66) + 6}%`,
+              top: -12,
+              width: 36,
+              height: 8,
+              backgroundColor: '#d1d5db',
+              borderRadius: 2,
+              transform: 'translateX(-50%)',
+            }}
+          />
+        ))}
       </div>
     </div>
   )
@@ -186,69 +316,56 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
       }}>
         <span style={{ color: '#9ca3af', fontSize: 11, fontWeight: 'bold', letterSpacing: 2 }}>APEX HQ</span>
         <div style={{ flex: 1 }} />
-        {/* Windows */}
         {[1,2,3].map(i => (
           <div key={i} style={{
-            width: 36, height: 22,
+            width: 40, height: 24,
             backgroundColor: '#1e40af',
-            borderRadius: 3,
-            boxShadow: '0 0 8px #3b82f680',
+            borderRadius: 4,
+            boxShadow: '0 0 10px #3b82f680',
           }} />
         ))}
       </div>
 
-      {/* ── Office floor (checkerboard) ── */}
+      {/* ── Office floor ── */}
       <div style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '16px 24px 24px',
+        padding: '12px 16px 20px',
         position: 'relative',
         overflow: 'hidden',
       }}>
-        {/* Checkerboard floor */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage:
-            'linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%)',
-          backgroundSize: '40px 40px',
-          backgroundPosition: '0 0, 0 20px, 20px -20px, -20px 0px',
-          opacity: 0.5,
-        }} />
 
-        {/* ── Boss section ── */}
-        <div className="flex flex-col items-center cursor-pointer relative z-10" onClick={() => handleClick('ceo')}>
+        {/* Boss section */}
+        <div
+          className="cursor-pointer relative z-10 mb-2"
+          onClick={() => handleClick('ceo')}
+        >
           {speech?.id === 'ceo' && (
-            <div className="mb-2 px-4 py-2 rounded-xl bg-red-500 text-white text-xs font-bold animate-fade-up shadow-lg whitespace-nowrap">
+            <div className="mb-2 px-4 py-2 rounded-xl bg-red-500 text-white text-xs font-bold animate-fade-up shadow-lg whitespace-nowrap"
+              style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>
               🦁 {speech.text}
             </div>
           )}
-          <BossDesk />
+          <Boss />
         </div>
 
-        {/* ── Dashed separator ── */}
-        <div style={{
-          width: '80%',
-          borderTop: '2px dashed #d1d5db',
-          margin: '8px 0',
-        }} />
+        {/* Dashed separator */}
+        <div style={{ width: '70%', borderTop: '2px dashed #d1d5db', margin: '4px 0' }} />
 
-        {/* ── Workers bench ── */}
-        <div className="flex items-end justify-center gap-2 relative z-10">
-          {/* Long desk surface */}
+        {/* Workers row */}
+        <div className="flex items-end justify-center gap-1 w-full relative z-10 mt-1">
+          {/* Bench desk */}
           <div style={{
             position: 'absolute',
             bottom: 48,
-            left: -20,
-            right: -20,
-            height: 10,
+            left: 0,
+            right: 0,
+            height: 12,
             backgroundColor: '#e5e7eb',
-            borderRadius: 6,
-            border: '2px solid #d1d5db',
-            borderBottom: '3px solid #9ca3af',
+            borderRadius: 8,
+            border: '3px solid #d1d5db',
           }} />
 
           {WORKERS.map(worker => (
@@ -260,17 +377,51 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
               {speech?.id === worker.id && (
                 <div
                   className="mb-1 px-3 py-1 rounded-xl text-white text-xs font-bold animate-fade-up shadow-lg whitespace-nowrap"
-                  style={{ backgroundColor: worker.color }}
+                  style={{
+                    position: 'absolute',
+                    top: -60,
+                    backgroundColor: worker.color,
+                    whiteSpace: 'nowrap',
+                    zIndex: 20,
+                  }}
                 >
                   {worker.emoji} {speech.text}
                 </div>
               )}
-              <WorkerDesk worker={worker} />
+              {/* Worker sitting */}
+              <div style={{ position: 'relative', zIndex: 2, marginBottom: -8 }}>
+                <div style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  backgroundColor: '#FDE68A',
+                  border: `2px solid ${worker.color}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 12,
+                }}>
+                  {worker.emoji}
+                </div>
+                <div style={{
+                  width: 44,
+                  height: 16,
+                  borderRadius: '50% 50% 0 0 / 100% 100% 0 0',
+                  backgroundColor: worker.color,
+                  marginTop: -6,
+                  marginLeft: -8,
+                }} />
+              </div>
+
+              {/* Name below desk */}
+              <div className="mt-8 text-center">
+                <div className="text-gray-700 font-bold text-[10px]">{worker.name}</div>
+              </div>
             </div>
           ))}
         </div>
 
-        {/* Floor line */}
+        {/* Bottom floor line */}
         <div style={{
           position: 'absolute',
           bottom: 0,
