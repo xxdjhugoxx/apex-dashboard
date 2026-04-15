@@ -48,7 +48,7 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-function OfficeFloor({ agentStatuses, onAgentClick, hugoPresence, stats }) {
+function OfficeFloor({ agentStatuses, onAgentClick, hugoPresence, stats, activeChatAgent, setActiveChatAgent }) {
   return (
     <div className="h-screen bg-[#0a0a0f] text-white flex flex-col overflow-hidden">
 
@@ -196,6 +196,8 @@ export default function App() {
         onAgentClick={setActiveChatAgent}
         hugoPresence={presenceStatus}
         stats={stats}
+        activeChatAgent={activeChatAgent}
+        setActiveChatAgent={setActiveChatAgent}
       />
     </ErrorBoundary>
   )
