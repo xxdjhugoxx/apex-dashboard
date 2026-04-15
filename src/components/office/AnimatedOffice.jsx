@@ -1,192 +1,190 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  'https://jbumilopcidspfujphiq.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpidW1pb3BwY2lkc3BmdWpwYWhpcSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNjQxNzYyMDI4LCJleHAiOjE5NTczMzgwMjh9.ZopNUt9bD7_P6qCyBdN7pHCDc9y0qTyegH1p2n8kHNs'
-)
+const TILE = 40
+const FLOOR_COLS = 20
+const FLOOR_ROWS = 14
 
-const TILE = 48
-const FLOOR_COLS = 24
-const FLOOR_ROWS = 16
+// 5 agents in ONE row — Hugo (CEO) center, 4 agents flanking
+const DEPTS = [
+  { id: 'sales',    name: 'Felix',   emoji: '🦊', color: '#FF6B35', dark: '#431407', cx: 3,  cy: 8 },
+  { id: 'marketing',name: 'Phoenix', emoji: '🦚', color: '#A855F7', dark: '#3b0764', cx: 7,  cy: 8 },
+  { id: 'ceo',      name: 'Hugo',    emoji: '🦁', color: '#EF4444', dark: '#450a0a', cx: 10, cy: 8, isCEO: true },
+  { id: 'ops',      name: 'Axel',    emoji: '🦡', color: '#10B981', dark: '#022c22', cx: 13, cy: 8 },
+  { id: 'finance',  name: 'Bruno',   emoji: '🐻', color: '#F59E0B', dark: '#451a03', cx: 17, cy: 8 },
+]
 
-const DEPTS = {
-  ceo:      { name: 'Hugo',     emoji: '🦁', color: '#EF4444', dark: '#450a0a', accent: '#7f1d1d', cx: 12, cy: 3, deskW: 6 },
-  sales:    { name: 'Felix',    emoji: '🦊', color: '#FF6B35', dark: '#431407', accent: '#7c2d12', cx: 3,  cy: 10, deskW: 4 },
-  marketing:{ name: 'Phoenix',  emoji: '🦚', color: '#A855F7', dark: '#3b0764', accent: '#581c87', cx: 9,  cy: 10, deskW: 4 },
-  ops:      { name: 'Axel',     emoji: '🦡', color: '#10B981', dark: '#022c22', accent: '#064e3b', cx: 15, cy: 10, deskW: 4 },
-  finance:  { name: 'Bruno',    emoji: '🐻', color: '#F59E0B', dark: '#451a03', accent: '#78350f', cx: 21, cy: 10, deskW: 4 },
-}
+// ─── Draw a realistic desk with legs ────────────────────────────────────────
+function drawDesk(ctx, dept, isCEO) {
+  const cx = dept.cx * TILE
+  const cy = dept.cy * TILE
+  const w = isCEO ? 240 : 180
+  const h = isCEO ? 130 : 100
+  const deskY = cy
+  const deskH = isCEO ? 14 : 10
 
-// ─── Draw a large detailed desk with monitor ─────────────────────────────
-function drawDesk(ctx, cx, cy, deskW, dept) {
-  const x = cx * TILE - (deskW * TILE) / 2
-  const y = cy * TILE
-  const w = deskW * TILE
-  const h = TILE * 2
-
-  // Desk shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.3)'
-  ctx.fillRect(x + 4, y + 4, w, h)
+  // Desk legs
+  ctx.fillStyle = '#374151'
+  ctx.fillRect(cx - w/2 + 8, deskY + deskH, 8, cy + 40 - deskY - deskH)  // left leg
+  ctx.fillRect(cx + w/2 - 16, deskY + deskH, 8, cy + 40 - deskY - deskH) // right leg
 
   // Desk surface
-  ctx.fillStyle = '#1e1e2e'
-  ctx.fillRect(x, y, w, h)
-  // Desk edge (top highlight)
+  ctx.fillStyle = '#1f2937'
+  ctx.fillRect(cx - w/2, deskY, w, deskH)
+  // Surface top edge
   ctx.fillStyle = dept.color
-  ctx.fillRect(x, y, w, 4)
-  ctx.fillRect(x, y, w, 2)
+  ctx.fillRect(cx - w/2, deskY, w, 4)
+  ctx.fillRect(cx - w/2, deskY, w, 2)
 
   // Monitor stand
-  ctx.fillStyle = '#333'
-  ctx.fillRect(cx * TILE - 6, y - 12, 12, 12)
+  ctx.fillStyle = '#374151'
+  ctx.fillRect(cx - 6, deskY - 16, 12, 16)
   // Monitor
-  ctx.fillStyle = '#0a0a0f'
-  ctx.fillRect(cx * TILE - 36, y - 60, 72, 44)
-  ctx.fillStyle = dept.color + '50'
-  ctx.fillRect(cx * TILE - 33, y - 57, 66, 38)
-  // Monitor top highlight
-  ctx.fillStyle = dept.color + '30'
-  ctx.fillRect(cx * TILE - 36, y - 60, 72, 4)
+  ctx.fillStyle = '#111827'
+  ctx.fillRect(cx - (isCEO ? 52 : 40), deskY - (isCEO ? 80 : 64), isCEO ? 104 : 80, isCEO ? 64 : 52)
+  ctx.fillStyle = dept.color + '35'
+  ctx.fillRect(cx - (isCEO ? 48 : 37), deskY - (isCEO ? 76 : 61), isCEO ? 96 : 74, isCEO ? 58 : 47)
+  // Monitor top shine
+  ctx.fillStyle = 'rgba(255,255,255,0.05)'
+  ctx.fillRect(cx - (isCEO ? 52 : 40), deskY - (isCEO ? 80 : 64), isCEO ? 104 : 80, 4)
 
   // Keyboard
-  ctx.fillStyle = '#252535'
-  ctx.fillRect(cx * TILE - 28, y + 4, 56, 14)
-  ctx.fillStyle = dept.color + '40'
-  ctx.fillRect(cx * TILE - 26, y + 6, 52, 10)
+  ctx.fillStyle = '#374151'
+  ctx.fillRect(cx - (isCEO ? 40 : 30), deskY + 4, isCEO ? 80 : 60, 10)
+  ctx.fillStyle = '#4b5563'
+  ctx.fillRect(cx - (isCEO ? 38 : 28), deskY + 6, isCEO ? 76 : 56, 6)
 
   // Coffee mug
   ctx.fillStyle = dept.color
-  ctx.fillRect(x + w - 20, y + 6, 14, 14)
-  ctx.fillStyle = '#0a0a0f'
-  ctx.fillRect(x + w - 18, y + 8, 10, 10)
-
-  // Dept label
+  ctx.fillRect(cx + w/2 - 24, deskY + 2, 16, 14)
+  ctx.fillStyle = '#1f2937'
+  ctx.fillRect(cx + w/2 - 22, deskY + 4, 12, 10)
+  // Handle
   ctx.fillStyle = dept.color
-  ctx.font = 'bold 14px monospace'
+  ctx.fillRect(cx + w/2 - 8, deskY + 5, 4, 8)
+
+  // Name tag
+  ctx.fillStyle = dept.color
+  ctx.font = `bold ${isCEO ? 14 : 12}px system-ui`
   ctx.textAlign = 'center'
-  ctx.fillText(dept.emoji + ' ' + dept.name, cx * TILE, y + h + 18)
+  ctx.fillText(`${dept.emoji} ${dept.name}`, cx, deskY + deskH + 18)
   ctx.textAlign = 'left'
 }
 
-// ─── Draw pixel agent character (large, 24×24) ──────────────────────────
-function drawAgent(ctx, id, cx, cy, frame, working, color) {
-  const x = cx * TILE - 12
-  const y = cy * TILE - 52
+// ─── Draw pixel agent sitting at desk ──────────────────────────────────────
+function drawAgent(ctx, dept, frame, working, clickable) {
+  const cx = dept.cx * TILE
+  const cy = dept.cy * TILE
+  const deskY = cy
   const f = frame % 4
-  const bobY = working ? [0, -2, 0, -2][f] : 0
+  const bobY = working ? [0, -1, 0, -1][f] : 0
+  const id = dept.id
 
-  // Shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.3)'
-  ctx.fillRect(cx * TILE - 10, cy * TILE - 4, 20, 6)
+  // Agent sits ON the desk, not floating above it
+  const headY = deskY - (dept.isCEO ? 68 : 54) + bobY
+  const bodyY = deskY - (dept.isCEO ? 40 : 32) + bobY
 
-  if (id === 'ceo') {
-    // Crown
-    ctx.fillStyle = '#F59E0B'; ctx.fillRect(x+4, y+bobY-8, 16, 8)
-    ctx.fillStyle = '#D97706'; ctx.fillRect(x+4, y+bobY-8, 4, 8); ctx.fillRect(x+16, y+bobY-8, 4, 8)
-    ctx.fillStyle = '#FBBF24'; ctx.fillRect(x+6, y+bobY-10, 12, 4)
-    // Head
-    ctx.fillStyle = '#FDE68A'; ctx.fillRect(x+4, y+bobY, 16, 14)
-    // Eyes
-    ctx.fillStyle = '#1a1a2e'; ctx.fillRect(x+7, y+bobY+4, 3, 3); ctx.fillRect(x+14, y+bobY+4, 3, 3)
-    // Mouth
-    ctx.fillStyle = '#92400E'; ctx.fillRect(x+9, y+bobY+9, 6, 2)
-    // Body
-    ctx.fillStyle = color; ctx.fillRect(x+2, y+bobY+14, 20, 16)
-    // Tie
-    ctx.fillStyle = '#EF4444'; ctx.fillRect(x+10, y+bobY+14, 4, 10)
-    // Legs
-    ctx.fillStyle = '#1e1e2e'; ctx.fillRect(x+4, y+bobY+30, 6, 8); ctx.fillRect(x+14, y+bobY+30, 6, 8)
-  } else if (id === 'sales') {
-    // Head
-    ctx.fillStyle = '#FF6B35'; ctx.fillRect(x+2, y+bobY-4, 20, 16)
-    // Ears
-    ctx.fillStyle = '#FF6B35'; ctx.fillRect(x-2, y+bobY, 4, 10); ctx.fillRect(x+22, y+bobY, 4, 10)
-    ctx.fillStyle = '#FDE68A'; ctx.fillRect(x-2, y+bobY+2, 4, 6); ctx.fillRect(x+22, y+bobY+2, 4, 6)
-    // Eyes
-    ctx.fillStyle = '#1a1a2e'; ctx.fillRect(x+6, y+bobY+2, 3, 3); ctx.fillRect(x+15, y+bobY+2, 3, 3)
-    // Body
-    ctx.fillStyle = '#1e1e2e'; ctx.fillRect(x+2, y+bobY+12, 20, 18)
-    ctx.fillStyle = '#FF6B35'; ctx.fillRect(x+9, y+bobY+12, 6, 18)
-    // Legs
-    ctx.fillStyle = '#1e1e2e'; ctx.fillRect(x+4, y+bobY+30, 6, 8); ctx.fillRect(x+14, y+bobY+30, 6, 8)
-  } else if (id === 'marketing') {
-    // Peacock feathers (top)
-    ctx.fillStyle = '#A855F7'; ctx.fillRect(x+4, y+bobY-16, 4, 14); ctx.fillRect(x+10, y+bobY-20, 4, 18); ctx.fillRect(x+16, y+bobY-16, 4, 14)
-    ctx.fillStyle = '#10B981'; ctx.fillRect(x+5, y+bobY-18, 2, 4); ctx.fillRect(x+11, y+bobY-22, 2, 4); ctx.fillRect(x+17, y+bobY-18, 2, 4)
-    // Head
-    ctx.fillStyle = '#A855F7'; ctx.fillRect(x+4, y+bobY, 16, 14)
-    ctx.fillStyle = '#FDE68A'; ctx.fillRect(x+7, y+bobY+4, 3, 3); ctx.fillRect(x+14, y+bobY+4, 3, 3)
-    // Body (wings spread)
-    ctx.fillStyle = '#10B981'; ctx.fillRect(x-4, y+bobY+14, 8, 14); ctx.fillRect(x+20, y+bobY+14, 8, 14)
-    ctx.fillStyle = '#A855F7'; ctx.fillRect(x+4, y+bobY+14, 16, 16)
-    // Legs
-    ctx.fillStyle = '#1e1e2e'; ctx.fillRect(x+6, y+bobY+30, 5, 8); ctx.fillRect(x+13, y+bobY+30, 5, 8)
-  } else if (id === 'ops') {
-    // Hard hat
-    ctx.fillStyle = '#10B981'; ctx.fillRect(x+2, y+bobY-6, 20, 8)
-    ctx.fillStyle = '#059669'; ctx.fillRect(x, y+bobY-4, 24, 4)
-    // Head
-    ctx.fillStyle = '#FDE68A'; ctx.fillRect(x+4, y+bobY+2, 16, 14)
-    // Eyes
-    ctx.fillStyle = '#1a1a2e'; ctx.fillRect(x+7, y+bobY+6, 3, 3); ctx.fillRect(x+14, y+bobY+6, 3, 3)
-    // Body (wider, strong)
-    ctx.fillStyle = '#10B981'; ctx.fillRect(x, y+bobY+16, 24, 18)
-    ctx.fillStyle = '#059669'; ctx.fillRect(x+4, y+bobY+18, 16, 14)
-    // Legs
-    ctx.fillStyle = '#1e1e2e'; ctx.fillRect(x+3, y+bobY+34, 7, 6); ctx.fillRect(x+14, y+bobY+34, 7, 6)
-  } else if (id === 'finance') {
-    // Ears
-    ctx.fillStyle = '#F59E0B'; ctx.fillRect(x-2, y+bobY, 6, 10); ctx.fillRect(x+20, y+bobY, 6, 10)
-    ctx.fillStyle = '#92400E'; ctx.fillRect(x-2, y+bobY+2, 6, 6); ctx.fillRect(x+20, y+bobY+2, 6, 6)
-    // Head
-    ctx.fillStyle = '#F59E0B'; ctx.fillRect(x+2, y+bobY+2, 20, 16)
-    // Eyes
-    ctx.fillStyle = '#1a1a2e'; ctx.fillRect(x+6, y+bobY+6, 3, 3); ctx.fillRect(x+15, y+bobY+6, 3, 3)
-    // Body
-    ctx.fillStyle = '#F59E0B'; ctx.fillRect(x+2, y+bobY+18, 20, 18)
-    ctx.fillStyle = '#92400E'; ctx.fillRect(x+6, y+bobY+20, 12, 12)
-    // Legs
-    ctx.fillStyle = '#1e1e2e'; ctx.fillRect(x+4, y+bobY+36, 6, 6); ctx.fillRect(x+14, y+bobY+36, 6, 6)
+  // Body
+  ctx.fillStyle = dept.color
+  ctx.fillRect(cx - (dept.isCEO ? 14 : 10), bodyY, dept.isCEO ? 28 : 20, dept.isCEO ? 28 : 22)
+  // Body detail
+  ctx.fillStyle = dept.dark
+  ctx.fillRect(cx - (dept.isCEO ? 10 : 7), bodyY + 4, dept.isCEO ? 20 : 14, dept.isCEO ? 18 : 14)
+
+  // Head
+  ctx.fillStyle = '#FDE68A'
+  ctx.fillRect(cx - (dept.isCEO ? 12 : 8), headY, dept.isCEO ? 24 : 16, dept.isCEO ? 22 : 16)
+  // Eyes
+  ctx.fillStyle = '#1a1a2e'
+  ctx.fillRect(cx - (dept.isCEO ? 8 : 5), headY + (dept.isCEO ? 6 : 4), dept.isCEO ? 4 : 3, dept.isCEO ? 4 : 3)
+  ctx.fillRect(cx + (dept.isCEO ? 4 : 2), headY + (dept.isCEO ? 6 : 4), dept.isCEO ? 4 : 3, dept.isCEO ? 4 : 3)
+
+  // Crown for Hugo/CEO
+  if (dept.isCEO) {
+    ctx.fillStyle = '#F59E0B'
+    ctx.fillRect(cx - 12, headY - 12, 24, 10)
+    ctx.fillStyle = '#D97706'
+    ctx.fillRect(cx - 12, headY - 12, 6, 10); ctx.fillRect(cx + 6, headY - 12, 6, 10)
+    ctx.fillStyle = '#FBBF24'
+    ctx.fillRect(cx - 8, headY - 14, 16, 4)
+  }
+
+  // Fox ears for Felix
+  if (id === 'sales') {
+    ctx.fillStyle = '#FF6B35'
+    ctx.fillRect(cx - 14, headY - 4, 6, 12); ctx.fillRect(cx + 8, headY - 4, 6, 12)
+    ctx.fillStyle = '#FDE68A'
+    ctx.fillRect(cx - 14, headY, 6, 8); ctx.fillRect(cx + 8, headY, 6, 8)
+  }
+
+  // Peacock feathers for Phoenix
+  if (id === 'marketing') {
+    ctx.fillStyle = '#A855F7'
+    ctx.fillRect(cx - 10, headY - 18, 5, 16); ctx.fillRect(cx - 2, headY - 22, 5, 20); ctx.fillRect(cx + 6, headY - 18, 5, 16)
+    ctx.fillStyle = '#10B981'
+    ctx.fillRect(cx - 9, headY - 20, 3, 4); ctx.fillRect(cx - 1, headY - 24, 3, 4); ctx.fillRect(cx + 7, headY - 20, 3, 4)
+  }
+
+  // Badger stripes for Axel
+  if (id === 'ops') {
+    ctx.fillStyle = '#065f46'
+    ctx.fillRect(cx - 8, headY + 2, 16, 3); ctx.fillRect(cx - 8, headY + 7, 16, 3)
+  }
+
+  // Bear ears for Bruno
+  if (id === 'finance') {
+    ctx.fillStyle = '#F59E0B'
+    ctx.fillRect(cx - 14, headY, 6, 10); ctx.fillRect(cx + 8, headY, 6, 10)
+    ctx.fillStyle = '#92400E'
+    ctx.fillRect(cx - 14, headY + 2, 6, 6); ctx.fillRect(cx + 8, headY + 2, 6, 6)
+  }
+
+  // Clickable highlight
+  if (clickable) {
+    ctx.fillStyle = 'rgba(255,255,255,0.08)'
+    ctx.fillRect(cx - (dept.isCEO ? 20 : 14), bodyY - 4, dept.isCEO ? 40 : 28, (dept.isCEO ? 50 : 40))
   }
 }
 
-// ─── Draw office background ────────────────────────────────────────────────
+// ─── Draw white/light office background ───────────────────────────────────
 function drawOffice(ctx, W, H) {
-  // Floor
-  ctx.fillStyle = '#0d0d1a'
+  // Light gray floor
+  ctx.fillStyle = '#e5e7eb'
   ctx.fillRect(0, 0, W, H)
 
-  // Grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.04)'
-  ctx.lineWidth = 1
+  // White floor tiles
+  ctx.fillStyle = '#f9fafb'
   for (let x = 0; x < FLOOR_COLS; x++) {
     for (let y = 0; y < FLOOR_ROWS; y++) {
-      ctx.strokeRect(x * TILE, y * TILE, TILE, TILE)
+      if ((x + y) % 2 === 0) {
+        ctx.fillRect(x * TILE, y * TILE, TILE, TILE)
+      }
     }
   }
 
-  // Wall border
-  ctx.strokeStyle = 'rgba(255,107,53,0.3)'
-  ctx.lineWidth = 3
-  ctx.strokeRect(4, 4, W - 8, H - 8)
+  // Ceiling / top bar (dark to contrast white office)
+  ctx.fillStyle = '#111827'
+  ctx.fillRect(0, 0, W, TILE)
 
-  // Ceiling lights (horizontal lines)
-  ctx.fillStyle = 'rgba(255,107,53,0.08)'
-  ctx.fillRect(2 * TILE, 0, 8 * TILE, 4)
-  ctx.fillRect(14 * TILE, 0, 8 * TILE, 4)
+  // Wall text
+  ctx.fillStyle = '#6b7280'
+  ctx.font = 'bold 12px system-ui'
+  ctx.fillText('APEX HQ', 12, 26)
 
-  // Draw all desks
-  Object.entries(DEPTS).forEach(([id, dept]) => {
-    drawDesk(ctx, dept.cx, dept.cy, dept.deskW, dept)
-  })
+  // Window panels on wall
+  ctx.fillStyle = '#1e3a5f'
+  ctx.fillRect(4 * TILE, 0, 4 * TILE, TILE)
+  ctx.fillRect(12 * TILE, 0, 4 * TILE, TILE)
+  ctx.fillStyle = '#3b82f6'
+  ctx.fillRect(4 * TILE + 4, 4, 4 * TILE - 8, TILE - 8)
+  ctx.fillRect(12 * TILE + 4, 4, 4 * TILE - 8, TILE - 8)
 
-  // Floor label "APEX HQ"
-  ctx.fillStyle = 'rgba(255,255,255,0.08)'
-  ctx.font = 'bold 20px monospace'
-  ctx.textAlign = 'center'
-  ctx.fillText('APEX HQ', W / 2, H - 16)
-  ctx.textAlign = 'left'
+  // Floor boundary line
+  ctx.strokeStyle = '#9ca3af'
+  ctx.lineWidth = 2
+  ctx.strokeRect(4, TILE + 4, W - 8, H - TILE - 8)
+
+  // Draw all 5 desks
+  DEPTS.forEach(dept => drawDesk(ctx, dept, dept.isCEO))
 }
 
 export function AnimatedOffice({ agentStatuses, onAgentClick }) {
@@ -194,18 +192,18 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
   const containerRef = useRef(null)
   const agentsRef = useRef({})
   const rafRef = useRef(null)
-  const [canvasSize, setCanvasSize] = useState({ w: 1152, h: 768 })
+  const [canvasSize, setCanvasSize] = useState({ w: 800, h: 560 })
   const [bubbles, setBubbles] = useState({})
+  const [selectedAgent, setSelectedAgent] = useState(null)
 
-  // Agent state machine
+  // Agent state
   const [agents, setAgents] = useState(() => {
     const initial = {}
-    Object.keys(DEPTS).forEach(id => {
-      const dept = DEPTS[id]
-      initial[id] = {
-        id, x: dept.cx * TILE, y: dept.cy * TILE,
+    DEPTS.forEach(dept => {
+      initial[dept.id] = {
+        id: dept.id, x: dept.cx * TILE, y: dept.cy * TILE,
         targetX: dept.cx * TILE, targetY: dept.cy * TILE,
-        state: 'idle', frame: 0, frameTimer: 0, facing: 'right',
+        state: 'idle', frame: 0, frameTimer: 0,
         status: 'idle', speech: '', speechTimer: 0,
       }
     })
@@ -217,10 +215,11 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
     Object.entries(agentStatuses).forEach(([id, s]) => {
       if (agentsRef.current[id]) {
         agentsRef.current[id].status = s.status
-        if (s.status === 'working' && agentsRef.current[id].state === 'idle' && Math.random() < 0.01) {
-          const dept = DEPTS[id]
+        if (s.status === 'working' && agentsRef.current[id].state === 'idle' && Math.random() < 0.005) {
+          const dept = DEPTS.find(d => d.id === id)
+          if (!dept) return
           const angle = Math.random() * Math.PI * 2
-          const r = 2 + Math.random() * 3
+          const r = 1 + Math.random() * 2
           agentsRef.current[id].targetX = (dept.cx + Math.cos(angle) * r) * TILE
           agentsRef.current[id].targetY = (dept.cy + Math.sin(angle) * r) * TILE
           agentsRef.current[id].state = 'walking'
@@ -256,15 +255,13 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
       const dt = time - lastTime
       lastTime = time
 
-      // Update agents
       Object.values(agentsRef.current).forEach(agent => {
         const dx = agent.targetX - agent.x
         const dy = agent.targetY - agent.y
         const dist = Math.sqrt(dx * dx + dy * dy)
-        if (dist > 3) {
-          agent.x += (dx / dist) * 80 * (dt / 1000)
-          agent.y += (dy / dist) * 80 * (dt / 1000)
-          agent.facing = dx > 0 ? 'right' : 'left'
+        if (dist > 2) {
+          agent.x += (dx / dist) * 60 * (dt / 1000)
+          agent.y += (dy / dist) * 60 * (dt / 1000)
           agent.frameTimer += dt
           if (agent.frameTimer > 150) { agent.frame++; agent.frameTimer = 0 }
         } else if (agent.state === 'walking') {
@@ -277,23 +274,26 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
         }
       })
 
-      // Draw
       const scale = canvasSize.w / (FLOOR_COLS * TILE)
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.save()
       ctx.scale(scale, scale)
       drawOffice(ctx, FLOOR_COLS * TILE, FLOOR_ROWS * TILE)
 
-      const sorted = Object.values(agentsRef.current).sort((a, b) => a.y - b.y)
+      // Draw agents sorted by Y
+      const sorted = DEPTS.map(d => agentsRef.current[d.id]).filter(Boolean).sort((a, b) => a.y - b.y)
       sorted.forEach(agent => {
+        const dept = DEPTS.find(d => d.id === agent.id)
+        if (!dept) return
         const working = agent.state === 'walking' || agent.status === 'working'
-        drawAgent(ctx, agent.id, agent.x / TILE, agent.y / TILE, agent.frame, working, DEPTS[agent.id]?.color || '#fff')
+        const clickable = selectedAgent === agent.id
+        drawAgent(ctx, dept, agent.frame, working, clickable)
       })
 
       ctx.restore()
 
       const newBubbles = {}
-      Object.values(agentsRef.current).forEach(a => { if (a.speech) newBubbles[a.id] = { text: a.speech, visible: true } })
+      Object.values(agentsRef.current).forEach(a => { if (a.speech) newBubbles[a.id] = { text: a.speech } })
       setBubbles(prev => JSON.stringify(prev) !== JSON.stringify(newBubbles) ? newBubbles : prev)
 
       rafRef.current = requestAnimationFrame(render)
@@ -301,7 +301,7 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
 
     rafRef.current = requestAnimationFrame(render)
     return () => cancelAnimationFrame(rafRef.current)
-  }, [canvasSize])
+  }, [canvasSize, selectedAgent])
 
   useEffect(() => { agentsRef.current = agents }, [agents])
 
@@ -313,24 +313,26 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
     const clickY = (e.clientY - rect.top) * scaleY
 
     let clicked = null
-    Object.values(agentsRef.current).forEach(agent => {
-      const d = Math.sqrt((clickX - agent.x) ** 2 + (clickY - agent.y) ** 2)
-      if (d < 30) clicked = agent
+    DEPTS.forEach(dept => {
+      const cx = dept.cx * TILE
+      const cy = dept.cy * TILE
+      const d = Math.sqrt((clickX - cx) ** 2 + (clickY - cy) ** 2)
+      if (d < TILE * 1.5) clicked = dept.id
     })
 
     if (clicked) {
-      onAgentClick && onAgentClick(clicked.id)
+      setSelectedAgent(clicked)
+      onAgentClick && onAgentClick(clicked)
       const speeches = {
-        ceo: ['Q3 strategy is GO — execute.', 'Team, I\'m watching. Make it happen.', 'No excuses. Just results.', 'The vision is clear. Follow it.'],
-        sales: ['Felix is CLOSING today!', 'Pipeline update — let\'s go!', '3 new leads just hit my desk.', 'Felix ready to crush it!'],
-        marketing: ['Phoenix has the FLOOR.', 'Content is KING today.', 'Socials are about to blow up.', 'Brand game: STRONG.'],
-        ops: ['Axel has everything under control.', 'All systems: GREEN.', 'Efficiency up 15% this week.', 'Zero issues. Maximum output.'],
-        finance: ['Bruno watching every penny.', 'Revenue tracking: healthy.', 'Invoices cleared, budgets locked.', 'Books are BALANCED.'],
+        ceo: ['Q3 strategy is GO!', 'Team, let\'s make it happen.', 'Results. Now.', 'No excuses.'],
+        sales: ['Felix is ON IT!', 'Pipeline looking strong.', '3 new leads hot off the press.', 'Closing time!'],
+        marketing: ['Phoenix has the floor.', 'Content dropping NOW.', 'Socials about to go viral.', 'Brand game: UNSTOPPABLE.'],
+        ops: ['Axel has this handled.', 'All systems: NOMINAL.', 'Efficiency at MAX.', 'Zero issues.'],
+        finance: ['Bruno on the books.', 'Revenue: HEALTHY.', 'All invoices CLEARED.', 'Budget: LOCKED.'],
       }
-      const opts = speeches[clicked.id] || ['']
-      const speech = opts[Math.floor(Math.random() * opts.length)]
-      agentsRef.current[clicked.id].speech = speech
-      agentsRef.current[clicked.id].speechTimer = 3500
+      const opts = speeches[clicked] || ['']
+      agentsRef.current[clicked].speech = opts[Math.floor(Math.random() * opts.length)]
+      agentsRef.current[clicked].speechTimer = 3000
     }
   }, [onAgentClick])
 
@@ -341,29 +343,30 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
         width={canvasSize.w}
         height={canvasSize.h}
         className="cursor-pointer w-full h-full rounded-2xl"
-        style={{ display: 'block', border: '2px solid rgba(255,107,53,0.4)', background: '#0d0d1a' }}
+        style={{ display: 'block' }}
         onClick={handleCanvasClick}
       />
 
       {/* Speech bubbles */}
       {Object.entries(bubbles).map(([id, { text }]) => {
-        const agent = agents[id]
-        if (!agent) return null
+        const dept = DEPTS.find(d => d.id === id)
+        if (!dept) return null
         const scale = canvasSize.w / (FLOOR_COLS * TILE)
+        const agent = agents[id]
         return (
           <div
             key={id}
             className="absolute pointer-events-none"
             style={{
-              left: (agent.x / TILE * scale) - 40,
-              top: (agent.y / TILE * scale) - 60,
-              width: 100,
+              left: (dept.cx * TILE * scale) - 50,
+              top: ((dept.cy - 2) * TILE * scale) - 30,
+              width: 120,
               textAlign: 'center',
             }}
           >
             <div className="px-3 py-1.5 rounded-2xl text-xs font-bold text-white whitespace-nowrap animate-fade-up"
-              style={{ backgroundColor: DEPTS[id]?.color, boxShadow: `0 0 12px ${DEPTS[id]?.color}60` }}>
-              {DEPTS[id]?.emoji} {text}
+              style={{ backgroundColor: dept.color, boxShadow: `0 0 12px ${dept.color}80` }}>
+              {dept.emoji} {text}
             </div>
           </div>
         )
@@ -371,12 +374,12 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
 
       <style>{`
         @keyframes fade-up {
-          0% { opacity: 0; transform: translateY(8px); }
-          20% { opacity: 1; transform: translateY(0); }
+          0% { opacity: 0; transform: translateY(6px); }
+          15% { opacity: 1; transform: translateY(0); }
           80% { opacity: 1; }
           100% { opacity: 0; }
         }
-        .animate-fade-up { animation: fade-up 3.5s ease-out forwards; }
+        .animate-fade-up { animation: fade-up 3s ease-out forwards; }
       `}</style>
     </div>
   )
