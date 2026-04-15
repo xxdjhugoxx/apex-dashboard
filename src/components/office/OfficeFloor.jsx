@@ -132,7 +132,8 @@ export function OfficeFloor() {
 
         {/* Left: Office Canvas */}
         <div className={`flex-1 overflow-hidden transition-all ${activeTab === 'chat' ? 'hidden lg:flex' : 'flex flex-col'}`}>
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-4 flex items-center justify-center">
+            <div className="w-full max-w-3xl">
             <AnimatedOffice
               agentStatuses={agentStatuses}
               onAgentClick={(id) => {
@@ -140,6 +141,7 @@ export function OfficeFloor() {
                 setActiveTab('chat')
               }}
             />
+            </div>
           </div>
         </div>
 

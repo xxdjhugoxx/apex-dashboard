@@ -229,12 +229,10 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
   // Canvas resize
   useEffect(() => {
     const update = () => {
-      const container = canvasRef.current?.parentElement
-      if (container) {
-        const w = Math.min(container.clientWidth - 32, FLOOR_COLS * TILE)
-        const scale = w / (FLOOR_COLS * TILE)
-        setCanvasSize({ w: FLOOR_COLS * TILE * scale, h: FLOOR_ROWS * TILE * scale })
-      }
+      const containerW = canvasRef.current?.parentElement?.clientWidth || window.innerWidth
+      const maxW = Math.min(containerW - 16, FLOOR_COLS * TILE)
+      const scale = maxW / (FLOOR_COLS * TILE)
+      setCanvasSize({ w: Math.max(320, FLOOR_COLS * TILE * scale), h: Math.max(224, FLOOR_ROWS * TILE * scale) })
     }
     update()
     window.addEventListener('resize', update)
@@ -372,13 +370,13 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
   }, [onAgentClick])
 
   return (
-    <div className="relative">
+    <div className="relative rounded-2xl border border-white/10 overflow-hidden" style={{ minHeight: '420px', backgroundColor: '#0f0f1a' }}>
       <canvas
         ref={canvasRef}
         width={canvasSize.w}
         height={canvasSize.h}
-        className="rounded-2xl border border-white/10 cursor-pointer w-full"
-        style={{ imageRendering: 'pixelated' }}
+        className="cursor-pointer w-full"
+        style={{ imageRendering: 'pixelated', display: 'block' }}
         onClick={handleCanvasClick}
       />
 
