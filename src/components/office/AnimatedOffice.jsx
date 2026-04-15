@@ -378,7 +378,7 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
   }, [onAgentClick])
 
   return (
-    <div ref={containerRef} className="relative rounded-2xl overflow-hidden" style={{ height: '420px', backgroundColor: '#16162a', border: '2px solid #FF6B35' }}>
+    <div ref={containerRef} className="relative rounded-2xl overflow-hidden" style={{ height: '100%', backgroundColor: '#16162a', border: '2px solid #FF6B35' }}>
       <canvas
         ref={canvasRef}
         width={canvasSize.w}

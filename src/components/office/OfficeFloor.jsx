@@ -63,7 +63,7 @@ export function OfficeFloor() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white overflow-hidden flex flex-col">
+    <div className="h-screen bg-[#0a0a0f] text-white overflow-hidden flex flex-col">
 
       {/* ── Header ───────────────────────────────────────────────────────── */}
       <header className="z-10 border-b border-white/10 bg-[#0f0f14]/95 backdrop-blur-sm shrink-0">
@@ -150,7 +150,7 @@ export function OfficeFloor() {
           w-full lg:w-96 shrink-0 border-l border-white/5
           ${activeTab === 'chat' ? 'flex' : 'hidden lg:flex'}
         `}>
-          <div className="flex-1 flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 130px)' }}>
+          <div className="flex-1 flex flex-col overflow-hidden" style={{ height: 'calc(100dvh - 130px)' }}>
             <ChatPanel
               activeAgent={activeChatAgent}
               onAgentSelect={setActiveChatAgent}
