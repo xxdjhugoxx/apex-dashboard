@@ -76,8 +76,8 @@ function drawAgent(ctx, agentId, frame, direction, working, x, y) {
 
 // ─── Draw office background ────────────────────────────────────────────────
 function drawOffice(ctx, W, H) {
-  // Floor
-  ctx.fillStyle = '#0f0f1a'
+  // Floor — slightly lighter so pixel art is visible
+  ctx.fillStyle = '#16162a'
   ctx.fillRect(0, 0, W, H)
 
   // Subtle tile grid
@@ -176,7 +176,7 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
   const canvasRef = useRef(null)
   const agentsRef = useRef({})
   const rafRef = useRef(null)
-  const [canvasSize, setCanvasSize] = useState({ w: 640, h: 448 })
+  const [canvasSize, setCanvasSize] = useState({ w: 640, h: 320 })
   const [bubbles, setBubbles] = useState({}) // agentId -> { text, visible }
 
   // Agent state machine
@@ -370,13 +370,13 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
   }, [onAgentClick])
 
   return (
-    <div className="relative rounded-2xl border border-white/10 overflow-hidden" style={{ minHeight: '420px', backgroundColor: '#0f0f1a' }}>
+    <div className="relative rounded-2xl overflow-hidden" style={{ minHeight: '420px', backgroundColor: '#0f0f1a', border: '2px solid #333' }}>
       <canvas
         ref={canvasRef}
         width={canvasSize.w}
         height={canvasSize.h}
-        className="cursor-pointer w-full"
-        style={{ imageRendering: 'pixelated', display: 'block' }}
+        className="cursor-pointer w-full h-auto"
+        style={{ imageRendering: 'pixelated', display: 'block', minHeight: '280px' }}
         onClick={handleCanvasClick}
       />
 
