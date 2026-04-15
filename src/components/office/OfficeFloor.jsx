@@ -100,7 +100,7 @@ export function OfficeFloor() {
       <div className="flex-1 flex shrink-0 min-h-0">
 
         {/* Office Canvas — 65% width */}
-        <div className="flex-1 flex flex-col min-w-0 min-h-0 p-3">
+        <div className="flex-1 flex flex-col min-w-0 p-3" style={{ minHeight: 0 }}>
           <AnimatedOffice
             agentStatuses={agentStatuses}
             onAgentClick={(id) => setActiveChatAgent(id)}

@@ -228,23 +228,22 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
     })
   }, [agentStatuses])
 
-  // Canvas resize — uses ResizeObserver for reliable cross-device sizing
+  // Canvas resize — fixed grid sizing, no ResizeObserver dependency
   useEffect(() => {
     const update = () => {
       const container = containerRef.current
       if (!container) return
       const cw = container.clientWidth
-      const ch = container.clientHeight
-      setDebug(`container: ${cw}x${ch}`)
-      if (cw < 10 || ch < 10) return
+      if (cw < 10) return
+      // Fixed 20-column grid, height proportional
       const scale = cw / (FLOOR_COLS * TILE)
       setCanvasSize({ w: Math.floor(FLOOR_COLS * TILE * scale), h: Math.floor(FLOOR_ROWS * TILE * scale) })
     }
     update()
-    const ro = new ResizeObserver(update)
-    if (containerRef.current) ro.observe(containerRef.current)
+    // Fallback: resize after short delay
+    const t = setTimeout(update, 200)
     window.addEventListener('resize', update)
-    return () => { ro.disconnect(); window.removeEventListener('resize', update) }
+    return () => { clearTimeout(t); window.removeEventListener('resize', update) }
   }, [])
 
   // Main render loop
@@ -303,9 +302,9 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
         }
       })
 
-      // Draw
-      const scale = canvasSize.w / (FLOOR_COLS * TILE)
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      // Draw — guard against zero dimensions
+      const scale = canvasSize.w > 0 ? canvasSize.w / (FLOOR_COLS * TILE) : 1
+      ctx.clearRect(0, 0, Math.max(canvasSize.w, 640), Math.max(canvasSize.h, 448))
       ctx.save()
       ctx.scale(scale, scale)
 
@@ -378,13 +377,12 @@ export function AnimatedOffice({ agentStatuses, onAgentClick }) {
   }, [onAgentClick])
 
   return (
-    <div ref={containerRef} className="relative rounded-2xl overflow-hidden" style={{ height: '100%', backgroundColor: '#16162a', border: '2px solid #FF6B35' }}>
+    <div ref={containerRef} className="relative rounded-2xl overflow-hidden bg-[#16162a]" style={{ minHeight: '320px', flex: '1', border: '2px solid #FF6B35' }}>
       <canvas
         ref={canvasRef}
         width={canvasSize.w}
         height={canvasSize.h}
-        className="cursor-pointer w-full h-auto"
-        style={{ imageRendering: 'pixelated', display: 'block', minHeight: '280px' }}
+        className="cursor-pointer w-full block"
         onClick={handleCanvasClick}
       />
 
