@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { createClient } from '@supabase/supabase-js'
-import { SUPABASE_URL, SUPABASE_ANON_KEY, DEPARTMENTS } from '../../lib/config'
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+import { supabase } from '../../lib/supabase'
+import { DEPARTMENTS } from '../../lib/config'
 
 const STATUS_COLORS = {
   idle:       { bg: '#94A3B8', text: '#1E293B', label: 'IDLE'    },

@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { createClient } from '@supabase/supabase-js'
-import { SUPABASE_URL, SUPABASE_ANON_KEY, AGENTS, INITIAL_MESSAGES } from '../../lib/config'
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+import { supabase } from '../../lib/supabase'
+import { AGENTS, INITIAL_MESSAGES } from '../../lib/config'
 
 // Presence-aware system prompts
 const PRESENCE_PROMPTS = {

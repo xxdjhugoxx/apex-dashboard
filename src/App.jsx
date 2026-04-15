@@ -3,10 +3,7 @@ import { AnimatedOffice } from './components/office/AnimatedOffice'
 import { ChatPanel } from './components/office/ChatPanel'
 import { StatsBar } from './components/office/StatsBar'
 import { hugoPresence } from './lib/hugoPresence'
-import { createClient } from '@supabase/supabase-js'
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './lib/config'
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+import { supabase } from './lib/supabase'
 
 const DEFAULT_STATS = {
   revenue: { value: 12840, target: 15000 },
