@@ -1,56 +1,666 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>APEX — AI Command Center</title>
-    <style>
-      /* Prevent flash of white/unstyled content */
-      html, body { background: #0a0a0f; margin: 0; padding: 0; overflow: hidden; }
-      /* Instant loader — renders before any JS */
-      #loader {
-        position: fixed; inset: 0; z-index: 99999;
-        background: #0a0a0f;
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-        color: #FF6B35;
-        transition: opacity 0.3s ease;
-      }
-      #loader-title { font-size: 28px; font-weight: 900; letter-spacing: 6px; margin-bottom: 8px; }
-      #loader-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin-bottom: 32px; letter-spacing: 2px; }
-      #loader-dots { display: flex; gap: 10px; }
-      .dot { width: 10px; height: 10px; background: #FF6B35; border-radius: 50%; animation: bounce 1s infinite; }
-      .dot:nth-child(2) { animation-delay: 0.15s; opacity: 0.65; }
-      .dot:nth-child(3) { animation-delay: 0.3s; opacity: 0.35; }
-      @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Shows INSTANTLY before React loads — no JS needed -->
-    <div id="loader">
-      <div id="loader-title">APEX</div>
-      <div id="loader-sub">AI COMMAND CENTER</div>
-      <div id="loader-dots">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DragonClaw AI Office</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: rgba(255,255,255,0.07);
+    --text: #f0f0f5;
+    --muted: rgba(255,255,255,0.4);
+    --accent: #FF6B35;
+  }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; overflow: hidden; }
+  .grid-bg {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .app { display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 1; }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 10px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, #FF6B35, #FF8C5A);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-size: 15px; font-weight: 900; letter-spacing: 2px;
+  }
+  .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #FF6B35, #FF8C5A); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; color: white; -webkit-text-fill-color: white; }
+  .header-center { flex: 1; display: flex; align-items: center; justify-content: center; }
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: 20px;
+    background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3);
+    font-size: 10px; font-weight: 700; color: #4ade80; letter-spacing: 1px;
+  }
+  .live-dot { width: 6px; height: 6px; background: #4ade80; border-radius: 50%; animation: pulse-green 1.5s infinite; }
+  @keyframes pulse-green { 0%,100% { box-shadow: 0 0 0 0 rgba(74,222,128,0.5); } 50% { box-shadow: 0 0 0 5px rgba(74,222,128,0); } }
+  .header-right { display: flex; align-items: center; gap: 12px; font-size: 11px; color: var(--muted); }
+  .presence-badge {
+    padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 10px;
+    background: rgba(251,146,60,0.2); color: #fb923c; border: 1px solid rgba(251,146,60,0.3);
+  }
+
+  /* ── METRICS BAR ── */
+  .metrics-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .metric {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+  }
+  .metric-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .metric-info { flex: 1; min-width: 0; }
+  .metric-label { font-size: 9px; color: var(--muted); font-weight: 600; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .metric-row { display: flex; align-items: baseline; gap: 4px; }
+  .metric-val { font-size: 16px; font-weight: 800; }
+  .metric-target { font-size: 10px; color: var(--muted); }
+  .metric-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 5px; overflow: hidden; }
+  .metric-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+
+  /* ── MAIN ── */
+  .main { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+
+  /* ── OFFICE GRID ── */
+  .office-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 16px; gap: 16px; min-width: 0; }
+
+  /* ── CHIEF CARD ── */
+  .chief-section { flex-shrink: 0; display: flex; justify-content: center; }
+  .chief-card {
+    position: relative;
+    background: var(--surface2);
+    border: 2px solid #EF4444;
+    border-radius: 16px;
+    padding: 14px 24px;
+    display: flex; align-items: center; gap: 16px;
+    min-width: 400px;
+    box-shadow: 0 0 30px rgba(239,68,68,0.15);
+  }
+  .chief-avatar-wrap { position: relative; flex-shrink: 0; }
+  .chief-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: linear-gradient(135deg, #7f1d1d, #991b1b);
+    border: 3px solid #EF4444;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    box-shadow: 0 0 20px rgba(239,68,68,0.3);
+  }
+  .chief-live-ring {
+    position: absolute; inset: -4px; border-radius: 50%;
+    border: 2px solid #EF4444;
+    animation: ring-pulse 2s infinite;
+  }
+  @keyframes ring-pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.1); } }
+  .chief-info { text-align: center; }
+  .chief-crown { font-size: 24px; margin-bottom: -8px; }
+  .chief-name { font-size: 14px; font-weight: 900; color: #EF4444; letter-spacing: 2px; }
+  .chief-title { font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; }
+  .speech-bubble {
+    position: absolute;
+    padding: 8px 14px; border-radius: 12px;
+    font-size: 11px; font-weight: 600;
+    max-width: 160px; text-align: center;
+    animation: fade-up 3s ease-out forwards;
+    white-space: nowrap;
+  }
+  .speech-left { background: #1e3a8a; color: white; left: -120px; top: 0; }
+  .speech-right { background: #1e3a8a; color: white; right: -120px; top: 0; }
+  @keyframes fade-up { 0% { opacity: 0; transform: translateY(6px); } 15% { opacity: 1; transform: translateY(0); } 80% { opacity: 1; } 100% { opacity: 0; } }
+  .chief-desks { display: flex; gap: 6px; align-items: flex-end; }
+  .chief-desk-monitor { width: 28px; height: 20px; background: #1f2937; border: 2px solid #EF4444; border-radius: 3px; position: relative; }
+  .chief-desk-monitor::after { content: ''; position: absolute; inset: 2px; background: rgba(239,68,68,0.3); border-radius: 2px; }
+  .chief-desk-surface { width: 36px; height: 5px; background: #78350f; border-radius: 2px; }
+
+  /* ── DEPT GRID ── */
+  .dept-grid {
+    flex: 1; display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 12px;
+    overflow: hidden;
+  }
+
+  /* ── DEPT CARD ── */
+  .dept-card {
+    background: var(--surface2);
+    border-radius: 14px;
+    border: 2px solid transparent;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.3s, box-shadow 0.3s;
+    display: flex; flex-direction: column;
+  }
+  .dept-card:hover { transform: translateY(-2px); }
+  .dept-card.active { border-color: var(--dept-color); box-shadow: 0 0 20px var(--dept-glow); }
+  .dept-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 10px;
+    background: var(--dept-color);
+    flex-shrink: 0;
+  }
+  .dept-name { font-size: 9px; font-weight: 900; color: white; letter-spacing: 1.5px; }
+  .dept-status {
+    font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 6px;
+    background: rgba(255,255,255,0.25); color: white; letter-spacing: 0.5px;
+  }
+  .dept-agents { display: flex; justify-content: center; gap: 10px; padding: 8px 8px 6px; flex-shrink: 0; }
+  .agent-avatar {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .agent-circle {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; color: white;
+    border: 2px solid rgba(255,255,255,0.3);
+    position: relative;
+  }
+  .agent-circle.main-agent { border-color: white; }
+  .agent-status-dot {
+    position: absolute; bottom: 0; right: 0;
+    width: 9px; height: 9px; border-radius: 50%;
+    border: 2px solid var(--surface2);
+  }
+  .status-working { background: #FDE047; }
+  .status-active { background: #86EFAC; }
+  .status-idle { background: #94A3B8; }
+  @keyframes status-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+  .status-active { animation: status-pulse 1.5s infinite; }
+  .agent-name { font-size: 8px; font-weight: 700; color: var(--muted); text-align: center; }
+  .agent-role { font-size: 7px; color: rgba(255,255,255,0.3); text-align: center; }
+  .dept-label { font-size: 8px; color: rgba(255,255,255,0.3); text-align: center; padding: 0 4px 4px; letter-spacing: 0.5px; }
+
+  /* ── SUB-AGENTS GRID ── */
+  .sub-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+    padding: 0 8px 8px;
+    flex: 1;
+  }
+  .sub-agent {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 5px 6px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .sub-dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+    animation: status-pulse 2s infinite;
+  }
+  .sub-name { font-size: 8px; color: rgba(255,255,255,0.6); font-weight: 600; flex: 1; }
+  .sub-bar { height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px; margin-top: 3px; overflow: hidden; }
+  .sub-fill { height: 100%; border-radius: 1px; transition: width 0.5s; }
+
+  /* ── RIGHT SIDEBAR ── */
+  .sidebar {
+    width: 300px; flex-shrink: 0;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-header {
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+    flex-shrink: 0;
+  }
+  .sidebar-title { font-size: 11px; font-weight: 800; letter-spacing: 1px; color: var(--muted); flex: 1; }
+  .chat-feed { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .chat-feed::-webkit-scrollbar { width: 4px; }
+  .chat-feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+  .chat-msg {
+    padding: 8px 10px; border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    animation: msg-in 0.3s ease;
+  }
+  @keyframes msg-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .chat-msg-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .chat-avatar-dot { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: white; flex-shrink: 0; }
+  .chat-agent-name { font-size: 9px; font-weight: 800; }
+  .chat-agent-dept { font-size: 8px; color: var(--muted); margin-left: auto; }
+  .chat-text { font-size: 10px; color: rgba(255,255,255,0.7); line-height: 1.5; }
+  .chat-time { font-size: 8px; color: rgba(255,255,255,0.2); margin-top: 3px; }
+  .chat-indicators {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    padding: 8px; border-top: 1px solid var(--border); flex-shrink: 0;
+  }
+  .chat-ind-dot { width: 5px; height: 5px; border-radius: 50%; }
+  .chat-ind-dot:nth-child(1) { background: #FF6B35; animation: bounce 1s infinite 0s; }
+  .chat-ind-dot:nth-child(2) { background: #FF6B35; animation: bounce 1s infinite 0.15s; }
+  .chat-ind-dot:nth-child(3) { background: #FF6B35; animation: bounce 1s infinite 0.3s; }
+  @keyframes bounce { 0%,100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(-4px); opacity: 1; } }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface2);
+    border: 2px solid var(--modal-color, #555);
+    border-radius: 20px;
+    width: 560px; max-height: 80vh;
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.25s;
+    box-shadow: 0 0 60px rgba(0,0,0,0.5);
+  }
+  .modal-overlay.open .modal { transform: scale(1); }
+  .modal-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px;
+    background: var(--modal-color, #555);
+  }
+  .modal-header-avatar { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .modal-header-info { flex: 1; }
+  .modal-dept-name { font-size: 14px; font-weight: 900; color: white; letter-spacing: 2px; }
+  .modal-dept-status { font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+  .modal-close {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(255,255,255,0.2); border: none;
+    color: white; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-body { padding: 16px 20px; overflow-y: auto; max-height: calc(80vh - 90px); display: flex; flex-direction: column; gap: 12px; }
+  .modal-sub-agent {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 12px 14px;
+  }
+  .modal-sa-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .modal-sa-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .modal-sa-name { font-size: 12px; font-weight: 700; color: var(--text); flex: 1; }
+  .modal-sa-badge { font-size: 8px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: rgba(255,255,255,0.1); color: var(--muted); }
+  .modal-sa-task { font-size: 10px; color: var(--muted); margin-bottom: 8px; }
+  .modal-sa-row { display: flex; align-items: center; gap: 8px; }
+  .modal-sa-bar-wrap { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+  .modal-sa-bar { height: 100%; border-radius: 2px; transition: width 0.5s; }
+  .modal-sa-pct { font-size: 10px; font-weight: 700; color: var(--text); min-width: 32px; text-align: right; }
+  .modal-sa-time { font-size: 9px; color: rgba(255,255,255,0.25); margin-top: 6px; }
+
+  /* ── FOOTER ── */
+  .footer { flex-shrink: 0; text-align: center; padding: 6px; font-size: 9px; color: rgba(255,255,255,0.12); letter-spacing: 2px; border-top: 1px solid var(--border); background: var(--surface); }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="app">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🐉</div>
+      <span>DragonClaw AI Office</span>
+    </div>
+    <div class="header-center">
+      <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+    </div>
+    <div class="header-right">
+      <span id="clock">--:--</span>
+      <div class="presence-badge">IN OFFICE</div>
+    </div>
+  </div>
+
+  <!-- METRICS BAR -->
+  <div class="metrics-bar" id="metrics-bar">
+    <!-- filled by JS -->
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- OFFICE -->
+    <div class="office-area">
+      <!-- CHIEF CARD -->
+      <div class="chief-section">
+        <div class="chief-card" id="chief-card">
+          <div class="chief-avatar-wrap">
+            <div class="chief-avatar">🦁</div>
+            <div class="chief-live-ring"></div>
+          </div>
+          <div class="chief-info">
+            <div class="chief-crown">👑</div>
+            <div class="chief-name">HUGO</div>
+            <div class="chief-title">CHIEF OF AI ORCHESTRATION</div>
+          </div>
+          <div class="chief-desks">
+            <div><div class="chief-desk-monitor"></div><div class="chief-desk-surface"></div></div>
+            <div><div class="chief-desk-monitor"></div><div class="chief-desk-surface"></div></div>
+            <div><div class="chief-desk-monitor"></div><div class="chief-desk-surface"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEPT GRID -->
+      <div class="dept-grid" id="dept-grid"></div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">LIVE ACTIVITY</div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <div style="width:5px;height:5px;border-radius:50%;background:#22c55e;animation:pulse-green 1.5s infinite"></div>
+          <span style="font-size:9px;color:#4ade80;font-weight:700">LIVE</span>
+        </div>
+      </div>
+      <div class="chat-feed" id="chat-feed"></div>
+      <div class="chat-indicators">
+        <div class="chat-ind-dot"></div>
+        <div class="chat-ind-dot"></div>
+        <div class="chat-ind-dot"></div>
       </div>
     </div>
-    <script>
-      // Loader stays until React explicitly removes it
-      window.removeLoader = function() {
-        var l = document.getElementById('loader');
-        if (l) { l.style.opacity = '0'; l.style.transition = 'opacity 0.4s'; }
-        setTimeout(function() { if (l) l.remove(); }, 400);
-      };
-      // Safety fallback: if React hasn't mounted in 5s, remove loader anyway
-      setTimeout(function() { window.removeLoader(); }, 5000);
-    </script>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">DRAGONCLAW AI OFFICE — AUTONOMOUS OPERATIONS</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal">
+    <div class="modal-header" id="modal-header">
+      <div class="modal-header-avatar" id="modal-avatar">🦊</div>
+      <div class="modal-header-info">
+        <div class="modal-dept-name" id="modal-dept-name">SALES</div>
+        <div class="modal-dept-status" id="modal-dept-status">3 agents active</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────────────
+const DEPTS = [
+  { id:'sales',      name:'SALES',          color:'#10B981', emoji:'🦊', agents:[{n:'Felix',e:'🦊'}, {n:'Chief AI',e:'🤖'}], subs:[{n:'Intent Signals',c:'#10B981'}, {n:'ICP Matching',c:'#10B981'}, {n:'Stage Forecast',c:'#10B981'}, {n:'Objection Map',c:'#10B981'}] },
+  { id:'marketing',  name:'MARKETING',      color:'#7C3AED', emoji:'🦚', agents:[{n:'Phoenix',e:'🦚'}, {n:'Chief AI',e:'🤖'}], subs:[{n:'Topic Research',c:'#7C3AED'}, {n:'Brief Gen',c:'#7C3AED'}, {n:'A/B Orch',c:'#7C3AED'}, {n:'Attribution',c:'#7C3AED'}] },
+  { id:'ops',        name:'OPERATIONS',      color:'#2563EB', emoji:'🦡', agents:[{n:'Axel',e:'🦡'}, {n:'Chief AI',e:'🤖'}], subs:[{n:'Flow Builder',c:'#2563EB'}, {n:'API Connector',c:'#2563EB'}, {n:'Lead Builder',c:'#2563EB'}, {n:'Health Check',c:'#2563EB'}] },
+  { id:'finance',    name:'FINANCE',         color:'#059669', emoji:'🐻', agents:[{n:'Bruno',e:'🐻'}, {n:'Chief AI',e:'🤖'}], subs:[{n:'Invoice Proc',c:'#059669'}, {n:'Payment Sched',c:'#059669'}, {n:'Budget Builder',c:'#059669'}, {n:'Audit Logger',c:'#059669'}] },
+  { id:'aiops',      name:'AI OPS & INFRA',  color:'#DB2777', emoji:'🧬', agents:[{n:'Dr. V',e:'🧬'}, {n:'Chief AI',e:'🤖'}], subs:[{n:'Model Router',c:'#DB2777'}, {n:'Fine Tuner',c:'#DB2777'}, {n:'Prompt Opt',c:'#DB2777'}, {n:'Guardrail Eng',c:'#DB2777'}] },
+  { id:'hr',         name:'PEOPLE / HR',     color:'#DC2626', emoji:'👩', agents:[{n:'Jessica',e:'👩'}, {n:'Chief AI',e:'🤖'}], subs:[{n:'Resume Screen',c:'#DC2626'}, {n:'Welcome Bot',c:'#DC2626'}, {n:'Culture Scan',c:'#DC2626'}, {n:'Onboard Flow',c:'#DC2626'}] },
+  { id:'product',    name:'PRODUCT',         color:'#4F46E5', emoji:'🧑', agents:[{n:'Tom',e:'🧑'}, {n:'Chief AI',e:'🤖'}], subs:[{n:'Market Scan',c:'#4F46E5'}, {n:'Roadmap Mgr',c:'#4F46E5'}, {n:'Feature Rank',c:'#4F46E5'}, {n:'Release Log',c:'#4F46E5'}] },
+  { id:'support',    name:'SUPPORT',         color:'#EA580C', emoji:'📸', agents:[{n:'Blaze',e:'📸'}, {n:'Chief AI',e:'🤖'}], subs:[{n:'Intent Classify',c:'#EA580C'}, {n:'KB Searcher',c:'#EA580C'}, {n:'Ticket Router',c:'#EA580C'}, {n:'CSAT Tracker',c:'#EA580C'}] },
+  { id:'data',       name:'DATA',            color:'#0891B2', emoji:'🤖', agents:[{n:'Atlas',e:'🤖'}, {n:'Chief AI',e:'🤖'}], subs:[{n:'Stream Conn',c:'#0891B2'}, {n:'Schema Map',c:'#0891B2'}, {n:'Report Gen',c:'#0891B2'}, {n:'Anomaly Det',c:'#0891B2'}] },
+  { id:'strategy',   name:'STRATEGY',        color:'#D97706', emoji:'👩‍💼', agents:[{n:'Sophia',e:'👩‍💼'}, {n:'Chief AI',e:'🤖'}], subs:[{n:'Trend Radar',c:'#D97706'}, {n:'OKR Manager',c:'#D97706'}, {n:'Competitor Watch',c:'#D97706'}, {n:'Risk Scorer',c:'#D97706'}] },
+]
+
+const CHAT_MESSAGES = [
+  { agent:'Felix',   dept:'Sales',      emoji:'🦊', color:'#10B981', text:'New intent signal detected — high-value prospect in fintech. Qualifying now.', task:'$42K deal stage 3' },
+  { agent:'Phoenix', dept:'Marketing',   emoji:'🦚', color:'#7C3AED', text:'A/B test variant C hitting 4.2% CTR. Scaling campaign to full budget.', task:'Campaign: Q3 Brand Push' },
+  { agent:'Axel',    dept:'Operations', emoji:'🦡', color:'#2563EB', text:'Workflow automation #47 deployed. Lead delivery time cut 34%.', task:'47 workflows active' },
+  { agent:'Bruno',   dept:'Finance',    emoji:'🐻', color:'#059669', text:'Invoice #312 processed. Burn rate 94% of target. Runway: 4.2 months.', task:'$128K processed' },
+  { agent:'Dr. V',   dept:'AI Ops',     emoji:'🧬', color:'#DB2777', text:'Model router updated — GPT-4o latency down 18ms. Guardrails passing 99.7%.', task:'Model: GPT-4o' },
+  { agent:'Jessica', dept:'People/HR',  emoji:'👩', color:'#DC2626', text:'Resume screening complete — 23 candidates ranked. Top 5 advancing to phone screen.', task:'23 resumes scored' },
+  { agent:'Tom',     dept:'Product',    emoji:'🧑', color:'#4F46E5', text:'Feature ranking updated. User onboarding drop-off identified — fix scheduled.', task:'Sprint 12 active' },
+  { agent:'Blaze',   dept:'Support',    emoji:'📸', color:'#EA580C', text:'Ticket volume up 40% after reel went viral. CSAT holding at 4.6/5.', task:'312 tickets today' },
+  { agent:'Atlas',   dept:'Data',       emoji:'🤖', color:'#0891B2', text:'Schema sync complete. Real-time anomaly detection flagging 3 data quality issues.', task:'3 anomalies found' },
+  { agent:'Sophia',  dept:'Strategy',   emoji:'👩‍💼', color:'#D97706', text:'Competitor watch: market shift detected in 2 segments. OKR Q3 on track.', task:'OKR: 78% complete' },
+]
+
+const CHIEF_DIRECTIVES = [
+  'Q3 EXECUTE. Revenue +25%.',
+  'ALL TEAMS — SCALE NOW.',
+  'EFFICIENCY > 95%.',
+  'AI-FIRST OPERATIONS.',
+  'NO BLOCKERS. MOVE FAST.',
+]
+
+const METRICS = [
+  { label:'REVENUE',     icon:'💰', color:'#10B981', value:12840, target:15000, prefix:'$' },
+  { label:'LEADS',       icon:'🎯', color:'#7C3AED', value:24,    target:30,    prefix:''  },
+  { label:'TASKS DONE',  icon:'✅', color:'#2563EB', value:312,   target:400,   prefix:''  },
+  { label:'AGENTS ACTIVE',icon:'🤖',color:'#FF6B35', value:19,   target:20,    prefix:''  },
+]
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let chatIndex = 0
+let chiefDirectiveIdx = 0
+let subAgentStates = {}
+
+function initSubAgentStates() {
+  DEPTS.forEach(d => {
+    d.subs.forEach((s, i) => {
+      subAgentStates[`${d.id}-${i}`] = {
+        status: ['working','active','working','active'][i],
+        progress: 40 + Math.random() * 55 | 0,
+        task: ['Processing...','Syncing...','Generating...','Monitoring...'][i],
+        lastAction: Date.now() - Math.random() * 300000,
+      }
+    })
+  })
+}
+initSubAgentStates()
+
+// ── CLOCK ─────────────────────────────────────────────────────────────────────
+function updateClock() {
+  const el = document.getElementById('clock')
+  if (el) {
+    const d = new Date()
+    el.textContent = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:false })
+  }
+}
+setInterval(updateClock, 1000)
+updateClock()
+
+// ── METRICS BAR ───────────────────────────────────────────────────────────────
+function renderMetrics() {
+  const bar = document.getElementById('metrics-bar')
+  bar.innerHTML = METRICS.map(m => {
+    const pct = Math.round((m.value / m.target) * 100)
+    const ok = pct >= 75
+    return `<div class="metric">
+      <div class="metric-icon" style="background:${m.color}22;font-size:18px">${m.icon}</div>
+      <div class="metric-info">
+        <div class="metric-label">${m.label}</div>
+        <div class="metric-row">
+          <span class="metric-val">${m.prefix}${typeof m.value === 'number' ? m.value.toLocaleString() : m.value}</span>
+          <span class="metric-target">/ ${m.prefix}${m.target.toLocaleString()}</span>
+        </div>
+        <div class="metric-bar"><div class="metric-fill" style="width:${pct}%;background:${ok?m.color:'#EF4444'}"></div></div>
+      </div>
+    </div>`
+  }).join('')
+}
+renderMetrics()
+
+// ── DEPT CARDS ────────────────────────────────────────────────────────────────
+function renderDepts() {
+  const grid = document.getElementById('dept-grid')
+  grid.innerHTML = DEPTS.map(d => {
+    const statusMap = { working:'WORKING', active:'ACTIVE', idle:'IDLE' }
+    const statusList = [0,1,2,3].map(i => subAgentStates[`${d.id}-${i}`]?.status || 'idle')
+    const activeCount = statusList.filter(s => s !== 'idle').length
+    const primaryStatus = statusList.includes('active') ? 'active' : statusList.includes('working') ? 'working' : 'idle'
+
+    return `<div class="dept-card" id="dept-${d.id}" style="--dept-color:${d.color};--dept-glow:${d.color}40" onclick="openModal('${d.id}')">
+      <div class="dept-header">
+        <span class="dept-name">${d.name}</span>
+        <span class="dept-status">${statusMap[primaryStatus]}</span>
+      </div>
+      <div class="dept-agents">
+        ${d.agents.map((a, i) => `
+          <div class="agent-avatar">
+            <div class="agent-circle ${i===0?'main-agent':''}" style="background:${d.color}">
+              ${a.e}
+              <div class="agent-status-dot status-${primaryStatus}" style="background:${primaryStatus==='active'?'#86EFAC':primaryStatus==='working'?'#FDE047':'#94A3B8'}"></div>
+            </div>
+            <div class="agent-name">${a.n}</div>
+            <div class="agent-role">${i===0?'Lead':'Chief AI'}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="sub-grid">
+        ${d.subs.map((s, i) => {
+          const st = subAgentStates[`${d.id}-${i}`] || { status:'idle', progress:0 }
+          return `<div class="sub-agent">
+            <div class="sub-dot" style="background:${s.c};opacity:${st.status==='idle'?0.3:1}"></div>
+            <div class="sub-name">${s.n}</div>
+            <div class="sub-bar">
+              <div class="sub-fill" style="width:${st.progress}%;background:${s.c}"></div>
+            </div>
+          </div>`
+        }).join('')}
+      </div>
+    </div>`
+  }).join('')
+}
+renderDepts()
+
+// ── SIMULATE LIVE UPDATES ──────────────────────────────────────────────────────
+function simulateUpdates() {
+  // Random sub-agent progress updates
+  const allKeys = Object.keys(subAgentStates)
+  for (let i = 0; i < 3; i++) {
+    const key = allKeys[Math.floor(Math.random() * allKeys.length)]
+    const st = subAgentStates[key]
+    st.progress = Math.min(100, st.progress + (Math.random() * 8 | 0))
+    if (st.progress > 98) {
+      st.progress = 30 + Math.random() * 20 | 0
+      st.task = ['Processing...','Syncing...','Generating...','Monitoring...','Updating...'][Math.floor(Math.random()*5)]
+      st.lastAction = Date.now()
+    }
+    st.status = Math.random() > 0.3 ? 'active' : 'working'
+  }
+
+  // Update metric values slightly
+  METRICS[0].value = 12000 + Math.floor(Math.random() * 2000)
+  METRICS[1].value = 20 + Math.floor(Math.random() * 12)
+  METRICS[2].value = 300 + Math.floor(Math.random() * 40)
+  METRICS[3].value = 17 + Math.floor(Math.random() * 4)
+
+  renderMetrics()
+  renderDepts()
+}
+
+setInterval(simulateUpdates, 3000)
+
+// ── CHAT ROTATION ─────────────────────────────────────────────────────────────
+function renderChat() {
+  const feed = document.getElementById('chat-feed')
+  const msgs = CHAT_MESSAGES.slice(chatIndex, chatIndex + 5)
+  feed.innerHTML = msgs.map((m, i) => `
+    <div class="chat-msg" style="animation-delay:${i*0.05}s">
+      <div class="chat-msg-header">
+        <div class="chat-avatar-dot" style="background:${m.color}">${m.emoji}</div>
+        <span class="chat-agent-name" style="color:${m.color}">${m.agent}</span>
+        <span class="chat-agent-dept">${m.dept}</span>
+      </div>
+      <div class="chat-text">${m.text}</div>
+      <div class="chat-time">${i===0?'Just now':`${i*5}s ago`}</div>
+    </div>
+  `).join('')
+  chatIndex = (chatIndex + 5) % CHAT_MESSAGES.length
+}
+renderChat()
+setInterval(() => {
+  chatIndex = (chatIndex + 5) % CHAT_MESSAGES.length
+  renderChat()
+}, 5000)
+
+// ── CHIEF DIRECTIVES ─────────────────────────────────────────────────────────
+function cycleChiefDirective() {
+  chiefDirectiveIdx = (chiefDirectiveIdx + 1) % CHIEF_DIRECTIVES.length
+  const card = document.getElementById('chief-card')
+  // Remove old bubbles
+  card.querySelectorAll('.speech-bubble').forEach(el => el.remove())
+
+  const left = document.createElement('div')
+  left.className = 'speech-bubble speech-left'
+  left.textContent = CHIEF_DIRECTIVES[chiefDirectiveIdx]
+  const right = document.createElement('div')
+  right.className = 'speech-bubble speech-right'
+  right.textContent = CHIEF_DIRECTIVES[(chiefDirectiveIdx + 2) % CHIEF_DIRECTIVES.length]
+  card.appendChild(left)
+  card.appendChild(right)
+  setTimeout(() => {
+    left.remove(); right.remove()
+  }, 2800)
+}
+setInterval(cycleChiefDirective, 6000)
+// Show first directive after 2s
+setTimeout(cycleChiefDirective, 2000)
+
+// ── MODAL ────────────────────────────────────────────────────────────────────
+function openModal(deptId) {
+  const d = DEPTS.find(x => x.id === deptId)
+  if (!d) return
+
+  // Highlight card
+  document.querySelectorAll('.dept-card').forEach(c => c.classList.remove('active'))
+  document.getElementById(`dept-${deptId}`).classList.add('active')
+
+  // Set modal color
+  document.documentElement.style.setProperty('--modal-color', d.color)
+  document.getElementById('modal-dept-name').textContent = d.name
+  document.getElementById('modal-avatar').textContent = d.emoji
+  const activeSubs = d.subs.map((_, i) => subAgentStates[`${d.id}-${i}`]?.status || 'idle').filter(s => s !== 'idle').length
+  document.getElementById('modal-dept-status').textContent = `${activeSubs} of 4 sub-agents active`
+
+  const body = document.getElementById('modal-body')
+  body.innerHTML = d.agents.map((a, i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.04);border-radius:12px;border:1px solid rgba(255,255,255,0.06)">
+      <div style="width:44px;height:44px;border-radius:50%;background:${d.color};display:flex;align-items:center;justify-content:center;font-size:22px;border:2px solid rgba(255,255,255,0.3)">${a.e}</div>
+      <div>
+        <div style="font-size:13px;font-weight:800;color:white">${a.n}</div>
+        <div style="font-size:9px;color:var(--muted)">${i===0?'Department Lead':'Chief AI Agent'}</div>
+        <div style="font-size:9px;color:${d.color};margin-top:2px">● Online — ${['Working on Q3 targets','Orchestrating sub-agents','Monitoring workflows','Executing strategy'][i]}</div>
+      </div>
+    </div>
+  `).join('') + d.subs.map((s, i) => {
+    const st = subAgentStates[`${d.id}-${i}`] || { status:'idle', progress:0, task:'Awaiting...', lastAction:Date.now() }
+    const ago = Math.floor((Date.now() - st.lastAction) / 1000)
+    const statusLabel = { working:'WORKING', active:'ACTIVE', idle:'IDLE' }[st.status]
+    return `<div class="modal-sub-agent">
+      <div class="modal-sa-header">
+        <div class="modal-sa-dot" style="background:${s.c}"></div>
+        <div class="modal-sa-name">${s.n}</div>
+        <div class="modal-sa-badge" style="background:${s.c}22;color:${s.c}">${statusLabel}</div>
+      </div>
+      <div class="modal-sa-task">${st.task}</div>
+      <div class="modal-sa-row">
+        <div class="modal-sa-bar-wrap"><div class="modal-sa-bar" style="width:${st.progress}%;background:${s.c}"></div></div>
+        <div class="modal-sa-pct">${st.progress}%</div>
+      </div>
+      <div class="modal-sa-time">Last action: ${ago < 60 ? ago + 's ago' : Math.floor(ago/60) + 'm ago'}</div>
+    </div>`
+  }).join('')
+
+  document.getElementById('modal-overlay').classList.add('open')
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open')
+  document.querySelectorAll('.dept-card').forEach(c => c.classList.remove('active'))
+}
+
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal()
+})
+</script>
+</body>
 </html>
