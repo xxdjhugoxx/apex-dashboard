@@ -11,11 +11,13 @@ const supabase = createClient(
 )
 
 const AGENTS = [
-  { id: 'ceo',      name: 'Hugo (Leo)', emoji: '🦁', color: '#EF4444' },
-  { id: 'sales',    name: 'Felix',   emoji: '🦊', color: '#FF6B35' },
-  { id: 'marketing',name: 'Phoenix',  emoji: '🦚', color: '#A855F7' },
-  { id: 'ops',      name: 'Axel',    emoji: '🦡', color: '#10B981' },
-  { id: 'finance',  name: 'Bruno',   emoji: '🐻', color: '#F59E0B' },
+  { id: 'ceo',       name: 'Hugo',    emoji: '🦁', color: '#EF4444' },
+  { id: 'sales',     name: 'Felix',   emoji: '🦊', color: '#FF6B35' },
+  { id: 'marketing', name: 'Phoenix', emoji: '🦚', color: '#A855F7' },
+  { id: 'ops',       name: 'Axel',   emoji: '🦡', color: '#10B981' },
+  { id: 'finance',   name: 'Bruno',   emoji: '🐻', color: '#F59E0B' },
+  { id: 'instagram', name: 'Blaze',   emoji: '📸', color: '#EC4899' },
+  { id: 'engineer',  name: 'Atlas',   emoji: '🤖', color: '#06B6D4' },
 ]
 
 const MOCK_STATS = {

@@ -7,11 +7,13 @@ const supabase = createClient(
 )
 
 const AGENTS = [
-  { id: 'ceo',      name: 'Leo',     emoji: '🦁', color: '#EF4444' },
-  { id: 'sales',    name: 'Felix',   emoji: '🦊', color: '#FF6B35' },
-  { id: 'marketing',name: 'Phoenix', emoji: '🦚', color: '#A855F7' },
-  { id: 'ops',      name: 'Axel',    emoji: '🦡', color: '#10B981' },
-  { id: 'finance',  name: 'Bruno',   emoji: '🐻', color: '#F59E0B' },
+  { id: 'ceo',       name: 'Hugo',    emoji: '🦁', color: '#EF4444' },
+  { id: 'sales',     name: 'Felix',   emoji: '🦊', color: '#FF6B35' },
+  { id: 'marketing', name: 'Phoenix', emoji: '🦚', color: '#A855F7' },
+  { id: 'ops',       name: 'Axel',   emoji: '🦡', color: '#10B981' },
+  { id: 'finance',   name: 'Bruno',   emoji: '🐻', color: '#F59E0B' },
+  { id: 'instagram', name: 'Blaze',   emoji: '📸', color: '#EC4899' },
+  { id: 'engineer',  name: 'Atlas',   emoji: '🤖', color: '#06B6D4' },
 ]
 
 const SYSTEM_PROMPTS = {
@@ -23,11 +25,13 @@ const SYSTEM_PROMPTS = {
 }
 
 const INITIAL_MESSAGES = [
-  { role: 'system', agent: 'ceo', content: 'Team, Q3 targets are set. Sales needs to drive $150K revenue. Marketing, get our reach up 3x. Ops, keep efficiency at 95%. Finance, maintain healthy margins. Let\'s execute.' },
-  { role: 'agent', agent: 'sales', content: 'On it Leo! Pipeline already at $82K. Need marketing to feed me more qualified leads and I\'ll close the gap by end of month.' },
+  { role: 'system', agent: 'ceo', content: 'Team, Q3 targets are set. Sales needs to drive $150K revenue. Marketing, get our reach up 3x. Ops, keep efficiency at 95%. Finance, maintain healthy margins. Instagram, flood our feeds. Atlas, ship the features. Let\'s execute.' },
+  { role: 'agent', agent: 'sales', content: 'On it Hugo! Pipeline already at $82K. Need marketing to feed me more qualified leads and I\'ll close the gap by end of month.' },
   { role: 'agent', agent: 'marketing', content: 'Felix, Instagram is blowing up — 340% organic reach last week. Give me 2 weeks and I\'ll double those leads you need.' },
   { role: 'agent', agent: 'ops', content: 'All automations running smooth. 47 tasks completed today. Zero bottlenecks. Ready to scale when you are.' },
   { role: 'agent', agent: 'finance', content: 'Monthly burn rate looks healthy. We\'re at 112% of revenue target. Two invoices pending — should push us to 118%.' },
+  { role: 'agent', agent: 'instagram', content: 'Blaze checking in — just posted a reel that hit 12K views in 2 hours. DMs are flooding in. Our follower count jumped 800 today.' },
+  { role: 'agent', agent: 'engineer', content: 'Atlas here. New feature deployed to production. Build passing, all tests green. Zero downtime deployment complete.' },
 ]
 
 export function ChatPanel({ activeAgent, onAgentSelect, hugoPresence = 'away' }) {
@@ -104,84 +108,32 @@ export function ChatPanel({ activeAgent, onAgentSelect, hugoPresence = 'away' })
 
       const responses = {
         ceo: {
-          in_office: [
-            'Boss, I have the Q3 numbers ready. Want me to walk you through the breakdown?',
-            'Leo here — the leadership briefing is prepped. What\'s our priority for today?',
-            'Three strategic decisions need your sign-off. Should we tackle them now?',
-            'Team morale is at 97/100 this week. What\'s driving that? Want my analysis?',
-            'I\'ve cleared my schedule — full focus on whatever you need.',
-          ],
-          away: [
-            'Hugo, just finished my morning review. Pipeline looks strong. Working autonomously today — I\'ll ping you if anything needs escalation.',
-            'Periodic update: all 5 departments on track. No blockers. Continuing execution.',
-            'Q3 strategy execution in progress. Major milestone hit on revenue. Will update you via Telegram.',
-            'No major decisions needed today. Team is executing well. I\'m handling the rest.',
-            'Morning briefing complete. We\'re 18% ahead of target. Monitoring closely.',
-          ],
+          in_office: ['Boss, Q3 numbers ready. Walk you through?', 'Hugo — briefing prepped. Priority today?', '3 decisions need your sign-off.', 'Team morale 97/100. Analysis ready.', "I've cleared my schedule."],
+          away: ['Morning review done. Pipeline strong.', 'All 5 depts on track. No blockers.', 'Q3 strategy executing. Milestone hit.', 'Team executing well. Handling the rest.', '18% ahead of target.'],
         },
         sales: {
-          in_office: [
-            'Felix in the house! Got a hot lead — Sarah from TechCorp, $12K. Want me to loop you in?',
-            'Pipeline is TRENDING. Three deals closing this week. Need marketing to feed me more and I\'ll hit $200K EOM.',
-            'Yo! Just closed $4,200 with NovaTech. Can I get a quick approval to throw a team celebration lunch?',
-            'Felix here — I\'m seeing some incredible momentum. Want me to show you the dashboard?',
-            'Boss! 3 new qualified leads today. Who should I prioritize — your call.',
-          ],
-          away: [
-            'Felix reporting in — 2 deals closed today, $8,400 total. Sending full pipeline update to Telegram now.',
-            'Auto-update: Lead gen hitting 140% of target this week. Felix is LOCKED IN. Working the phones.',
-            'Hot lead just came in while you were out — already qualified, $15K potential. Closing probability: 78%.',
-            'Felix here, running autonomously. All active deals on track. Will update when major milestones hit.',
-            'Sales floor is HOT today. Two more meetings scheduled. Pipeline growing fast — you\'ll see the numbers tonight.',
-          ],
+          in_office: ['Felix ON IT! Hot lead — Sarah, $12K.', 'Pipeline trending. 3 deals closing.', 'Just closed $4,200! Celebration?', 'Incredible momentum. Dashboard?', '3 new leads. Who first?'],
+          away: ['2 deals closed today, $8,400.', 'Lead gen at 140% of target.', 'Hot lead in — $15K, 78% prob.', 'Running autonomously. On track.', 'Sales floor is HOT.'],
         },
         marketing: {
-          in_office: [
-            'Phoenix here! Instagram reel is VIRAL — 50K views and climbing. Want to see the analytics before I push ad budget?',
-            'Hey Boss! A/B test results are in — variant B wins by 18%. Want to greenlight the switch before I scale?',
-            'Content calendar for next week is READY. Can you review the highlights? Want your take on the strategy.',
-            'Phoenix checking in — brand awareness up 340% this month. Want me to walk you through the campaign breakdown?',
-            'Boss! Got a COLLAB opportunity — micro-influencer wants to partner. Can you approve the deal terms?',
-          ],
-          away: [
-            'Phoenix dropping a Telegram update: Instagram hit 100K reach this week. Organic growth insane. Boosting with ads now.',
-            'Content drop complete — new reel went live. Watching engagement closely. Will escalate if it goes viral.',
-            'Marketing update: social mentions up 400%. Running day 2 of the campaign. All metrics green. Executing autonomously.',
-            'Phoenix working the algorithms. Day 3 of paid campaign — CTR at 4.2%, well above industry standard. Budget optimized.',
-            'Morning content sprint done. Posted 4 pieces across channels. Engagement rate: 8.7%. Brand growing fast.',
-          ],
+          in_office: ['Reel VIRAL — 50K views. Ad budget?', 'A/B test done — variant B wins +18%.', 'Content calendar ready.', 'Brand up 340%. Walk you through?', 'COLLAB opportunity. Deal terms?'],
+          away: ['Instagram 100K reach this week.', 'Reel live. Watching engagement.', 'Socials up 400%. Day 2 campaign.', 'CTR 4.2%. Budget optimized.', '4 pieces posted. Engagement 8.7%.'],
         },
         ops: {
-          in_office: [
-            'Axel here! Systems are green. Got an automation idea — want me to show you the workflow before I deploy it?',
-            'Boss, noticed a bottleneck in the task queue. Can I get 2 mins to walk you through the fix?',
-            'Morning systems check complete. 99.2% uptime across all tools. Want the detailed breakdown?',
-            'Axel here — I optimized 3 workflows today. Efficiency up 12%. Can you approve the changes before I roll out?',
-            'Hey! Task queue is CLEARED. Got 20 min before my next automation run. Anything you need?',
-          ],
-          away: [
-            'Axel reporting: all 47 tasks completed today. Zero blockers. Systems running at 99.2% uptime. Fully autonomous.',
-            'Ops update: automated 3 new workflows today. Efficiency up 12%. Will monitor overnight and escalate if anything breaks.',
-            'Axel here — scheduling synced for the next 3 days. All resources optimally allocated. Running in background.',
-            'Morning ops sprint complete. Task queue: empty. Team utilization: 94%. Systems: green. Nothing to escalate.',
-            'Daily automation run complete. No intervention needed. Evening status: all clear. Monitoring overnight.',
-          ],
+          in_office: ['Systems green. Automation idea.', 'Bottleneck found. Walk you through?', 'Uptime 99.2%. Want breakdown?', '3 workflows optimized. Approve?', 'Task queue cleared. Need me?'],
+          away: ['47 tasks done. 99.2% uptime.', '3 workflows automated. Monitoring.', 'Schedule synced. All allocated.', 'Ops sprint done. Systems green.', 'Automation complete. All clear.'],
         },
         finance: {
-          in_office: [
-            'Bruno here! Invoice #15 just cleared — $3,200 received. Want me to walk you through the cash flow?',
-            'Boss, monthly burn rate looks PERFECT. Got 4.5 months runway. Want my breakdown of the Q3 budget?',
-            'Hey! Financial report is ready. We\'re at 112% of revenue target. Want to review before I finalize the projections?',
-            'Bruno here — two invoices pending approval. Can you sign off so I can send them out?',
-            'Finance update: all invoices reconciled. Healthy margins maintained. Want me to prepare the investor summary?',
-          ],
-          away: [
-            'Bruno here — daily financial sync complete. Revenue at 112% of target. Outstanding invoices: $8,400. All healthy.',
-            'Evening finance update: 3 invoices sent, 2 paid today totaling $5,100. Cash position strong. No action needed.',
-            'Bruno running autonomously. Monthly reconciliation complete. Margins up 3% vs last month. Summary sent to Telegram.',
-            'Financial health check: all budgets within limits. Burn rate sustainable. Q3 projections updated. Nothing to escalate.',
-            'Bruno here: financial forecast updated. 4.5 month runway confirmed. Next invoice cycle in 5 days. Will monitor closely.',
-          ],
+          in_office: ['Invoice #15 cleared — $3,200.', 'Burn rate perfect. 4.5mo runway.', '112% of target. Review?', '2 invoices pending. Sign off?', 'Invoices reconciled. Summary?'],
+          away: ['Revenue 112%. Outstanding $8,400.', '3 invoices sent, 2 paid $5,100.', 'Margins up 3%. Summary sent.', 'Budgets within limits. No escalate.', 'Runway 4.5mo. Monitoring closely.'],
+        },
+        instagram: {
+          in_office: ['Blaze here! Reel hit 12K views.', 'Followers up 800 today. DMs flooding.', 'New post going LIVE now.', 'Collaboration request — approve?', 'Analytics look AMAZING. Want the report?'],
+          away: ['Blaze: reel 12K views in 2hrs.', '800 new followers today.', 'Content posted. Engagement HIGH.', 'Running IG autonomously.', 'Story up. Monitoring replies.'],
+        },
+        engineer: {
+          in_office: ['Atlas here. Feature deployed.', 'Build passing. Tests green.', 'Zero bugs. Ready to ship.', 'Code review done. LGTM.', 'Architecture optimized. Want demo?'],
+          away: ['Atlas: feature shipped. Zero downtime.', 'Build complete. All tests passing.', 'Code deployed to production.', 'Deploying sprint 4.', 'Monitoring metrics post-launch.'],
         },
       }
 
