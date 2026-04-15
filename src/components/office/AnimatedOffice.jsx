@@ -1,556 +1,416 @@
 import React, { useState, useEffect, useRef } from 'react'
 
-const WORKERS = [
-  { id: 'sales',     name: 'Felix',   emoji: '🦊', color: '#FF6B35' },
-  { id: 'marketing', name: 'Phoenix', emoji: '🦚', color: '#A855F7' },
-  { id: 'ops',       name: 'Axel',   emoji: '🦡', color: '#10B981' },
-  { id: 'finance',   name: 'Bruno',   emoji: '🐻', color: '#F59E0B' },
-  { id: 'instagram', name: 'Blaze',   emoji: '📸', color: '#EC4899' },
-  { id: 'engineer',  name: 'Atlas',  emoji: '🤖', color: '#06B6D4' },
+const DEPARTMENTS = [
+  { id: 'sales',     name: 'SALES',     color: '#0D9488', worker: { name: 'Felix',   emoji: '🦊' } },
+  { id: 'marketing', name: 'MARKETING', color: '#7C3AED', worker: { name: 'Phoenix', emoji: '🦚' } },
+  { id: 'ops',       name: 'OPERATIONS',color: '#2563EB', worker: { name: 'Axel',   emoji: '🦡' } },
+  { id: 'finance',   name: 'FINANCE',   color: '#65A30D', worker: { name: 'Bruno',   emoji: '🐻' } },
+  { id: 'instagram', name: 'INSTAGRAM', color: '#DB2777', worker: { name: 'Blaze',   emoji: '📸' } },
+  { id: 'engineer',  name: 'ENGINEERING',color: '#0891B2', worker: { name: 'Atlas',  emoji: '🤖' } },
 ]
 
-// ─── Desk (top-down view) ─────────────────────────────────────────────────
-function Desk({ color, worker, isHugo, atDesk }) {
+const STATUS_COLORS = {
+  working:   { bg: '#FDE047', text: '#713F12', label: 'WORKING' },
+  delivering:{ bg: '#86EFAC', text: '#14532D', label: 'DELIVERING' },
+  finished:  { bg: '#93C5FD', text: '#1E3A8A', label: 'FINISHED' },
+}
+
+const STATUSES = ['working', 'delivering', 'finished']
+
+// ─── Mini status tag ──────────────────────────────────────────────────────
+function StatusTag({ status }) {
+  const s = STATUS_COLORS[status]
   return (
     <div
-      className="absolute flex flex-col items-center"
+      className="rounded px-1.5 py-0.5 font-bold"
       style={{
-        width: 80,
-        height: 90,
-        left: '50%',
-        top: '50%',
-        transform: 'translate(-50%, -50%)',
+        backgroundColor: s.bg,
+        color: s.text,
+        fontSize: 8,
+        letterSpacing: 0.5,
       }}
     >
-      {/* Desk surface */}
+      {s.label}
+    </div>
+  )
+}
+
+// ─── Desk (top-down: brown rectangle + dark monitor) ──────────────────────
+function Desk({ color, isHugo, isEmpty }) {
+  return (
+    <div className="flex flex-col items-center gap-0.5">
+      {/* Monitor */}
       <div
-        className="rounded-xl shadow-lg"
+        className="rounded"
         style={{
-          width: 72,
-          height: 56,
-          backgroundColor: '#fafafa',
-          border: `3px solid ${color || '#d1d5db'}`,
+          width: isHugo ? 36 : 28,
+          height: isHugo ? 26 : 20,
+          backgroundColor: '#1f2937',
+          border: `2px solid ${color}`,
           position: 'relative',
-          overflow: 'visible',
         }}
       >
-        {/* Monitor on desk (top-down: rectangle) */}
         <div
-          className="absolute rounded"
+          className="rounded-sm"
           style={{
-            width: 32,
-            height: 22,
-            backgroundColor: '#1f2937',
-            border: `2px solid ${color}`,
-            left: '50%',
-            top: 6,
-            transform: 'translateX(-50%)',
-          }}
-        >
-          <div
-            className="rounded-sm m-0.5"
-            style={{
-              width: 'calc(100% - 4px)',
-              height: 'calc(100% - 4px)',
-              backgroundColor: color + '40',
-            }}
-          />
-        </div>
-
-        {/* Keyboard */}
-        <div
-          className="absolute rounded"
-          style={{
-            width: 24,
-            height: 10,
-            backgroundColor: '#d1d5db',
-            left: '50%',
-            bottom: 8,
-            transform: 'translateX(-50%)',
+            margin: 2,
+            width: 'calc(100% - 4px)',
+            height: 'calc(100% - 4px)',
+            backgroundColor: color + '50',
           }}
         />
+        {/* Status dot on monitor */}
+        <div
+          className="absolute rounded-full"
+          style={{
+            width: 5,
+            height: 5,
+            backgroundColor: '#86EFAC',
+            top: 2,
+            right: 2,
+          }}
+        />
+      </div>
+      {/* Desk surface */}
+      <div
+        className="rounded"
+        style={{
+          width: isHugo ? 42 : 34,
+          height: isHugo ? 8 : 6,
+          backgroundColor: '#92400E',
+          border: `1px solid #78350F`,
+        }}
+      />
+      {/* Person (if not empty) */}
+      {!isEmpty && (
+        <div
+          className="rounded-full flex items-center justify-center text-white font-bold border-2"
+          style={{
+            width: isHugo ? 28 : 22,
+            height: isHugo ? 28 : 22,
+            backgroundColor: isHugo ? '#7f1d1d' : color,
+            borderColor: isHugo ? '#EF4444' : color,
+            fontSize: isHugo ? 12 : 9,
+            marginTop: 1,
+          }}
+        >
+          {isHugo ? '🦁' : null}
+        </div>
+      )}
+    </div>
+  )
+}
 
-        {/* Person sitting at desk (top-down: we see top of head + shoulders) */}
-        {atDesk && (
-          <div
-            className="absolute flex flex-col items-center"
-            style={{
-              // Person is BEHIND the desk (lower z-index), head peeking up
-              bottom: -18,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              zIndex: 1,
-            }}
-          >
-            {/* Head (top-down circle) */}
-            <div
-              className="rounded-full shadow border-2 flex items-center justify-center text-white font-bold"
-              style={{
-                width: isHugo ? 38 : 30,
-                height: isHugo ? 38 : 30,
-                backgroundColor: isHugo ? '#7f1d1d' : color,
-                borderColor: isHugo ? '#EF4444' : color,
-                fontSize: isHugo ? 16 : 12,
-              }}
-            >
-              {isHugo ? '🦁' : worker?.emoji}
-            </div>
-            {/* Shoulders hint */}
-            <div
-              className="rounded-t-full"
-              style={{
-                width: isHugo ? 44 : 36,
-                height: 12,
-                backgroundColor: isHugo ? '#7f1d1d' : color,
-                marginTop: -4,
-                border: `2px solid ${isHugo ? '#EF4444' : color}`,
-                borderBottom: 'none',
-              }}
-            />
-          </div>
-        )}
+// ─── Department pod ────────────────────────────────────────────────────────
+function Pod({ dept, status, onClick }) {
+  return (
+    <div
+      className="rounded-2xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+      style={{
+        border: `3px solid ${dept.color}`,
+        backgroundColor: '#ffffff',
+        minWidth: 140,
+      }}
+      onClick={onClick}
+    >
+      {/* Header */}
+      <div
+        className="px-3 py-2 flex items-center justify-between"
+        style={{ backgroundColor: dept.color }}
+      >
+        <span
+          className="text-white font-black tracking-widest"
+          style={{ fontSize: 10 }}
+        >
+          {dept.name}
+        </span>
+        <StatusTag status={status} />
       </div>
 
-      {/* Name */}
-      <div
-        className="mt-1 text-center font-extrabold tracking-wide"
-        style={{
-          fontSize: 10,
-          color: isHugo ? '#EF4444' : '#374151',
-        }}
-      >
-        {isHugo ? 'HUGO' : worker?.name?.toUpperCase()}
+      {/* Content area */}
+      <div className="p-2 flex flex-col items-center gap-2">
+        {/* Worker avatar + info */}
+        <div className="flex flex-col items-center">
+          <div
+            className="rounded-full flex items-center justify-center text-white font-bold border-2 shadow-sm"
+            style={{
+              width: 38,
+              height: 38,
+              backgroundColor: dept.color,
+              borderColor: dept.color,
+              fontSize: 18,
+            }}
+          >
+            {dept.worker.emoji}
+          </div>
+          <div
+            className="font-bold text-gray-700 mt-1"
+            style={{ fontSize: 10 }}
+          >
+            {dept.worker.name}
+          </div>
+        </div>
+
+        {/* Desk row */}
+        <div className="flex gap-2 items-end">
+          {/* 3 mini desks */}
+          {[0,1,2].map(i => (
+            <Desk key={i} color={dept.color} />
+          ))}
+        </div>
       </div>
     </div>
   )
 }
 
-// ─── Walking person (animated) ─────────────────────────────────────────────
-function WalkingPerson({ worker, fromX, fromY, toX, toY, progress, isHugo }) {
-  // Interpolate position
-  const x = fromX + (toX - fromX) * progress
-  const y = fromY + (toY - fromY) * progress
-
-  // Bounce/walk effect
-  const bounce = Math.sin(progress * Math.PI * 6) * 4
-
+// ─── Boss pod ──────────────────────────────────────────────────────────────
+function BossPod({ speech }) {
   return (
     <div
-      className="absolute transition-all pointer-events-none"
+      className="rounded-2xl overflow-hidden"
       style={{
-        left: x,
-        top: y + bounce,
-        zIndex: 50,
-        transform: 'translate(-50%, -100%)',
+        border: '3px solid #EF4444',
+        backgroundColor: '#ffffff',
+        minWidth: 200,
       }}
     >
-      {/* Walking person — slightly bigger, very visible */}
-      <div className="flex flex-col items-center">
-        {/* Head */}
+      {/* Header */}
+      <div
+        className="px-4 py-2.5 flex items-center justify-between"
+        style={{ backgroundColor: '#EF4444' }}
+      >
+        <span
+          className="text-white font-black tracking-widest"
+          style={{ fontSize: 11 }}
+        >
+          CHIEF EXECUTIVE
+        </span>
+        <StatusTag status="delivering" />
+      </div>
+
+      {/* Content */}
+      <div className="p-3 flex flex-col items-center gap-2">
+        {/* Hugo avatar */}
+        <div className="flex flex-col items-center relative">
+          {/* Crown */}
+          <div style={{
+            width: 0, height: 0,
+            borderLeft: '16px solid transparent',
+            borderRight: '16px solid transparent',
+            borderBottom: '10px solid #F59E0B',
+            marginBottom: -2,
+            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
+          }} />
+          <div
+            className="rounded-full flex items-center justify-center text-white font-bold border-2 shadow-lg"
+            style={{
+              width: 52,
+              height: 52,
+              backgroundColor: '#7f1d1d',
+              borderColor: '#EF4444',
+              fontSize: 26,
+            }}
+          >
+            🦁
+          </div>
+          <div className="font-black text-red-600 mt-1 tracking-widest" style={{ fontSize: 12 }}>HUGO</div>
+
+          {/* Speech bubble */}
+          {speech && (
+            <div
+              className="animate-fade-up px-3 py-1.5 rounded-xl shadow-lg text-white text-xs font-bold"
+              style={{
+                position: 'absolute',
+                top: -60,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                backgroundColor: speech.color || '#EF4444',
+                whiteSpace: 'nowrap',
+                zIndex: 50,
+              }}
+            >
+              {speech.emoji} {speech.text}
+            </div>
+          )}
+        </div>
+
+        {/* Desk row */}
+        <div className="flex gap-3 items-end mt-1">
+          {[0,1,2].map(i => (
+            <Desk key={i} color="#EF4444" isHugo />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Server racks (top corners decoration) ────────────────────────────────
+function ServerRack({ side }) {
+  return (
+    <div
+      className="flex flex-col gap-0.5 px-1.5 py-2 rounded"
+      style={{
+        backgroundColor: '#374151',
+        width: side === 'left' ? 60 : 80,
+        height: 60,
+      }}
+    >
+      {[0,1,2,3].map(i => (
         <div
-          className="rounded-full shadow-lg border-2 flex items-center justify-center text-white font-bold"
+          key={i}
+          className="rounded-sm"
           style={{
-            width: isHugo ? 44 : 36,
-            height: isHugo ? 44 : 36,
-            backgroundColor: isHugo ? '#7f1d1d' : worker.color,
-            borderColor: isHugo ? '#EF4444' : worker.color,
-            fontSize: isHugo ? 18 : 14,
+            flex: 1,
+            backgroundColor: '#1f2937',
+            border: '1px solid #4b5563',
+            display: 'flex',
+            gap: 2,
+            padding: 2,
           }}
         >
-          {isHugo ? '🦁' : worker.emoji}
+          {[0,1,2,3].map(j => (
+            <div
+              key={j}
+              className="flex-1 rounded-sm"
+              style={{
+                backgroundColor: i % 2 === 0 ? '#22c55e' : '#ef4444',
+                opacity: 0.6,
+              }}
+            />
+          ))}
         </div>
-        {/* Body */}
-        <div
-          className="rounded-t-full"
-          style={{
-            width: isHugo ? 52 : 42,
-            height: 16,
-            backgroundColor: isHugo ? '#7f1d1d' : worker.color,
-            border: `2px solid ${isHugo ? '#EF4444' : worker.color}`,
-            borderBottom: 'none',
-            marginTop: -4,
-          }}
-        />
-      </div>
+      ))}
     </div>
   )
 }
 
 // ─── Main Office ───────────────────────────────────────────────────────────
 export function AnimatedOffice({ agentStatuses, onAgentClick }) {
-  // Walking state: which worker is walking to Hugo
-  const [walking, setWalking] = useState(null) // { worker, progress, direction }
-  // speech bubble
-  const [speech, setSpeech] = useState(null)
+  const [deptStatuses, setDeptStatuses] = useState(
+    Object.fromEntries(DEPARTMENTS.map(d => [d.id, 'working']))
+  )
+  const [activeSpeech, setActiveSpeech] = useState(null) // { deptId, text, emoji }
 
-  const officeRef = useRef(null)
-
-  // Get pixel positions for each desk area
-  const getDeskPositions = () => {
-    if (!officeRef.current) return {}
-    const rect = officeRef.current.getBoundingClientRect()
-    const cx = rect.width / 2
-    const cy = rect.height / 2
-
-    // Hugo's desk: top center
-    const hugoY = cy - 140
-    // Workers' desks: bottom area, evenly spaced
-    const workerSpacing = 90
-    const startX = cx - ((WORKERS.length - 1) * workerSpacing) / 2
-
-    const positions = {}
-    WORKERS.forEach((w, i) => {
-      positions[w.id] = {
-        x: startX + i * workerSpacing,
-        y: cy + 80,
-      }
-    })
-    positions.ceo = { x: cx, y: hugoY }
-
-    return positions
-  }
-
-  const [positions, setPositions] = useState({})
-
-  useEffect(() => {
-    const update = () => setPositions(getDeskPositions())
-    update()
-    window.addEventListener('resize', update)
-    return () => window.removeEventListener('resize', update)
-  }, [])
-
-  // Simulate random worker walking to Hugo every ~8 seconds
+  // Simulate status changes
   useEffect(() => {
     const interval = setInterval(() => {
-      if (walking) return
-      const worker = WORKERS[Math.floor(Math.random() * WORKERS.length)]
-      triggerWalk(worker)
-    }, 8000)
+      const randomDept = DEPARTMENTS[Math.floor(Math.random() * DEPARTMENTS.length)]
+      const randomStatus = STATUSES[Math.floor(Math.random() * STATUSES.length)]
+      setDeptStatuses(prev => ({ ...prev, [randomDept.id]: randomStatus }))
+    }, 3000)
     return () => clearInterval(interval)
-  }, [walking])
+  }, [])
 
-  const triggerWalk = (worker) => {
-    if (walking) return
-
-    // Walk to Hugo
-    setWalking({ worker, progress: 0, direction: 'toHugo', speech: getSpeech(worker.id) })
-    let start = null
-    const duration = 1200 // ms
-
-    const animate = (ts) => {
-      if (!start) start = ts
-      const p = Math.min((ts - start) / duration, 1)
-      setWalking(prev => prev ? { ...prev, progress: p } : null)
-
-      if (p < 1) {
-        requestAnimationFrame(animate)
-      } else {
-        // Arrived — show speech, then walk back
-        setSpeech({ id: worker.id, text: getSpeech(worker.id), worker })
-        setTimeout(() => {
-          setSpeech(null)
-          setWalking({ worker, progress: 0, direction: 'toDesk', speech: null })
-          const animateBack = (ts2) => {
-            if (!start) start = ts2
-            const p2 = Math.min((ts2 - start) / duration, 1)
-            setWalking(prev => prev ? { ...prev, progress: p2 } : null)
-            if (p2 < 1) {
-              requestAnimationFrame(animateBack)
-            } else {
-              setWalking(null)
-            }
-          }
-          requestAnimationFrame(animateBack)
-        }, 2500)
-      }
+  // Simulate speech from random department
+  useEffect(() => {
+    const speeches = {
+      sales:     ['Lead incoming! 💰', 'Deal closing! 🎉', 'Pipeline strong!'],
+      marketing: ['Post live! 🚀', 'Going viral! 📈', 'Campaign launched!'],
+      ops:       ['Task done ✅', 'Systems GREEN', 'Scheduler updated'],
+      finance:   ['Burn: 94% 📊', 'Invoice sent', 'Budget on track'],
+      instagram: ['Reel uploaded! 🎬', '+23% engagement', 'Story posted!'],
+      engineer:  ['Build done ⚙️', 'Deployed! 🚀', 'Code merged'],
     }
-    requestAnimationFrame(animate)
-  }
+    const interval = setInterval(() => {
+      const dept = DEPARTMENTS[Math.floor(Math.random() * DEPARTMENTS.length)]
+      const opts = speeches[dept.id]
+      const text = opts[Math.floor(Math.random() * opts.length)]
+      setActiveSpeech({ deptId: dept.id, text, emoji: dept.worker.emoji, color: dept.color })
+      setTimeout(() => setActiveSpeech(null), 3000)
+    }, 6000)
+    return () => clearInterval(interval)
+  }, [])
 
-  const getSpeech = (id) => {
-    const lines = {
-      sales: ['New lead! 💰', 'Deal closed! 🎉', 'Pipeline strong!'],
-      marketing: ['Post live! 🚀', 'Viral hit! 📈', 'New campaign live!'],
-      ops: ['Task done ✅', 'Systems GREEN', 'Scheduler updated'],
-      finance: ['Burn rate: 94% 📊', 'Invoice #47 sent', 'Budget: on track'],
-      instagram: ['Reel uploaded! 🎬', 'Engagement +23%', 'Story posted!'],
-      engineer: ['Build complete ⚙️', 'Deployed! 🚀', 'Code merged ✅'],
-    }
-    const opts = lines[id] || ['']
-    return opts[Math.floor(Math.random() * opts.length)]
+  const handlePodClick = (dept) => {
+    onAgentClick && onAgentClick(dept.id)
   }
-
-  const pos = walking ? positions[walking.worker.id] : null
-  const hugoPos = positions.ceo
 
   return (
     <div
       className="flex-1 flex flex-col overflow-hidden"
       style={{ backgroundColor: '#f3f4f6' }}
     >
-      {/* ── Wall ── */}
+      {/* ── Header bar ── */}
       <div style={{
         backgroundColor: '#1f2937',
-        padding: '10px 20px',
+        padding: '8px 16px',
         display: 'flex',
         alignItems: 'center',
-        gap: 16,
-        borderBottom: '5px solid #374151',
+        gap: 12,
+        borderBottom: '4px solid #374151',
         flexShrink: 0,
       }}>
         <span style={{
           color: '#f3f4f6',
-          fontSize: 13,
+          fontSize: 12,
           fontWeight: '800',
           letterSpacing: 3,
           fontFamily: 'monospace',
         }}>🏢 APEX HQ</span>
         <div style={{ flex: 1 }} />
-        {[1,2,3].map(i => (
-          <div key={i} style={{
-            width: 48, height: 28,
-            backgroundColor: '#1e3a8a',
-            borderRadius: 5,
-            boxShadow: '0 0 12px #3b82f680, inset 0 0 8px #60a5fa40',
+        {/* Live indicator */}
+        <div className="flex items-center gap-1.5">
+          <div className="rounded-full" style={{
+            width: 7,
+            height: 7,
+            backgroundColor: '#22c55e',
+            boxShadow: '0 0 6px #22c55e',
           }} />
-        ))}
+          <span style={{ color: '#86efac', fontSize: 10, fontWeight: 'bold' }}>LIVE</span>
+        </div>
       </div>
 
-      {/* ── Office floor (ref) ── */}
+      {/* ── Grid floor ── */}
       <div
-        ref={officeRef}
-        className="flex-1 relative overflow-hidden"
+        className="flex-1 grid gap-4 p-4 overflow-auto"
         style={{
           backgroundColor: '#e5e7eb',
           backgroundImage: `
-            linear-gradient(rgba(209,213,219,0.5) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(209,213,219,0.5) 1px, transparent 1px)
+            linear-gradient(rgba(209,213,219,0.6) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(209,213,219,0.6) 1px, transparent 1px)
           `,
-          backgroundSize: '40px 40px',
+          backgroundSize: '32px 32px',
+          alignContent: 'start',
         }}
       >
-        {/* HUGO'S DESK — top center */}
-        {positions.ceo && (
-          <div
-            className="absolute"
-            style={{
-              left: positions.ceo.x,
-              top: positions.ceo.y,
-              transform: 'translate(-50%, -50%)',
-              zIndex: 10,
-            }}
-          >
-            <div className="flex flex-col items-center">
-              {/* Crown above Hugo */}
-              <div style={{
-                width: 0, height: 0,
-                borderLeft: '20px solid transparent',
-                borderRight: '20px solid transparent',
-                borderBottom: '14px solid #F59E0B',
-                marginBottom: -2,
-                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-              }} />
-              {/* Desk */}
-              <div
-                className="rounded-xl shadow-xl"
-                style={{
-                  width: 88,
-                  height: 68,
-                  backgroundColor: '#fafafa',
-                  border: '4px solid #EF4444',
-                  position: 'relative',
-                }}
-              >
-                {/* Monitor */}
-                <div className="absolute rounded" style={{
-                  width: 38,
-                  height: 28,
-                  backgroundColor: '#1f2937',
-                  border: '2px solid #EF4444',
-                  left: '50%',
-                  top: 6,
-                  transform: 'translateX(-50%)',
-                }}>
-                  <div className="m-1 rounded-sm" style={{
-                    width: 'calc(100% - 4px)',
-                    height: 'calc(100% - 4px)',
-                    backgroundColor: '#EF444440',
-                  }} />
-                </div>
-                {/* Keyboard */}
-                <div className="absolute rounded" style={{
-                  width: 30,
-                  height: 12,
-                  backgroundColor: '#d1d5db',
-                  left: '50%',
-                  bottom: 8,
-                  transform: 'translateX(-50%)',
-                }} />
-                {/* Hugo sitting behind desk */}
-                <div className="absolute" style={{
-                  bottom: -22,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  zIndex: 5,
-                }}>
-                  <div style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
-                    backgroundColor: '#FDE68A',
-                    border: '3px solid #EF4444',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 18,
-                  }}>🦁</div>
-                  <div style={{
-                    width: 50,
-                    height: 14,
-                    borderRadius: '10px 10px 0 0',
-                    backgroundColor: '#7f1d1d',
-                    border: '2px solid #EF4444',
-                    borderBottom: 'none',
-                    marginTop: -4,
-                    marginLeft: -5,
-                  }} />
-                </div>
-              </div>
-              <div className="mt-1 text-red-600 font-extrabold tracking-widest" style={{ fontSize: 11 }}>HUGO</div>
-            </div>
+        {/* Server racks top corners */}
+        <div className="absolute top-14 left-2">
+          <ServerRack side="left" />
+        </div>
+        <div className="absolute top-14 right-2">
+          <ServerRack side="right" />
+        </div>
+
+        {/* ── Boss row ── */}
+        <div className="col-span-full flex justify-center mt-2">
+          <div className="relative">
+            <BossPod speech={activeSpeech?.deptId === 'ceo' ? activeSpeech : null} />
           </div>
-        )}
+        </div>
 
-        {/* WORKERS' DESKS — bottom row */}
-        {WORKERS.map((worker, i) => {
-          const wPos = positions[worker.id]
-          if (!wPos) return null
-          return (
-            <div
-              key={worker.id}
-              className="absolute"
-              style={{
-                left: wPos.x,
-                top: wPos.y,
-                transform: 'translate(-50%, -50%)',
-                zIndex: 5,
-              }}
-            >
-              <div className="flex flex-col items-center">
-                {/* Desk */}
-                <div
-                  className="rounded-xl shadow-lg"
-                  style={{
-                    width: 80,
-                    height: 60,
-                    backgroundColor: '#fafafa',
-                    border: `3px solid ${worker.color}`,
-                    position: 'relative',
-                  }}
-                >
-                  {/* Monitor */}
-                  <div className="absolute rounded" style={{
-                    width: 32,
-                    height: 22,
-                    backgroundColor: '#1f2937',
-                    border: `2px solid ${worker.color}`,
-                    left: '50%',
-                    top: 6,
-                    transform: 'translateX(-50%)',
-                  }}>
-                    <div className="m-0.5 rounded-sm" style={{
-                      width: 'calc(100% - 2px)',
-                      height: 'calc(100% - 2px)',
-                      backgroundColor: worker.color + '40',
-                    }} />
-                  </div>
-                  {/* Keyboard */}
-                  <div className="absolute rounded" style={{
-                    width: 24,
-                    height: 10,
-                    backgroundColor: '#d1d5db',
-                    left: '50%',
-                    bottom: 8,
-                    transform: 'translateX(-50%)',
-                  }} />
-                  {/* Worker sitting behind desk */}
-                  <div className="absolute" style={{
-                    bottom: -20,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    zIndex: 5,
-                  }}>
-                    <div style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: '50%',
-                      backgroundColor: '#FDE68A',
-                      border: `2px solid ${worker.color}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 13,
-                    }}>{worker.emoji}</div>
-                    <div style={{
-                      width: 42,
-                      height: 12,
-                      borderRadius: '10px 10px 0 0',
-                      backgroundColor: worker.color,
-                      border: `2px solid ${worker.color}`,
-                      borderBottom: 'none',
-                      marginTop: -3,
-                      marginLeft: -5,
-                    }} />
-                  </div>
-                </div>
-                <div className="mt-1 text-gray-700 font-extrabold tracking-wide" style={{ fontSize: 9 }}>{worker.name.toUpperCase()}</div>
-              </div>
-            </div>
-          )
-        })}
-
-        {/* WALKING PERSON — animated */}
-        {walking && walking.progress > 0 && walking.progress < 1 && hugoPos && pos && (
-          <WalkingPerson
-            worker={walking.worker}
-            fromX={walking.direction === 'toHugo' ? pos.x : hugoPos.x}
-            fromY={walking.direction === 'toHugo' ? pos.y : hugoPos.y}
-            toX={walking.direction === 'toHugo' ? hugoPos.x : pos.x}
-            toY={walking.direction === 'toHugo' ? hugoPos.y : pos.y}
-            progress={walking.progress}
-            isHugo={false}
-          />
-        )}
-
-        {/* SPEECH BUBBLE at Hugo's desk */}
-        {speech && (
-          <div
-            className="absolute animate-fade-up px-4 py-2 rounded-2xl shadow-xl text-white text-xs font-bold"
-            style={{
-              left: hugoPos ? hugoPos.x : '50%',
-              top: hugoPos ? hugoPos.y - 90 : 100,
-              transform: 'translateX(-50%)',
-              backgroundColor: speech.worker?.color || '#EF4444',
-              zIndex: 100,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {speech.worker?.emoji} {speech.text}
-          </div>
-        )}
-
-        {/* Office label */}
+        {/* ── Department pods grid (2×3) ── */}
         <div
-          className="absolute bottom-2 right-3 text-gray-400 font-bold"
-          style={{ fontSize: 9, letterSpacing: 1 }}
+          className="col-span-full grid gap-4"
+          style={{
+            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          }}
         >
-          {walking ? `📢 ${walking.worker.name.toUpperCase()} WALKING TO HUGO` : '🏢 ALL AT DESKS'}
+          {DEPARTMENTS.map(dept => (
+            <div key={dept.id} className="flex justify-center">
+              <Pod
+                dept={dept}
+                status={deptStatuses[dept.id]}
+                onClick={() => handlePodClick(dept)}
+              />
+            </div>
+          ))}
         </div>
       </div>
 
       <style>{`
         @keyframes fade-up {
-          0% { opacity: 0; transform: translateX(-50%) translateY(8px); }
+          0% { opacity: 0; transform: translateX(-50%) translateY(6px); }
           15% { opacity: 1; transform: translateX(-50%) translateY(0); }
           80% { opacity: 1; }
           100% { opacity: 0; }
