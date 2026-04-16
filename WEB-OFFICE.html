@@ -553,7 +553,21 @@ function updateWalkers(dt) {
       w.progress += dt / 1200
       if (w.progress >= 1) { w.progress = 1; w.phase = 'arrived' }
     } else if (w.phase === 'arrived') {
-      // Show bubble then return
+      // Show message bubble and chat
+      if (w.message && !w.showedBubble) {
+        w.showedBubble = true
+        // Show in chat
+        addChatMsg(w.agentName, w.agentDept, w.emoji, w.color, w.message, true)
+        // Show bubble on screen
+        showBubble(w.message, w.color, w.targetX - 60, w.targetY - 40)
+      }
+      // After 3 seconds, walk back
+      if (!w.returnTimer) {
+        w.returnTimer = setTimeout(() => {
+          w.phase = 'return'
+          w.progress = 0
+        }, 3000)
+      }
     } else if (w.phase === 'return') {
       w.progress += dt / 1200
       if (w.progress >= 1) { w.progress = 1; w.phase = 'done' }
@@ -561,6 +575,20 @@ function updateWalkers(dt) {
   })
   walkers = walkers.filter(w => w.phase !== 'done')
   renderWalkers()
+}
+
+let bubbleTimeout = null
+function showBubble(text, color, x, y) {
+  const container = document.getElementById('bubbles')
+  const div = document.createElement('div')
+  div.className = 'bubble'
+  div.style.left = x + 'px'
+  div.style.top = y + 'px'
+  div.style.borderColor = color + '40'
+  div.textContent = text
+  container.appendChild(div)
+  if (bubbleTimeout) clearTimeout(bubbleTimeout)
+  bubbleTimeout = setTimeout(() => { div.remove() }, 4000)
 }
 
 function renderWalkers() {
@@ -677,8 +705,31 @@ async function sendChat() {
   // Get AI response
   const response = await fetchAI(text + '\n\nReply as a short helpful message from your APEX AI team.', 'ceo')
   if (response) {
-    setTimeout(() => addChatMsg('DRAGONclaw', 'AI', '🐉', '#FF6B35', response, true), 800)
+    // Pick a random agent to walk with the response
+    const a = AGENTS[Math.floor(Math.random() * AGENTS.length)]
+    spawnWalkerForAgent(a, response)
   }
+}
+
+function spawnWalkerForAgent(agent, message) {
+  const positions = getDeskPositions()
+  const dept = positions.find(d => d.id === agent.id) || positions[0]
+  if (!dept) return
+  const w = {
+    id: dept.id,
+    emoji: agent.emoji,
+    color: agent.color,
+    x: dept.x + dept.deskW / 2,
+    y: dept.y + dept.deskH + 30,
+    targetX: document.getElementById('office').clientWidth / 2,
+    targetY: 90,
+    progress: 0,
+    phase: 'walk',
+    message: message,
+    agentName: agent.name,
+    agentDept: agent.dept,
+  }
+  walkers.push(w)
 }
 
 function addChatMsg(agent, dept, emoji, color, text, isAi) {
@@ -734,8 +785,6 @@ let walkerTimer = 0
 function animate(time) {
   const dt = time - lastTime
   lastTime = time
-  walkerTimer += dt
-  if (walkerTimer > 4000) { walkerTimer = 0; spawnWalker() }
   updateWalkers(dt)
   requestAnimationFrame(animate)
 }
@@ -744,12 +793,6 @@ function init() {
   renderMetrics()
   renderDesks()
   renderAgentsPanel()
-  // Spawn first walkers
-  setTimeout(() => {
-    for (let i = 0; i < 3; i++) {
-      setTimeout(() => spawnWalker(), i * 1500)
-    }
-  }, 800)
   requestAnimationFrame(animate)
 }
 
