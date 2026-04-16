@@ -79,7 +79,7 @@
     letter-spacing: 3px; margin-left: auto; margin-right: auto; }
 
   /* Boss area */
-  .boss-area { position: absolute; top: 65px; left: 50%; transform: translateX(-50%);
+  .boss-area { position: absolute; top: 52px; left: 50%; transform: translateX(-50%);
     display: flex; flex-direction: column; align-items: center; z-index: 10; }
   .boss-name-label { font-size: 9px; font-weight: 900; color: #EF4444; letter-spacing: 3px; margin-bottom: 4px; }
   .boss-desk { width: 100px; height: 60px; background: #1e1e30; border: 3px solid #EF4444;
@@ -623,49 +623,72 @@ renderMetrics()
 function getDeskPositions() {
   if (!floorRect) return []
   const wallH = 52
-  const bossH = 110
-  const row1Y = wallH + 30
-  const row2Y = wallH + bossH + 50
+  const bossH = 100
+  const bossBottom = wallH + bossH + 8  // 160px — bottom of boss desk area
+  const row1Y = bossBottom + 15        // row 1 starts 15px below boss
+  const row2Y = row1Y + 80 + 20        // row 2 starts after row1 desk + gap
   const availableW = floorRect.width - 80
-  const deskW = 100
-  const gap = (availableW - 6 * deskW) / 5
-  const startX = 40
+  const deskW = 130
+  const gap = Math.floor((availableW - 6 * deskW) / 7)
+  const startX = Math.floor(gap / 2)
 
   return DEPTS.map((d, i) => {
     const row = i < 6 ? 0 : 1
     const col = i < 6 ? i : i - 6
     const x = startX + col * (deskW + gap)
     const y = row === 0 ? row1Y : row2Y
-    return { ...d, x, y, deskW, deskH: 56 }
+    return { ...d, x, y, deskW, deskH: 60 }
   })
 }
 
-// ── RENDER DESKS ─────────────────────────────────────────────────────────────
+// ── RENDER DESKS — 2 agents per desk ───────────────────────────────────────
 function renderDesks() {
   const container = document.getElementById('desks-container')
   const positions = getDeskPositions()
   container.innerHTML = positions.map(p => {
-    const statusMap = { working:'WORKING', active:'ACTIVE', idle:'IDLE' }
-    const statuses = p.subs.map((_, i) => subStates[`${p.id}-${i}`]?.status || 'idle')
-    const primary = statuses.includes('active') ? 'active' : statuses.includes('working') ? 'working' : 'idle'
-    const subDots = p.subs.map((s, i) => {
+    // Status dots for subs
+    const subDots = p.subs.slice(0,2).map((s, i) => {
       const st = subStates[`${p.id}-${i}`] || { status: 'idle' }
-      return `<div class="desk-status-dot" style="background:${st.status==='active'?'#86EFAC':st.status==='working'?'#FDE047':'#94A3B8'}"></div>`
+      const color = st.status==='active'?'#86EFAC':st.status==='working'?'#FDE047':'#94A3B8'
+      const label = st.status === 'idle' ? s : `${s}: ${st.status.toUpperCase()}`
+      return `<div style="font-size:7px;color:${color};margin-top:2px">${label}</div>`
     }).join('')
+
     return `<div class="desk" id="desk-${p.id}" style="left:${p.x}px;top:${p.y}px;width:${p.deskW}px">
       <div class="desk-surface" style="width:${p.deskW}px;height:${p.deskH}px;border:2px solid ${p.color}40;border-radius:8px">
         <div class="desk-info" style="color:${p.color};border-color:${p.color}40">${p.name}</div>
-        <div class="desk-monitor" style="width:38px;height:26px;border:2px solid ${p.color}60">
-          <div class="desk-monitor-screen" style="width:30px;height:18px;background:${p.color}40"></div>
-        </div>
-        <div class="desk-keyboard" style="width:30px;height:5px"></div>
-        <div class="desk-person">
-          <div class="person-head" style="width:28px;height:28px;background:#FDE68A;border-color:${p.color};font-size:14px">${p.emoji}</div>
-          <div class="person-body" style="width:36px;height:12px;background:${p.color};border-color:${p.color}"></div>
+
+        <div style="display:flex;gap:4px;align-items:center;margin-top:2px">
+          ${/* LEAD AGENT */''}
+          <div style="display:flex;flex-direction:column;align-items:center;flex:1">
+            <div style="font-size:7px;color:${p.color};margin-bottom:1px">${p.lead}</div>
+            <div class="desk-monitor" style="width:32px;height:20px;border:1.5px solid ${p.color}60">
+              <div class="desk-monitor-screen" style="width:26px;height:14px;background:${p.color}40"></div>
+            </div>
+            <div class="desk-keyboard" style="width:26px;height:3px;background:${p.color}40;margin-top:1px"></div>
+            <div class="desk-person">
+              <div class="person-head" style="width:22px;height:22px;background:#FDE68A;border-color:${p.color};font-size:11px;border-width:1.5px">${p.emoji}</div>
+              <div class="person-body" style="width:28px;height:9px;background:${p.color};border-color:${p.color};border-width:1.5px"></div>
+            </div>
+          </div>
+
+          <div style="width:1px;height:30px;background:${p.color}30"></div>
+
+          ${/* SUB AGENT */''}
+          <div style="display:flex;flex-direction:column;align-items:center;flex:1">
+            <div style="font-size:7px;color:${p.color}80;margin-bottom:1px">${p.subs[0] || 'AI'}</div>
+            <div class="desk-monitor" style="width:32px;height:20px;border:1.5px solid ${p.color}30">
+              <div class="desk-monitor-screen" style="width:26px;height:14px;background:${p.color}20"></div>
+            </div>
+            <div class="desk-keyboard" style="width:26px;height:3px;background:${p.color}20;margin-top:1px"></div>
+            <div class="desk-person">
+              <div class="person-head" style="width:22px;height:22px;background:${p.color}60;border-color:${p.color};font-size:9px;border-width:1.5px;color:white;text-align:center;line-height:22px;font-weight:700">AI</div>
+              <div class="person-body" style="width:28px;height:9px;background:${p.color}60;border-color:${p.color};border-width:1.5px"></div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="desk-label" style="color:${p.color}">${p.lead}</div>
-      <div class="desk-subs">${subDots}</div>
+      <div style="font-size:7px;color:${p.color};text-align:center;margin-top:3px">${p.role}</div>
     </div>`
   }).join('')
 }
