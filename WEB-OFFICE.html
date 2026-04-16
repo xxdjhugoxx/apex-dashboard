@@ -109,7 +109,8 @@ background-size:40px 40px}
 /* ADMIN MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0);z-index:100;pointer-events:none;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex;background:rgba(0,0,0,0.7);pointer-events:all}
-.modal{background:var(--surface2);border:2px solid #333;border-radius:20px;width:min(580px,95vw);max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 60px rgba(0,0,0,0.5)}
+.modal{display:none;background:var(--surface2);border:2px solid #333;border-radius:20px;width:min(580px,95vw);max-height:88vh;overflow:hidden;flex-direction:column;box-shadow:0 0 60px rgba(0,0,0,0.5)}
+.modal-overlay.open .modal{display:flex}
 .modal-hdr{display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
 .modal-hdr h2{font-size:12px;font-weight:900;letter-spacing:2px;flex:1}
 .modal-close{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px}
