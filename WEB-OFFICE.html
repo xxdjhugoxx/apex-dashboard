@@ -680,6 +680,11 @@ async function sendChat() {
     setTimeout(() => addChatMsg('DRAGONclaw', 'AI', '🐉', '#FF6B35', response, true), 800)
   }
 }
+
+function addChatMsg(agent, dept, emoji, color, text, isAi) {
+  const feed = document.getElementById('chat-feed')
+  const noMsgs = document.getElementById('no-msgs')
+  if (noMsgs) noMsgs.remove()
   const div = document.createElement('div')
   div.className = 'chat-msg'
   div.innerHTML = `
