@@ -55,8 +55,9 @@ background-size:40px 40px}
 .boss-title{font-size:7px;color:#EF4444;letter-spacing:2px;margin-top:20px;text-align:center}
 /* DESKS */
 .desks{position:absolute;inset:0}
-.desk{position:absolute}
-.desk-surface{background:#1e2040;border-radius:8px;padding:5px;display:flex;flex-direction:column;align-items:center;gap:3px}
+/* DESK — 3D pixel art style */
+.desk{position:absolute;display:flex;flex-direction:column;align-items:center}
+.desk-surface{background:#1e2040;border-radius:8px;padding:5px;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
 .desk-name{font-size:7px;font-weight:900;letter-spacing:1px;margin-bottom:1px}
 .desk-row{display:flex;gap:3px;align-items:center;width:100%;justify-content:center}
 .desk-agent{display:flex;flex-direction:column;align-items:center;flex:1}
@@ -68,6 +69,35 @@ background-size:40px 40px}
 .desk-label{font-size:7px;font-weight:700;text-align:center;margin-top:3px;letter-spacing:0.5px}
 .desk-subs-row{display:flex;gap:3px;margin-top:2px}
 .desk-dot{width:4px;height:4px;border-radius:50%}
+/* 3D MONITOR */
+.pc-wrap{position:absolute;top:3px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
+.mon-3d{transform:perspective(120px) rotateX(-8deg);display:flex;flex-direction:column;align-items:center}
+.mon-bezel{width:54px;height:40px;background:linear-gradient(160deg,#2c2c2c,#1a1a1a);border:2px solid #0e0e0e;border-radius:3px;padding:3px;position:relative;box-shadow:2px 4px 14px rgba(0,0,0,.85),0 1px 0 rgba(255,255,255,.06) inset}
+.mon-bezel::before{content:'';position:absolute;top:-7px;left:1px;right:1px;height:7px;background:linear-gradient(180deg,#3c3c3c,#2a2a2a);border-radius:3px 3px 0 0;border:1px solid #0e0e0e;border-bottom:none;transform-origin:bottom;transform:rotateX(50deg)}
+.mon-bezel::after{content:'';position:absolute;top:1px;right:-6px;bottom:1px;width:6px;background:linear-gradient(90deg,#252525,#181818);border-radius:0 3px 3px 0;border:1px solid #0e0e0e;border-left:none}
+.mon-cam{position:absolute;top:1px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:#111;box-shadow:0 0 4px rgba(0,150,255,.3)}
+.mon-screen{width:100%;height:100%;background:linear-gradient(160deg,#061828,#0a2444 60%,#041020);border-radius:1px;overflow:hidden;position:relative}
+.mon-screen::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.16) 2px,rgba(0,0,0,.16) 3px);pointer-events:none;z-index:2}
+.mon-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(0,160,255,.14),transparent 70%);pointer-events:none;z-index:1}
+.scr-in{position:absolute;inset:3px;z-index:3;display:flex;flex-direction:column;gap:2px}
+.scr-ref{position:absolute;top:2px;left:2px;width:14px;height:7px;background:linear-gradient(135deg,rgba(255,255,255,.09),transparent);border-radius:2px;z-index:4;pointer-events:none}
+.scr-bar{height:2px;border-radius:1px;opacity:.75}
+.scr-row{display:flex;gap:2px;align-items:center}
+.scr-dot{width:3px;height:3px;border-radius:50%}
+.scr-line{height:1px;flex:1;background:rgba(255,255,255,.1)}
+.scr-cur{width:2px;height:5px;background:#00ff88;animation:cur .9s step-end infinite;margin-left:1px}
+@keyframes cur{0%,100%{opacity:1}50%{opacity:0}}
+.mon-neck{width:6px;height:9px;background:linear-gradient(90deg,#222,#2e2e2e,#222)}
+.mon-base{width:30px;height:5px;background:linear-gradient(180deg,#2e2e2e,#1e1e1e);border-radius:2px;box-shadow:0 2px 6px rgba(0,0,0,.6);position:relative}
+.mon-base::after{content:'';position:absolute;right:-4px;top:0;bottom:0;width:4px;background:linear-gradient(90deg,#1e1e1e,#141414);border-radius:0 2px 2px 0}
+.kbd{position:absolute;bottom:3px;left:50%;width:52px;height:10px;background:linear-gradient(180deg,#2e2e2e,#222);border:1.5px solid #111;border-radius:2px;box-shadow:0 2px 0 #111,2px 3px 8px rgba(0,0,0,.6);transform:perspective(80px) rotateX(-14deg) translateX(-50%);transform-origin:bottom center;overflow:hidden}
+.kbd::before{content:'';position:absolute;top:2px;left:4px;right:4px;height:1px;background:repeating-gradient(90deg,rgba(255,255,255,.15) 0,rgba(255,255,255,.15) 3px,transparent 3px,transparent 5px)}
+.kbd::after{content:'';position:absolute;bottom:2px;left:6px;right:6px;height:1px;background:repeating-gradient(90deg,rgba(255,255,255,.08) 0,rgba(255,255,255,.08) 4px,transparent 4px,transparent 7px)}
+.mse{position:absolute;bottom:5px;right:4px;width:10px;height:14px;background:linear-gradient(160deg,#333,#1e1e1e);border:1.5px solid #111;border-radius:5px 5px 4px 4px;box-shadow:2px 2px 6px rgba(0,0,0,.7)}
+.mse::before{content:'';position:absolute;top:3px;left:50%;transform:translateX(-50%);width:1.5px;height:6px;background:rgba(255,255,255,.15)}
+.desk-mug{position:absolute;top:4px;right:3px;font-size:12px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.65)}
+.agent{position:absolute;display:flex;flex-direction:column;align-items:center;cursor:pointer;z-index:10;transition:transform .15s}
+.agent:hover{transform:scale(1.1) translateY(-5px)}
 /* WALKING AGENTS */
 .walker{position:absolute;display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:20;transition:none}
 .walker-head{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid rgba(255,255,255,0.3)}
@@ -159,6 +189,13 @@ background-size:40px 40px}
   .sidebar{width:100%;border-left:none!important;border-top:1px solid var(--border);max-height:45vh;overflow-y:auto}
   .office{min-width:0;width:100%;height:calc(55vh - 130px)}
 }
+/* AGENT WORKING STATES */
+.agent-typing{animation:typing .5s step-end infinite}
+.agent-reading{animation:reading 1.2s ease-in-out infinite}
+.agent-waiting{animation:waiting 2s ease-in-out infinite}
+@keyframes typing{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes reading{0%,100%{opacity:1}50%{opacity:0.6}}
+@keyframes waiting{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 </style>
 </head>
 <body>
@@ -561,21 +598,37 @@ function renderDesks() {
   container.innerHTML = positions.map(p => `
     <div class="desk" id="desk-${p.id}" style="left:${p.x}px;top:${p.y}px">
       <div class="desk-surface" style="width:${p.deskW}px;height:${p.deskH}px;border:2px solid ${p.color}60">
-        <div class="desk-name" style="color:${p.color};font-size:9px;font-weight:900;letter-spacing:1px">${p.name}</div>
-        <div class="desk-row">
+        <div class="desk-row" style="margin-bottom:2px">
           <div class="desk-agent">
-            <div class="desk-agent-icon" style="background:${p.color}30;border-color:${p.color}80;width:24px;height:24px;font-size:13px">${p.emoji}</div>
-            <div class="desk-agent-name" style="font-size:8px;font-weight:700">${p.lead}</div>
+            <div class="desk-agent-icon" style="background:${p.color}30;border-color:${p.color}80;width:22px;height:22px;font-size:12px">${p.emoji}</div>
+            <div class="desk-agent-name" style="font-size:6px;font-weight:700">${p.lead}</div>
           </div>
           <div class="desk-divider" style="background:${p.color}50"></div>
           <div class="desk-agent">
-            <div class="desk-agent-icon" style="background:${p.color}20;border-color:${p.color}50;width:24px;height:24px;font-size:11px">🤖</div>
-            <div class="desk-agent-name" style="font-size:8px">AI</div>
+            <div class="desk-agent-icon" style="background:${p.color}20;border-color:${p.color}50;width:22px;height:22px;font-size:10px">🤖</div>
+            <div class="desk-agent-name" style="font-size:6px">AI</div>
           </div>
         </div>
-        <div class="desk-monitor" style="border-color:${p.color}50;width:32px;height:18px">
-          <div class="desk-screen" style="background:${p.color}50"></div>
+        <div class="pc-wrap">
+          <div class="mon-3d">
+            <div class="mon-bezel" style="box-shadow:2px 4px 14px rgba(0,0,0,.85),0 1px 0 rgba(255,255,255,.06) inset,${p.color}40 0 0 1px">
+              <div class="mon-cam"></div>
+              <div class="mon-screen">
+                <div class="scr-in">
+                  <div class="scr-ref"></div>
+                  <div class="scr-row"><div class="scr-line" style="width:8px;background:${p.color}80"></div><div class="scr-dot" style="background:${p.color}90"></div><div class="scr-line" style="width:12px"></div><div class="scr-dot" style="background:${p.color}70"></div></div>
+                  <div class="scr-row"><div class="scr-bar" style="width:18px;background:${p.color}60"></div><div class="scr-line"></div><div class="scr-bar" style="width:6px;background:${p.color}40"></div></div>
+                  <div class="scr-row"><div class="scr-line" style="width:5px"></div><div class="scr-bar" style="width:10px;background:${p.color}50"></div><div class="scr-line" style="width:8px"></div><div class="scr-cur"></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="mon-neck"></div>
+            <div class="mon-base"></div>
+          </div>
+          <div class="kbd"></div>
+          <div class="mse"></div>
         </div>
+        <div class="desk-mug">☕</div>
       </div>
       <div class="desk-label" style="color:${p.color};font-size:8px;font-weight:700;margin-top:3px">${p.role}</div>
     </div>`).join('')
