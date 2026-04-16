@@ -15,16 +15,16 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 /* HEADER */
 .header{display:flex;align-items:center;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);gap:12px;flex-shrink:0}
 .logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:900;letter-spacing:2px;color:var(--accent)}
-.logo-icon{width:28px;height:28px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.logo-icon{width:32px;height:32px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
 .header-center{flex:1;display:flex;justify-content:center}
-.live-badge{background:#111;border:1px solid #222;border-radius:20px;padding:4px 12px;font-size:9px;font-weight:700;letter-spacing:2px;color:#4ade80;display:flex;align-items:center;gap:6px}
-.live-dot{width:6px;height:6px;background:#4ade80;border-radius:50%;animation:pulse 1.5s infinite}
+.live-badge{background:#111;border:1px solid #222;border-radius:20px;padding:5px 14px;font-size:10px;font-weight:700;letter-spacing:2px;color:#4ade80;display:flex;align-items:center;gap:6px}
+.live-dot{width:7px;height:7px;background:#4ade80;border-radius:50%;animation:pulse 1.5s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 .status-btns{display:flex;gap:8px}
 .status-btn{padding:5px 10px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:1px;border:none;cursor:pointer}
 .status-btn.in-office{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid #4ade8030}
 .status-btn.away{background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid var(--border)}
-.admin-btn{background:rgba(255,107,53,0.15);color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:1px}
+.admin-btn{background:rgba(255,107,53,0.15);color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px}
 /* METRICS */
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
 .metric{background:var(--surface2);border-radius:10px;padding:8px 10px;border:1px solid var(--border)}
@@ -212,7 +212,8 @@ background-size:40px 40px}
     <div class="modal-tabs">
       <div class="modal-tab active" id="mtab-ai" onclick="switchMTab('ai')">🤖 AI</div>
       <div class="modal-tab" id="mtab-tele" onclick="switchMTab('tele')">📱 TELEGRAM</div>
-      <div class="modal-tab" id="mtab-pres" onclick="switchMTab('pres')">👤 PRESENCE</div>
+      <div class="modal-tab" id="mtab-pres">👤 PRESENCE</div>
+      <div class="modal-tab" id="mtab-social" onclick="switchMTab('social')">📸 SOCIAL</div>
     </div>
     <div class="modal-body" id="modal-body"></div>
     <div class="modal-footer">
@@ -273,6 +274,7 @@ let CFG = {
   telegramChatId: '8432475368',
   presenceUrl: '',
   presenceToken: '',
+  socialAccounts: [],
   officeName: 'APEX HQ',
 }
 
@@ -283,6 +285,7 @@ function loadCfg() {
   } catch(e) {}
 }
 loadCfg()
+  setTimeout(renderSocialAccounts, 100)
 
 function saveConfig() {
   // Gather all inputs
@@ -381,6 +384,8 @@ const ADMIN_TABS = {
       <div class="api-sec-title">🗑️ CLEAR ALL DATA</div>
       <button onclick="clearAllData()" style="background:rgba(220,38,38,0.15);border:1px solid #DC2626;border-radius:8px;padding:7px 14px;color:#DC2626;font-size:10px;font-weight:700;cursor:pointer">🗑️ Reset Everything</button>
     </div>`,
+  social: `<div class="api-sec"><div class="api-sec-title">📸 SOCIAL ACCOUNTS</div><p class="api-note">Add social platform accounts. Instagram agent uses these to post content and manage DMs.</p></div><div class="api-sec"><div class="api-sec-title">➕ ADD ACCOUNT</div><div class="api-grid"><div class="api-field"><label>PLATFORM</label><select id="f-social-platform"><option value="instagram">Instagram</option><option value="tiktok">TikTok</option><option value="twitter">Twitter / X</option><option value="facebook">Facebook</option><option value="linkedin">LinkedIn</option><option value="youtube">YouTube</option></select></div><div class="api-field"><label>USERNAME</label><input type="text" id="f-social-username" placeholder="@yourhandle" /></div></div><div class="api-field"><label>PASSWORD / ACCESS TOKEN</label><input type="password" id="f-social-token" placeholder="Password or access token" /></div><button class="test-btn" onclick="addSocialAccount()" style="width:100%;margin-top:4px">➕ Add Account</button></div><div class="api-sec"><div class="api-sec-title">📋 CONFIGURED ACCOUNTS</div><div id="social-accounts-list"><span style="font-size:11px;color:var(--muted)">No accounts yet.</span></div></div>`,
+
 }
 
 function openAdmin() {
@@ -422,6 +427,36 @@ function clearAllData() {
     localStorage.removeItem('apex_config')
     location.reload()
   }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SOCIAL ACCOUNTS
+function addSocialAccount() {
+  const platform = document.getElementById('f-social-platform')?.value
+  const username = document.getElementById('f-social-username')?.value.trim()
+  const token = document.getElementById('f-social-token')?.value.trim()
+  if (!username || !token) { alert('Fill in username and token'); return }
+  if (!CFG.socialAccounts) CFG.socialAccounts = []
+  CFG.socialAccounts.push({ platform, username, token })
+  localStorage.setItem('apex_config', JSON.stringify(CFG))
+  renderSocialAccounts()
+  document.getElementById('f-social-username').value = ''
+  document.getElementById('f-social-token').value = ''
+}
+function renderSocialAccounts() {
+  const list = document.getElementById('social-accounts-list')
+  if (!list) return
+  if (!CFG.socialAccounts || CFG.socialAccounts.length === 0) {
+    list.innerHTML = '<span style="font-size:11px;color:var(--muted)">No accounts yet.</span>'
+    return
+  }
+  const icons = { instagram: '📸', tiktok: '🎵', twitter: '🐦', facebook: '👤', linkedin: '💼', youtube: '▶️' }
+  list.innerHTML = CFG.socialAccounts.map((a, i) => '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)"><span style="font-size:14px">' + (icons[a.platform]||'🔗') + '</span><div style="flex:1"><div style="font-size:11px;font-weight:700">' + a.username + '</div><div style="font-size:9px;color:var(--muted)">' + a.platform + '</div></div><button onclick="removeSocialAccount(' + i + ')" style="background:none;border:none;color:#DC2626;font-size:12px;cursor:pointer">✕</button></div>').join('')
+}
+function removeSocialAccount(i) {
+  CFG.socialAccounts.splice(i, 1)
+  localStorage.setItem('apex_config', JSON.stringify(CFG))
+  renderSocialAccounts()
 }
 
 // ═══════════════════════════════════════════════════════════════
