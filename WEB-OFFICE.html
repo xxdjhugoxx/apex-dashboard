@@ -81,6 +81,10 @@ background-size:40px 40px}
 .tab{flex:1;padding:8px;font-size:9px;font-weight:700;text-align:center;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all 0.2s}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .chat-feed{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+.chat-input-area{flex-shrink:0;padding:8px;background:var(--surface);border-top:1px solid var(--border);display:flex;gap:6px}
+.chat-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 10px;color:white;font-size:10px;outline:none}
+.chat-input:focus{border-color:var(--accent)}
+.chat-send{background:var(--accent);border:none;border-radius:10px;padding:8px 12px;color:white;font-size:11px;font-weight:800;cursor:pointer}
 .chat-feed::-webkit-scrollbar{width:3px}
 .chat-feed::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1)}
 .chat-msg{background:var(--surface2);border-radius:10px;padding:8px 10px;border:1px solid var(--border);animation:fadeIn 0.3s ease}
@@ -188,6 +192,10 @@ background-size:40px 40px}
         </div>
       </div>
       <div class="agents-panel" id="agents-panel"></div>
+      <div class="chat-input-area" id="chat-input-area">
+        <input class="chat-input" id="chat-input" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')sendChat()" />
+        <button class="chat-send" onclick="sendChat()">➤</button>
+      </div>
     </div>
   </div>
 
@@ -472,20 +480,23 @@ function getDeskPositions() {
   const office = document.getElementById('office')
   const w = office.clientWidth
   const h = office.clientHeight
-  const bossH = 110
-  const row1Y = 50 + bossH + 12
-  const row2Y = row1Y + 78 + 16
-  const deskW = 120
-  const gap = Math.floor((w - 6 * deskW) / 7)
+  const bossH = 100
+  const row1Y = 50 + bossH + 8
+  const row2Y = row1Y + 90 + 18
+  // 5 desks per row max, distribute 11 desks: row1=6, row2=5
+  const deskW = Math.min(140, Math.floor((w - 80) / 6) - 12)
+  const totalWanted = 6 * deskW
+  const gap = Math.floor((w - 80 - totalWanted) / 7)
   const startX = Math.floor(gap / 2)
   return DEPARTMENTS.map((d, i) => {
     const row = i < 6 ? 0 : 1
     const col = i < 6 ? i : i - 6
+    const actualDeskW = row === 1 && col >= 5 ? Math.floor(deskW * 1.2) : deskW // slightly wider for last row
     return {
       ...d,
       x: startX + col * (deskW + gap),
       y: row === 0 ? row1Y : row2Y,
-      deskW, deskH: 56
+      deskW: deskW, deskH: 64
     }
   })
 }
@@ -495,27 +506,24 @@ function renderDesks() {
   const positions = getDeskPositions()
   container.innerHTML = positions.map(p => `
     <div class="desk" id="desk-${p.id}" style="left:${p.x}px;top:${p.y}px">
-      <div class="desk-surface" style="width:${p.deskW}px;height:${p.deskH}px;border:2px solid ${p.color}40">
-        <div class="desk-name" style="color:${p.color}">${p.name}</div>
+      <div class="desk-surface" style="width:${p.deskW}px;height:${p.deskH}px;border:2px solid ${p.color}60">
+        <div class="desk-name" style="color:${p.color};font-size:9px;font-weight:900;letter-spacing:1px">${p.name}</div>
         <div class="desk-row">
           <div class="desk-agent">
-            <div class="desk-agent-icon" style="background:${p.color}20;border-color:${p.color}60">${p.emoji}</div>
-            <div class="desk-agent-name">${p.lead}</div>
+            <div class="desk-agent-icon" style="background:${p.color}30;border-color:${p.color}80;width:24px;height:24px;font-size:13px">${p.emoji}</div>
+            <div class="desk-agent-name" style="font-size:8px;font-weight:700">${p.lead}</div>
           </div>
-          <div class="desk-divider" style="background:${p.color}40"></div>
+          <div class="desk-divider" style="background:${p.color}50"></div>
           <div class="desk-agent">
-            <div class="desk-agent-icon" style="background:${p.color}20;border-color:${p.color}40">🤖</div>
-            <div class="desk-agent-name">AI</div>
+            <div class="desk-agent-icon" style="background:${p.color}20;border-color:${p.color}50;width:24px;height:24px;font-size:11px">🤖</div>
+            <div class="desk-agent-name" style="font-size:8px">AI</div>
           </div>
         </div>
-        <div class="desk-monitor" style="border-color:${p.color}40">
-          <div class="desk-screen" style="background:${p.color}40"></div>
+        <div class="desk-monitor" style="border-color:${p.color}50;width:32px;height:18px">
+          <div class="desk-screen" style="background:${p.color}50"></div>
         </div>
       </div>
-      <div class="desk-label" style="color:${p.color}">${p.role}</div>
-      <div class="desk-subs-row">
-        ${p.subs.slice(0,3).map(() => `<div class="desk-dot" style="background:#86EFAC"></div>`).join('')}
-      </div>
+      <div class="desk-label" style="color:${p.color};font-size:8px;font-weight:700;margin-top:3px">${p.role}</div>
     </div>`).join('')
 }
 
@@ -650,6 +658,34 @@ function addChatMsg(agent, dept, emoji, color, text, isAi) {
   const feed = document.getElementById('chat-feed')
   const noMsgs = document.getElementById('no-msgs')
   if (noMsgs) noMsgs.remove()
+  const div = document.createElement('div')
+  div.className = 'chat-msg'
+  div.innerHTML = `
+    <div class="chat-header">
+      <div class="chat-avatar" style="background:${color}20;border:1.5px solid ${color}40">${emoji}</div>
+      <div class="chat-name" style="color:${color}">${agent}${isAi?' 🤖':''}</div>
+      <div class="chat-dept">${dept}</div>
+    </div>
+    <div class="chat-text">${text}</div>
+    <div class="chat-time">Just now</div>`
+  feed.appendChild(div)
+  feed.scrollTop = feed.scrollHeight
+  while (feed.children.length > 20) feed.removeChild(feed.firstChild)
+}
+
+// Send a message as Hugo
+async function sendChat() {
+  const input = document.getElementById('chat-input')
+  const text = input?.value.trim()
+  if (!text) return
+  input.value = ''
+  addChatMsg('Hugo', 'CEO', '🦁', '#EF4444', text, false)
+  // Get AI response
+  const response = await fetchAI(text + '\n\nReply as a short helpful message from your APEX AI team.', 'ceo')
+  if (response) {
+    setTimeout(() => addChatMsg('DRAGONclaw', 'AI', '🐉', '#FF6B35', response, true), 800)
+  }
+}
   const div = document.createElement('div')
   div.className = 'chat-msg'
   div.innerHTML = `
