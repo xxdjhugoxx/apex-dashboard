@@ -37,7 +37,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 /* MAIN */
 .main{display:flex;flex:1;min-height:0}
 /* OFFICE FLOOR */
-.office{flex:1;position:relative;overflow:hidden;background:var(--bg)}
+.office{flex:1;min-height:0;position:relative;overflow:hidden;background:#0f0f1a}
 .wall{position:absolute;top:0;left:0;right:0;height:50px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:20px;z-index:5}
 .wall-window{width:48px;height:28px;background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);border-radius:4px}
 .floor{position:absolute;inset:0;background:
@@ -56,7 +56,7 @@ background-size:40px 40px}
 /* DESKS */
 .desks{position:absolute;inset:0}
 .desk{position:absolute}
-.desk-surface{background:var(--surface2);border-radius:8px;padding:4px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.desk-surface{background:#1e2040;border-radius:8px;padding:5px;display:flex;flex-direction:column;align-items:center;gap:3px}
 .desk-name{font-size:7px;font-weight:900;letter-spacing:1px;margin-bottom:1px}
 .desk-row{display:flex;gap:3px;align-items:center;width:100%;justify-content:center}
 .desk-agent{display:flex;flex-direction:column;align-items:center;flex:1}
@@ -107,8 +107,8 @@ background-size:40px 40px}
 /* FOOTER */
 .footer{flex-shrink:0;text-align:center;padding:4px;font-size:7px;color:rgba(255,255,255,0.07);letter-spacing:2px;border-top:1px solid var(--border)}
 /* ADMIN MODAL */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center}
-.modal-overlay.open{display:flex}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0);z-index:100;pointer-events:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex;background:rgba(0,0,0,0.7);pointer-events:all}
 .modal{background:var(--surface2);border:2px solid #333;border-radius:20px;width:min(580px,95vw);max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 60px rgba(0,0,0,0.5)}
 .modal-hdr{display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
 .modal-hdr h2{font-size:12px;font-weight:900;letter-spacing:2px;flex:1}
@@ -191,7 +191,7 @@ background-size:40px 40px}
       </div>
       <div class="agents-panel" id="agents-panel"></div>
       <div class="chat-input-area" id="chat-input-area">
-        <input class="chat-input" id="chat-input" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')sendChat()" />
+        <input class="chat-input" id="chat-input" placeholder="Ask anything..." onkeydown="event.key==='Enter'&&sendChat()" />
         <button class="chat-send" onclick="sendChat()">➤</button>
       </div>
     </div>
@@ -476,25 +476,22 @@ function renderMetrics() {
 // ═══════════════════════════════════════════════════════════════
 function getDeskPositions() {
   const office = document.getElementById('office')
-  const w = office.clientWidth
-  const h = office.clientHeight
+  const w = Math.max(800, office.clientWidth || 800)
+  const h = office.clientHeight || 600
   const bossH = 100
   const row1Y = 50 + bossH + 8
   const row2Y = row1Y + 90 + 18
-  // 5 desks per row max, distribute 11 desks: row1=6, row2=5
   const deskW = Math.min(140, Math.floor((w - 80) / 6) - 12)
-  const totalWanted = 6 * deskW
-  const gap = Math.floor((w - 80 - totalWanted) / 7)
+  const gap = Math.floor((w - 80 - 6 * deskW) / 7)
   const startX = Math.floor(gap / 2)
   return DEPARTMENTS.map((d, i) => {
     const row = i < 6 ? 0 : 1
     const col = i < 6 ? i : i - 6
-    const actualDeskW = row === 1 && col >= 5 ? Math.floor(deskW * 1.2) : deskW // slightly wider for last row
     return {
       ...d,
       x: startX + col * (deskW + gap),
       y: row === 0 ? row1Y : row2Y,
-      deskW: deskW, deskH: 64
+      deskW, deskH: 64
     }
   })
 }
