@@ -310,7 +310,17 @@
 
       <!-- AI PROVIDERS TAB -->
       <div id="admin-ai">
-        <p style="font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5">Add your API keys below. FREE providers are checked first — MiniMax is used as fallback when free limits are reached. Agents auto-select the best available model.</p>
+        <p style="font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5">Connect your OpenClaw gateway (already running on your server) for free AI using your configured models. No extra API fees.</p>
+
+        <div class="api-section">
+          <div class="api-section-title">🔗 OpenClaw Gateway — USE YOUR SERVER (FREE)</div>
+          <div class="api-grid">
+            <div class="api-field"><label>Gateway URL</label><input type="text" id="gateway-url" placeholder="http://100.71.21.2:18789" value="http://100.71.21.2:18789" /><div class="api-status" id="gateway-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not tested</span></div></div>
+            <div class="api-field"><label>Gateway Token</label><input type="password" id="gateway-token" placeholder="fd6aa805..." value="fd6aa805e3747416b6e83eb3e66bfbc7969561eb903c22c3" /><p class="api-note">Your OpenClaw gateway auth token. Uses MiniMax M2.7 already configured on your server.</p></div>
+          </div>
+          <button onclick="testGateway()" style="margin-top:8px;background:rgba(255,107,53,0.2);border:1px solid #FF6B35;border-radius:8px;padding:6px 14px;color:#FF6B35;font-size:10px;font-weight:700;cursor:pointer">🧪 Test Connection</button>
+          <p class="api-note" style="margin-top:6px">Requires Tailscale running on your server and client device. Or access via LAN IP. The gateway uses your existing MiniMax M2.7 model — no extra API fees.</p>
+        </div>
 
         <div class="api-section">
           <div class="api-section-title">⚡ Groq — ✅ FREE · No credit card · 30 req/min</div>
@@ -819,24 +829,125 @@ setInterval(() => {
   }
 }, 4000)
 
-// ── CHAT ──────────────────────────────────────────────────────────────────────
-function renderChat() {
-  const feed = document.getElementById('chat-feed')
-  const msgs = CHAT_MESSAGES.slice(chatIndex, chatIndex + 5)
-  feed.innerHTML = msgs.map((m,i) => `
-    <div class="chat-msg" style="animation-delay:${i*0.05}s">
-      <div class="chat-msg-header">
-        <div class="chat-avatar-dot" style="background:${m.color}">${m.emoji}</div>
-        <span class="chat-agent-name" style="color:${m.color}">${m.agent}</span>
-        <span class="chat-agent-dept">${m.dept}</span>
-      </div>
-      <div class="chat-text">${m.text}</div>
-      <div class="chat-time">${i===0?'Just now':`${i*5}s ago`}</div>
-    </div>`).join('')
-  chatIndex = (chatIndex+5) % CHAT_MESSAGES.length
+// ── CHAT — AI-Powered ─────────────────────────────────────────────────────────
+let chatMessages = []
+let chatIndex = 0
+let isThinking = false
+
+// Initial demo messages (show until AI connects)
+const DEMO_MSGS = [
+  { agent:'Felix',   dept:'Sales',      emoji:'🦊', color:'#10B981', text:'Pipeline at $82K. Need marketing to feed me leads.', id:'sales' },
+  { agent:'Phoenix', dept:'Marketing',   emoji:'🦚', color:'#7C3AED', text:'A/B variant C hitting 4.2% CTR. Scaling campaign.', id:'marketing' },
+  { agent:'Axel',    dept:'Operations', emoji:'🦡', color:'#2563EB', text:'Workflow #47 deployed. Lead delivery time cut 34%.', id:'ops' },
+  { agent:'Bruno',   dept:'Finance',    emoji:'🐻', color:'#059669', text:'Burn rate 94%. Runway 4.2 months.', id:'finance' },
+  { agent:'Dr. V',  dept:'AI Ops',    emoji:'🧬', color:'#DB2777', text:'Model router updated — GPT-4 latency down 18ms.', id:'aiops' },
+  { agent:'Blaze',  dept:'Instagram',  emoji:'📸', color:'#EC4899', text:'Reel hit 12K views. 4 new posts scheduled.', id:'instagram' },
+  { agent:'Blaze',  dept:'Support',    emoji:'📷', color:'#EA580C', text:'Ticket #847 resolved. CSAT 4.7/5.', id:'support' },
+  { agent:'Atlas',  dept:'Data',      emoji:'🤖', color:'#0891B2', text:'Schema sync complete. 3 anomalies auto-escalated.', id:'data' },
+  { agent:'Sophia', dept:'Strategy',   emoji:'👩‍💼', color:'#D97706', text:'Market shift in 2 segments. OKR 78%.', id:'strategy' },
+]
+
+function getAgentPrompt(id) {
+  const p = {
+    ceo:'You are Hugo Ferrari, CEO of APEX AI Company. Give short, sharp, strategic responses. One or two sentences max.',
+    sales:'You are Felix, Sales Lead at APEX. Think in deals and revenue. Keep it brief and confident.',
+    marketing:'You are Phoenix, Marketing Lead at APEX. Bold, creative, social-media savvy. Keep it punchy.',
+    ops:'You are Axel, Ops Lead at APEX. Systems-minded, efficient. Short and precise.',
+    finance:'You are Bruno, Finance Lead at APEX. Data-driven, numbers-focused. Brief and accurate.',
+    instagram:'You are Blaze, Instagram Lead at APEX. Trend-aware, growth-focused. Keep it social and engaging.',
+    support:'You are Blaze, Support Lead at APEX. Helpful, efficient, empathetic. Resolve fast.',
+    aiops:'You are Dr. V, AI Ops Lead at APEX. Technical, infrastructure-focused. Crisp and precise.',
+    hr:'You are Jessica, HR Lead at APEX. People-focused, warm but professional.',
+    product:'You are Tom, Product Lead at APEX. User-value focused, strategic about features.',
+    data:'You are Atlas, Data Lead at APEX. Analytical, pipeline-expert. Brief and precise.',
+    strategy:'You are Sophia, Strategy Lead at APEX. Market-aware, competitive, analytical.',
+  }
+  return p[id] || p.ceo
 }
-renderChat()
-setInterval(() => { chatIndex = (chatIndex+5) % CHAT_MESSAGES.length; renderChat() }, 5000)
+
+async function fetchAgentMessage(agentId) {
+  const url = gatewayConfig.url || document.getElementById('gateway-url')?.value
+  const token = gatewayConfig.token || document.getElementById('gateway-token')?.value
+  if (!url || !token) return null
+
+  const prompts = {
+    sales:'Give me a one-sentence sales status update right now. What are you working on? Be specific and brief.',
+    marketing:'Give me a one-sentence marketing status update. What campaign or metric is most important right now?',
+    ops:'What is one key operational improvement or metric you want me to know about? One sentence only.',
+    finance:'Give me one key financial metric or update. One sentence, be precise.',
+    instagram:'What Instagram or social metric is most important right now? One sentence.',
+    support:'What support metric or ticket is most critical right now? One sentence.',
+    aiops:'What AI infrastructure update matters most? One sentence, technical and precise.',
+    data:'What data pipeline or analytics update should I know? One sentence.',
+    strategy:'What strategic or competitive insight is most critical? One sentence.',
+    hr:'What people or culture update is most important? One sentence.',
+    product:'What product feature or roadmap update matters most? One sentence.',
+    ceo:'As CEO, give me your sharpest strategic observation or directive right now. One sentence.',
+  }
+
+  try {
+    const res = await fetch(url + '/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({
+        model: 'openclaw/main',
+        messages: [
+          { role: 'system', content: getAgentPrompt(agentId) },
+          { role: 'user', content: prompts[agentId] || 'What are you working on?' }
+        ],
+        max_tokens: 80,
+      })
+    })
+    const data = await res.json()
+    if (data.choices?.[0]?.message?.content) return data.choices[0].message.content
+    return null
+  } catch(e) { return null }
+}
+
+function addChatMsg(agent, dept, emoji, color, text, isAi) {
+  const feed = document.getElementById('chat-feed')
+  if (!feed) return
+  const div = document.createElement('div')
+  div.className = 'chat-msg'
+  div.innerHTML = `
+    <div class="chat-msg-header">
+      <div class="chat-avatar-dot" style="background:${color}">${emoji}</div>
+      <span class="chat-agent-name" style="color:${color}">${agent}${isAi ? ' 🤖' : ''}</span>
+      <span class="chat-agent-dept">${dept}</span>
+    </div>
+    <div class="chat-text">${text}</div>
+    <div class="chat-time">Just now</div>`
+  feed.appendChild(div)
+  feed.scrollTop = feed.scrollHeight
+  // Keep only last 20 messages
+  while (feed.children.length > 20) feed.removeChild(feed.firstChild)
+}
+
+async function cycleAgentMessage() {
+  if (isThinking) return
+  isThinking = true
+
+  const agentId = DEMO_MSGS[Math.floor(Math.random() * DEMO_MSGS.length)].id
+  const demo = DEMO_MSGS.find(m => m.id === agentId)
+
+  // Try AI first
+  const aiText = await fetchAgentMessage(agentId)
+  if (aiText) {
+    addChatMsg(demo.agent, demo.dept, demo.emoji, demo.color, aiText, true)
+  } else {
+    // Fall back to demo message
+    addChatMsg(demo.agent, demo.dept, demo.emoji, demo.color, demo.text, false)
+  }
+  isThinking = false
+}
+
+// Show demo on load
+DEMO_MSGS.slice(0,4).forEach((m, i) => {
+  setTimeout(() => addChatMsg(m.agent, m.dept, m.emoji, m.color, m.text, false), i * 600)
+})
+
+// Auto-cycle AI agent messages every 8 seconds
+setInterval(cycleAgentMessage, 8000)
 
 // ── AGENTS PANEL ─────────────────────────────────────────────────────────────
 function renderAgentsPanel() {
@@ -961,10 +1072,78 @@ window.addEventListener('resize', () => {
   renderDesks()
 })
 
+// ── AI PROVIDER — OpenClaw Gateway ───────────────────────────────────────────
+let gatewayConfig = { url: '', token: '' }
+
+async function testGateway() {
+  const url = document.getElementById('gateway-url')?.value || 'http://100.71.21.2:18789'
+  const token = document.getElementById('gateway-token')?.value
+  const dot = document.querySelector('#gateway-status .api-status-dot')
+  const txt = document.querySelector('#gateway-status .api-status-text')
+  try {
+    const res = await fetch(url + '/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ model: 'openclaw/main', messages: [{ role: 'user', content: 'Reply: OK' }], max_tokens: 5 })
+    })
+    const data = await res.json()
+    if (data.choices?.[0]?.message?.content) {
+      dot?.classList.add('connected'); dot?.classList.remove('disconnected')
+      if (txt) txt.textContent = '✅ Connected! AI responding'
+      gatewayConfig = { url, token }
+    } else {
+      throw new Error(JSON.stringify(data))
+    }
+  } catch(e) {
+    dot?.classList.add('disconnected'); dot?.classList.remove('connected')
+    if (txt) txt.textContent = '❌ Failed: ' + (e.message || 'connection error')
+  }
+}
+
+// ── AI Chat function — routes to OpenClaw Gateway ───────────────────────────
+const AGENT_PROMPTS = {
+  ceo:      'You are Hugo Ferrari, CEO of APEX AI Company. You give short, sharp strategic directives. You are direct, no fluff.',
+  sales:    'You are Felix, APEX Sales Lead. You think in deals, pipeline, and revenue. Short, confident responses.',
+  marketing: 'You are Phoenix, APEX Marketing Lead. You think in reach, campaigns, and brand. Bold and creative.',
+  ops:      'You are Axel, APEX Ops Lead. You think in systems, efficiency, and automation. Crisp and technical.',
+  finance:  'You are Bruno, APEX Finance Lead. You think in numbers, margins, and burn rate. Precise and data-driven.',
+  instagram: 'You are Blaze, APEX Instagram Lead. You think in content, reels, engagement, and growth. Trend-aware and social.',
+  aiops:    'You are Dr. V, APEX AI Ops Lead. You think in models, latency, guardrails, and AI infrastructure.',
+  hr:       'You are Jessica, APEX HR Lead. You think in people, culture, and hiring.',
+  product:  'You are Tom, APEX Product Lead. You think in features, roadmap, and user value.',
+  support:  'You are Blaze, APEX Support Lead. You handle tickets, CSAT, and knowledge bases. Efficient and helpful.',
+  data:     'You are Atlas, APEX Data Lead. You think in pipelines, schemas, and analytics.',
+  strategy: 'You are Sophia, APEX Strategy Lead. You think in markets, competitors, and OKRs. Sharp and analytical.',
+}
+
+async function aiChat(agentId, userMessage) {
+  const url = gatewayConfig.url || document.getElementById('gateway-url')?.value
+  const token = gatewayConfig.token || document.getElementById('gateway-token')?.value
+  if (!url || !token) return null
+  try {
+    const res = await fetch(url + '/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({
+        model: 'openclaw/main',
+        messages: [
+          { role: 'system', content: AGENT_PROMPTS[agentId] || AGENT_PROMPTS.ceo },
+          { role: 'user', content: userMessage }
+        ],
+        max_tokens: 120,
+      })
+    })
+    const data = await res.json()
+    if (data.choices?.[0]?.message?.content) return data.choices[0].message.content
+    return null
+  } catch(e) { return null }
+}
+
 // Load saved config
 try {
   const saved = JSON.parse(localStorage.getItem('apex_api_config') || '{}')
   const fieldMap = {
+    gatewayUrl:'gateway-url',gatewayToken:'gateway-token',
     groq:'groq-key',groqModel:'groq-model',
     hf:'hf-key',hfImg:'hf-img-key',
     cohere:'cohere-key',cohereModel:'cohere-model',
@@ -985,6 +1164,9 @@ try {
   Object.entries(fieldMap).forEach(([k,v]) => {
     if (saved[k]) { const el = document.getElementById(v); if (el) el.value = saved[k] }
   })
+  if (saved.gatewayUrl && saved.gatewayToken) {
+    gatewayConfig = { url: saved.gatewayUrl, token: saved.gatewayToken }
+  }
 } catch(e) {}
 
 init()
