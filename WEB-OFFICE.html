@@ -73,28 +73,28 @@ background-size:40px 40px}
 .walker-head{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid rgba(255,255,255,0.3)}
 .walker-body{width:26px;height:8px;border-radius:6px 6px 0 0;margin-top:-2px}
 /* SPEECH BUBBLE */
-.bubble{position:absolute;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:6px 9px;font-size:8px;max-width:120px;color:var(--text);z-index:30;pointer-events:none;line-height:1.4}
+.bubble{position:absolute;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:11px;max-width:150px;color:var(--text);z-index:30;pointer-events:none;line-height:1.4}
 .bubble::before{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--surface2)}
 /* SIDEBAR */
 .sidebar{width:280px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
 .sidebar-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
-.tab{flex:1;padding:8px;font-size:9px;font-weight:700;text-align:center;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all 0.2s}
+.tab{flex:1;padding:10px;font-size:11px;font-weight:700;text-align:center;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all 0.2s}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .chat-feed{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
-.chat-input-area{flex-shrink:0;padding:8px;background:var(--surface);border-top:1px solid var(--border);display:flex;gap:6px}
-.chat-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 10px;color:white;font-size:10px;outline:none}
+.chat-input-area{flex-shrink:0;padding:12px;background:var(--surface);border-top:1px solid var(--border);display:flex;gap:6px}
+.chat-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 12px;color:white;font-size:12px;outline:none}
 .chat-input:focus{border-color:var(--accent)}
 .chat-send{background:var(--accent);border:none;border-radius:10px;padding:8px 12px;color:white;font-size:11px;font-weight:800;cursor:pointer}
 .chat-feed::-webkit-scrollbar{width:3px}
 .chat-feed::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1)}
-.chat-msg{background:var(--surface2);border-radius:10px;padding:8px 10px;border:1px solid var(--border);animation:fadeIn 0.3s ease}
+.chat-msg{background:var(--surface2);border-radius:10px;padding:12px 14px;border:1px solid var(--border);animation:fadeIn 0.3s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 .chat-header{display:flex;align-items:center;gap:6px;margin-bottom:4px}
-.chat-avatar{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px}
+.chat-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px}
 .chat-name{font-size:9px;font-weight:800}
-.chat-dept{font-size:8px;color:var(--muted);margin-left:auto}
+.chat-dept{font-size:10px;color:var(--muted);margin-left:auto}
 .chat-text{font-size:9px;line-height:1.5;color:var(--text)}
-.chat-time{font-size:7px;color:var(--muted);margin-top:3px}
+.chat-time{font-size:10px;color:var(--muted);margin-top:3px}
 .agents-panel{display:none;flex-direction:column;gap:5px;padding:8px;flex:1;overflow-y:auto}
 .agent-card{background:var(--surface2);border-radius:10px;padding:8px 10px;border:1px solid var(--border);display:flex;align-items:center;gap:8px}
 .agent-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid rgba(255,255,255,0.2)}
@@ -109,19 +109,19 @@ background-size:40px 40px}
 /* ADMIN MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0);z-index:100;pointer-events:none;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex;background:rgba(0,0,0,0.7);pointer-events:all}
-.modal{display:none;background:var(--surface2);border:2px solid #333;border-radius:20px;width:min(580px,95vw);max-height:88vh;overflow:hidden;flex-direction:column;box-shadow:0 0 60px rgba(0,0,0,0.5)}
+.modal{display:none;background:var(--surface2);border:2px solid #333;border-radius:20px;width:min(640px,95vw);max-height:88vh;overflow:hidden;flex-direction:column;box-shadow:0 0 60px rgba(0,0,0,0.5)}
 .modal-overlay.open .modal{display:flex}
 .modal-hdr{display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
-.modal-hdr h2{font-size:12px;font-weight:900;letter-spacing:2px;flex:1}
+.modal-hdr h2{font-size:14px;font-weight:900;letter-spacing:2px;flex:1}
 .modal-close{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px}
 .modal-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
 .modal-tab{flex:1;padding:8px 6px;font-size:9px;font-weight:700;text-align:center;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all 0.2s}
 .modal-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.modal-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+.modal-body{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:16px}
 .modal-footer{padding:10px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
-.save-btn{background:var(--accent);color:white;border:none;border-radius:10px;padding:9px 20px;font-size:10px;font-weight:800;letter-spacing:1px;cursor:pointer;width:100%}
+.save-btn{background:var(--accent);color:white;border:none;border-radius:10px;padding:12px 20px;font-size:13px;font-weight:800;letter-spacing:1px;cursor:pointer;width:100%}
 .api-sec{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
-.api-sec-title{font-size:10px;font-weight:900;letter-spacing:1px;margin-bottom:2px}
+.api-sec-title{font-size:11px;font-weight:900;letter-spacing:1px;margin-bottom:2px}
 .api-field{display:flex;flex-direction:column;gap:3px}
 .api-field label{font-size:8px;font-weight:700;color:var(--muted);letter-spacing:1px}
 .api-field input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:10px;outline:none}
@@ -289,7 +289,7 @@ loadCfg()
 
 function saveConfig() {
   // Gather all inputs
-  CFG.minimaxKey   = document.getElementById('f-minimax')?.value || CFG.minimaxKey
+  CFG.minimaxKey = (document.getElementById('f-minimax')?.value || '').trim()
   CFG.ollamaUrl     = document.getElementById('f-ollama-url')?.value || CFG.ollamaUrl
   CFG.ollamaModel   = document.getElementById('f-ollama-model')?.value || CFG.ollamaModel
   CFG.provider      = document.getElementById('f-provider')?.value || CFG.provider
@@ -320,7 +320,7 @@ const ADMIN_TABS = {
       <div class="api-sec-title">🔶 MINIMAX — DIRECT (no server needed)</div>
       <div class="api-field">
         <label>API KEY</label>
-        <input type="password" id="f-minimax" placeholder="sk-cp-xxxxxxxx" value="${CFG.minimaxKey}" />
+        <input type="password" id="f-minimax" placeholder="sk-cp-xxxxxxxx" value="${CFG.minimaxKey}" oninput="CFG.minimaxKey=this.value" />
       </div>
       <div class="api-status">
         <div class="api-dot ${CFG.minimaxKey?'connected':'disconnected'}" id="s-minimax"></div>
