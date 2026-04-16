@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX HQ — Pixel Office</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --floor:#f0e8d0;--wall:#8faabf;--desk:#c8925a;--desk-s:#9a6a38;
+  --bg:#0c1020;--panel:rgba(6,10,22,0.97);--border:#1a3058;
+  --mono:'JetBrains Mono',monospace;--pixel:'Press Start 2P',monospace;
+}
+body{background:var(--bg);overflow:hidden;}
+#root{width:100vw;height:100vh;position:relative;overflow:hidden;}
+.scene-outer{position:absolute;top:0;left:0;right:0;bottom:0;overflow:auto;-webkit-overflow-scrolling:touch;display:flex;justify-content:center;padding:20px;}
+.scene-wrap{transform:perspective(1600px) rotateX(14deg);transform-origin:center top;flex-shrink:0;}
+.office{position:relative;width:1330px;height:690px;background:var(--floor);border:5px solid #5a7a90;box-shadow:0 28px 80px rgba(0,0,0,.85),inset 0 0 60px rgba(0,0,0,.06);}
+.office::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(0,0,0,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.035) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;}
+.back-wall{position:absolute;top:-78px;left:-5px;right:-5px;height:82px;background:var(--wall);border-bottom:4px solid #5a7a90;display:flex;align-items:center;padding:8px 30px;gap:40px;}
+.back-wall::before{content:'🐾 APEX — AI ANIMAL HEADQUARTERS';position:absolute;left:50%;transform:translateX(-50%);font-family:var(--pixel);font-size:10px;color:rgba(255,255,255,.18);letter-spacing:3px;white-space:nowrap;}
+.ww{width:88px;height:58px;background:linear-gradient(150deg,rgba(200,240,255,.65),rgba(140,200,240,.35));border:4px solid #4a6a88;display:grid;grid-template:1fr 1fr/1fr 1fr;gap:3px;padding:4px;}
+.ww div{background:rgba(180,225,255,.45);}
+.zone{position:absolute;border-radius:4px;border:2px solid;}
+.zone-head{height:24px;display:flex;align-items:center;padding:0 9px;gap:5px;font-family:var(--pixel);font-size:5px;font-weight:bold;letter-spacing:.5px;border-radius:3px 3px 0 0;}
+.zone-fill{position:absolute;top:24px;left:0;right:0;bottom:0;border-radius:0 0 3px 3px;}
+.zone-body{position:relative;}
+.desk{position:absolute;width:88px;cursor:pointer;transition:transform .15s,filter .15s;}
+.desk:hover{transform:scale(1.07) translateY(-2px);filter:brightness(1.08);}
+.desk-top{height:60px;background:var(--desk);border:2px solid var(--desk-s);border-radius:3px 3px 0 0;box-shadow:0 2px 0 var(--desk-s),0 5px 12px rgba(0,0,0,.25);position:relative;overflow:visible;}
+.desk-top::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 10px,rgba(0,0,0,.04) 10px,rgba(0,0,0,.04) 11px);pointer-events:none;}
+.desk-front{height:5px;background:var(--desk-s);border-radius:0 0 2px 2px;box-shadow:0 2px 4px rgba(0,0,0,.2);}
+.mzone{position:absolute;background:rgba(255,215,0,.07);border:2px solid rgba(255,215,0,.3);border-radius:4px;}
+.mzone-head{height:24px;background:rgba(255,215,0,.12);border-bottom:1px solid rgba(255,215,0,.2);display:flex;align-items:center;padding:0 10px;gap:6px;font-family:var(--pixel);font-size:5px;color:#ffd700;}
+.mtable{position:absolute;border-radius:50%;background:#7a4e28;border:4px solid #5a3810;box-shadow:0 4px 0 #3a2008,0 8px 20px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;}
+.meet-hint{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:var(--pixel);font-size:4px;color:rgba(255,215,0,.65);white-space:nowrap;cursor:pointer;}
+.hugo-wrap{position:absolute;display:flex;flex-direction:column;align-items:center;cursor:pointer;z-index:9;transition:transform .15s;}
+.hugo-wrap:hover{transform:scale(1.1) translateY(-5px);}
+.hugo-desk{width:112px;height:56px;background:#8b4513;border:3px solid #5a2a08;border-radius:4px 4px 0 0;box-shadow:0 3px 0 #3a1a04,0 6px 16px rgba(0,0,0,.4);position:relative;}
+.pc-wrap{position:absolute;top:3px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;}
+.mon-3d{transform:perspective(120px) rotateX(-8deg);display:flex;flex-direction:column;align-items:center;}
+.mon-bezel{width:54px;height:40px;background:linear-gradient(160deg,#2c2c2c,#1a1a1a);border:2px solid #0e0e0e;border-radius:3px;padding:3px;position:relative;box-shadow:2px 4px 14px rgba(0,0,0,.85),0 1px 0 rgba(255,255,255,.06) inset;}
+.mon-bezel::before{content:'';position:absolute;top:-7px;left:1px;right:1px;height:7px;background:linear-gradient(180deg,#3c3c3c,#2a2a2a);border-radius:3px 3px 0 0;border:1px solid #0e0e0e;border-bottom:none;transform-origin:bottom;transform:rotateX(50deg);}
+.mon-bezel::after{content:'';position:absolute;top:1px;right:-6px;bottom:1px;width:6px;background:linear-gradient(90deg,#252525,#181818);border-radius:0 3px 3px 0;border:1px solid #0e0e0e;border-left:none;}
+.mon-cam{position:absolute;top:1px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:#111;box-shadow:0 0 4px rgba(0,150,255,.3);}
+.mon-screen{width:100%;height:100%;background:linear-gradient(160deg,#061828,#0a2444 60%,#041020);border-radius:1px;overflow:hidden;position:relative;}
+.mon-screen::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.16) 2px,rgba(0,0,0,.16) 3px);pointer-events:none;z-index:2;}
+.mon-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(0,160,255,.14),transparent 70%);pointer-events:none;z-index:1;}
+.scr-in{position:absolute;inset:3px;z-index:3;display:flex;flex-direction:column;gap:2px;}
+.scr-ref{position:absolute;top:2px;left:2px;width:14px;height:7px;background:linear-gradient(135deg,rgba(255,255,255,.09),transparent);border-radius:2px;z-index:4;pointer-events:none;}
+.scr-bar{height:2px;border-radius:1px;opacity:.75;}
+.scr-row{display:flex;gap:2px;align-items:center;}
+.scr-dot{width:3px;height:3px;border-radius:50%;}
+.scr-line{height:1px;flex:1;background:rgba(255,255,255,.1);}
+.scr-cur{width:2px;height:5px;background:#00ff88;animation:cur .9s step-end infinite;margin-left:1px;}
+@keyframes cur{0%,100%{opacity:1}50%{opacity:0}}
+.mon-neck{width:6px;height:9px;background:linear-gradient(90deg,#222,#2e2e2e,#222);}
+.mon-base{width:30px;height:5px;background:linear-gradient(180deg,#2e2e2e,#1e1e1e);border-radius:2px;box-shadow:0 2px 6px rgba(0,0,0,.6);position:relative;}
+.mon-base::after{content:'';position:absolute;right:-4px;top:0;bottom:0;width:4px;background:linear-gradient(90deg,#1e1e1e,#141414);border-radius:0 2px 2px 0;}
+.kbd{position:absolute;bottom:3px;left:50%;width:52px;height:10px;background:linear-gradient(180deg,#2e2e2e,#222);border:1.5px solid #111;border-radius:2px;box-shadow:0 2px 0 #111,2px 3px 8px rgba(0,0,0,.6);transform:perspective(80px) rotateX(-14deg) translateX(-50%);transform-origin:bottom center;overflow:hidden;}
+.kbd::before{content:'';position:absolute;top:2px;left:4px;right:4px;height:1px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.15) 0,rgba(255,255,255,.15) 3px,transparent 3px,transparent 5px);}
+.kbd::after{content:'';position:absolute;bottom:2px;left:6px;right:6px;height:1px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.08) 0,rgba(255,255,255,.08) 4px,transparent 4px,transparent 7px);}
+.mse{position:absolute;bottom:5px;right:4px;width:10px;height:14px;background:linear-gradient(160deg,#333,#1e1e1e);border:1.5px solid #111;border-radius:5px 5px 4px 4px;box-shadow:2px 2px 6px rgba(0,0,0,.7);}
+.mse::before{content:'';position:absolute;top:3px;left:50%;transform:translateX(-50%);width:1.5px;height:6px;background:rgba(255,255,255,.15);}
+.desk-mug{position:absolute;top:4px;right:3px;font-size:12px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.65);}
+.agent{position:absolute;display:flex;flex-direction:column;align-items:center;cursor:pointer;z-index:10;transition:transform .15s;}
+.agent:hover{transform:scale(1.1) translateY(-5px);}
+.cpanel{position:fixed;right:0;top:0;bottom:0;width:355px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;z-index:200;animation:sIn .2s ease-out;backdrop-filter:blur(14px);}
+@keyframes sIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.cp-head{padding:13px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px;background:rgba(8,14,32,.9);flex-shrink:0;}
+.cp-av{width:38px;height:38px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.cp-name{font-weight:600;font-size:14px;margin-bottom:2px;}
+.cp-role{font-family:var(--pixel);font-size:5px;color:#3a5a7f;}
+.cp-dept{display:inline-block;font-family:var(--pixel);font-size:4px;padding:2px 7px;border-radius:20px;border:1px solid;margin-top:4px;}
+.cp-x{margin-left:auto;background:none;border:none;color:#2a4060;font-size:20px;cursor:pointer;}
+.cp-x:hover{color:#f87171;}
+.cp-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px;scrollbar-width:thin;}
+.cmsg{display:flex;flex-direction:column;gap:3px;}
+.cmsg.u{align-items:flex-end}
+.cmsg-meta{font-family:var(--pixel);font-size:4px;color:#1e3860;padding:0 4px;}
+.cmsg-b{max-width:88%;padding:8px 12px;border-radius:4px;font-size:13px;line-height:1.7;white-space:pre-wrap;word-break:break-word;font-family:var(--mono);}
+.cmsg-b.u{background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.25);color:#c8e0ff;border-bottom-right-radius:0;}
+.cmsg-b.a{background:rgba(12,22,46,.8);border:1px solid;color:#c8e0ff;border-bottom-left-radius:0;}
+.cmsg-b.s{background:rgba(0,0,0,.3);border:1px dashed #1a3050;color:#2a4a6f;font-family:var(--pixel);font-size:9px;align-self:center;max-width:100%;text-align:center;}
+.cmsg-think{max-width:88%;padding:8px 12px;border-radius:4px;border:1px solid;border-bottom-left-radius:0;display:flex;gap:5px;align-items:center;background:rgba(12,22,46,.6);font-family:var(--pixel);font-size:5px;}
+.cp-bar{padding:10px;border-top:1px solid var(--border);display:flex;gap:7px;flex-shrink:0;background:rgba(5,8,18,.8);}
+.cp-ta{flex:1;background:rgba(12,22,46,.8);border:1px solid var(--border);color:#c8e0ff;font-family:var(--mono);font-size:13px;padding:8px 10px;border-radius:3px;resize:none;outline:none;min-height:38px;max-height:90px;}
+.cp-ta:focus{border-color:#2a5a8f;}
+.cp-send{background:#22c55e;color:#000;border:none;font-family:var(--pixel);font-size:6px;padding:0 11px;border-radius:3px;cursor:pointer;height:38px;}
+.cp-send:hover{background:#16a34a;}
+.cp-send:disabled{background:#1a3050;color:#2a4060;cursor:not-allowed;}
+.v-btn{width:38px;height:38px;border-radius:3px;border:1px solid var(--border);background:transparent;color:#3a5a7f;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.v-btn:hover{border-color:#60a5fa;color:#60a5fa;}
+.v-btn.on{border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.1);animation:pmic 1s infinite;}
+@keyframes pmic{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
+.dot{width:4px;height:4px;border-radius:50%;animation:dota 1.2s infinite;}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes dota{0%,80%,100%{opacity:.2;transform:scale(.7)}40%{opacity:1;transform:scale(1)}}
+.mpanel{position:fixed;inset:0;background:rgba(3,6,16,.97);display:flex;flex-direction:column;z-index:300;animation:fIn .25s ease-out;}
+@keyframes fIn{from{opacity:0}to{opacity:1}}
+.mp-head{padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;background:rgba(5,8,18,.9);flex-shrink:0;}
+.mp-title{font-family:var(--pixel);font-size:10px;color:#ffd700;}
+.mp-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.mp-chip{display:flex;align-items:center;gap:4px;padding:3px 7px;border-radius:20px;font-family:var(--pixel);font-size:4px;border:1px solid;}
+.mp-x{margin-left:auto;background:none;border:none;color:#2a4060;font-size:22px;cursor:pointer;align-self:flex-start;}
+.mp-x:hover{color:#f87171;}
+.mp-feed{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin;}
+.mp-msg{display:flex;gap:12px;align-items:flex-start;}
+.mp-av{width:36px;height:36px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.mp-body{flex:1;}
+.mp-mname{font-family:var(--pixel);font-size:5px;margin-bottom:4px;}
+.mp-text{background:rgba(10,18,40,.7);border:1px solid var(--border);border-radius:4px;padding:10px 14px;font-size:13px;line-height:1.7;color:#c8e0ff;font-family:var(--mono);white-space:pre-wrap;}
+.mp-think{display:flex;gap:5px;align-items:center;padding:8px 12px;background:rgba(10,18,40,.5);border:1px solid var(--border);border-radius:4px;font-family:var(--pixel);font-size:5px;}
+.mp-bar{padding:14px 22px;border-top:1px solid var(--border);background:rgba(5,8,18,.9);display:flex;gap:10px;align-items:flex-end;flex-shrink:0;}
+.mp-ta{flex:1;background:rgba(10,18,40,.8);border:1px solid var(--border);color:#c8e0ff;font-family:var(--mono);font-size:14px;padding:10px 14px;border-radius:4px;resize:none;outline:none;min-height:44px;max-height:110px;}
+.mp-send{background:#ffd700;color:#000;border:none;font-family:var(--pixel);font-size:7px;padding:0 16px;border-radius:4px;cursor:pointer;height:44px;}
+.mp-send:hover{background:#ffed4a;}
+.mp-send:disabled{background:#1a2a44;color:#2a3a54;cursor:not-allowed;}
+.mp-vbtn{width:44px;height:44px;border-radius:4px;border:1px solid var(--border);background:transparent;color:#3a5a7f;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mp-vbtn:hover{border-color:#60a5fa;color:#60a5fa;}
+.cfg-ov{position:fixed;inset:0;background:rgba(3,6,16,.93);display:flex;align-items:center;justify-content:center;z-index:400;}
+.cfg-box{background:#080e20;border:1px solid var(--border);border-radius:8px;padding:26px 30px;width:450px;max-width:94vw;}
+.cfg-title{font-family:var(--pixel);font-size:8px;color:#60a5fa;margin-bottom:18px;}
+.cfg-f{margin-bottom:11px;}
+.cfg-l{font-family:var(--pixel);font-size:5px;color:#2a4a6f;margin-bottom:4px;}
+.cfg-i{width:100%;background:#050a16;border:1px solid #1a3050;color:#c8e0ff;font-family:var(--mono);font-size:13px;padding:7px 10px;border-radius:3px;outline:none;}
+.cfg-i:focus{border-color:#60a5fa;}
+.cfg-btns{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.cfg-ok{background:#22c55e;color:#000;border:none;font-family:var(--pixel);font-size:6px;padding:9px 16px;border-radius:3px;cursor:pointer;}
+.cfg-test{background:transparent;color:#60a5fa;border:1px solid #60a5fa;font-family:var(--pixel);font-size:6px;padding:9px 13px;border-radius:3px;cursor:pointer;}
+.cfg-cancel{background:transparent;color:#2a4060;border:1px solid #1a3050;font-family:var(--pixel);font-size:6px;padding:9px 12px;border-radius:3px;cursor:pointer;margin-left:auto;}
+.cfg-res{font-family:var(--pixel);font-size:5px;padding:7px 10px;border-radius:3px;margin-top:10px;}
+.cr-ok{color:#22c55e;background:rgba(34,197,94,.07);border:1px solid #22c55e;}
+.cr-err{color:#f87171;background:rgba(248,113,113,.07);border:1px solid #f87171;}
+.cr-info{color:#60a5fa;background:rgba(96,165,250,.07);border:1px solid #60a5fa;}
+.rug{position:absolute;border-radius:6px;opacity:.45;}
+.plant{position:absolute;font-size:22px;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45));}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#1a3058;border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:#2a4a78;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+/* ══ DATA ═══════════════════════════════════════════════════════ */
+const DEPTS=[
+ {id:'sales',name:'SALES',icon:'💼',color:'#4ade80',x:10,y:10,w:200,h:210,agents:[{id:'s1',name:'Alex',role:'Sales Lead',sys:'You are Alex, Sales Lead at APEX. Close deals and drive revenue. Be persuasive and confident.'},{id:'s2',name:'Sam',role:'Account Exec',sys:'You are Sam, Account Executive at APEX. Manage client relationships and pipeline. Be sharp.'}]},
+ {id:'marketing',name:'MARKETING',icon:'📢',color:'#f472b6',x:225,y:10,w:200,h:210,agents:[{id:'m1',name:'Maya',role:'Brand Manager',sys:'You are Maya, Brand Manager at APEX. Shape brand identity and campaigns. Be creative and bold.'},{id:'m2',name:'Leo',role:'Growth Hacker',sys:'You are Leo, Growth Hacker at APEX. Find scalable growth channels. Be fearless and data-driven.'}]},
+ {id:'operations',name:'OPERATIONS',icon:'⚙️',color:'#60a5fa',x:440,y:10,w:200,h:210,agents:[{id:'o1',name:'Ora',role:'Process Manager',sys:'You are Ora, Process Manager at APEX. Streamline workflows and operations. Be systematic.'},{id:'o2',name:'Rex',role:'Systems Admin',sys:'You are Rex, Systems Admin at APEX. Keep infrastructure solid. Be technical.'}]},
+ {id:'finance',name:'FINANCE',icon:'💰',color:'#fbbf24',x:655,y:10,w:200,h:210,agents:[{id:'f1',name:'Max',role:'CFO Analyst',sys:'You are Max, CFO Analyst at APEX. Analyze financials and strategy. Be rigorous.'},{id:'f2',name:'Fia',role:'Budget Controller',sys:'You are Fia, Budget Controller at APEX. Save resources wisely. Be precise.'}]},
+ {id:'aiops',name:'AI OPS',icon:'🤖',color:'#22d3ee',x:870,y:10,w:200,h:210,agents:[{id:'a1',name:'Nova',role:'AI Engineer',sys:'You are Nova, AI Engineer at APEX. Build and optimize AI models. Be innovative.'},{id:'a2',name:'Flux',role:'Model Ops',sys:'You are Flux, Model Ops at APEX. Monitor AI pipelines. Be agile.'}]},
+ {id:'peoplehr',name:'PEOPLE/HR',icon:'👥',color:'#a78bfa',x:1085,y:10,w:235,h:210,agents:[{id:'h1',name:'Aria',role:'HR Lead',sys:'You are Aria, HR Lead at APEX. Manage culture, hiring and people ops. Be empathetic.'},{id:'h2',name:'Kai',role:'Talent Scout',sys:'You are Kai, Talent Scout at APEX. Find and recruit top talent. Be perceptive.'}]},
+ {id:'product',name:'PRODUCT',icon:'🎨',color:'#fb923c',x:10,y:233,w:200,h:210,agents:[{id:'p1',name:'Dot',role:'Product Lead',sys:'You are Dot, Product Lead at APEX. Define product vision and roadmap. Be decisive.'},{id:'p2',name:'Nox',role:'UX Designer',sys:'You are Nox, UX Designer at APEX. Design great user experiences. Be detail-obsessed.'}]},
+ {id:'instagram',name:'INSTAGRAM',icon:'📸',color:'#ec4899',x:225,y:233,w:200,h:210,agents:[{id:'i1',name:'Isla',role:'Content Creator',sys:'You are Isla, Content Creator at APEX. Make bold viral content. Be expressive.'},{id:'i2',name:'Zara',role:'Community Mgr',sys:'You are Zara, Community Mgr at APEX. Grow engagement and community. Be warm.'}]},
+ {id:'support',name:'SUPPORT',icon:'🎧',color:'#2dd4bf',x:890,y:233,w:200,h:210,agents:[{id:'su1',name:'Ace',role:'Support Lead',sys:'You are Ace, Support Lead at APEX. Solve issues with strength. Be patient.'},{id:'su2',name:'Vex',role:'Tech Support',sys:'You are Vex, Tech Support at APEX. Dig into technical issues deeply. Be tenacious.'}]},
+ {id:'data',name:'DATA',icon:'📊',color:'#818cf8',x:1105,y:233,w:215,h:210,agents:[{id:'d1',name:'Nix',role:'Data Scientist',sys:'You are Nix, Data Scientist at APEX. Find patterns in data. Be wise and analytical.'},{id:'d2',name:'Byte',role:'Analytics Eng',sys:'You are Byte, Analytics Eng at APEX. Build dashboards. Be precise.'}]},
+ {id:'strategy',name:'STRATEGY',icon:'🎯',color:'#f87171',x:10,y:456,w:200,h:218,agents:[{id:'st1',name:'Gal',role:'Strategy Lead',sys:'You are Gal, Strategy Lead at APEX. Drive strategic direction. Be relentless.'},{id:'st2',name:'Orion',role:'Market Analyst',sys:'You are Orion, Market Analyst at APEX. Spot market opportunities. Be precise.'}]},
+];
+const MZONE={x:440,y:233,w:435,h:210};
+const HUGO={id:'hugo',name:'Hugo',role:'CHIEF — APEX',sys:'You are Hugo, Chief of APEX. You oversee all 11 departments. You are powerful, decisive, and deeply technical. You delegate effectively.'};
+const ALL_LEADS=[...DEPTS.map(d=>({...d.agents[0],deptName:d.name,deptColor:d.color})),{...HUGO,deptName:'EXECUTIVE',deptColor:'#ffd700'}];
+const DEFAULT_CFG={endpoint:'https://api.dragon-claw.com',token:'fd6aa805e3747416b6e83eb3e66bfbc7969561eb903c22c3',model:'openclaw/dragonclaw-web',maxTokens:2048};
+const MUGS=['☕','🧃','🫖','🥤','🧋','☕','🥤','🧃','☕','🫖','🥤'];
+
+function uid(){return Math.random().toString(36).slice(2,8);}
+function tnow(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+
+async function callAgent(cfg,system,messages){
+  try {
+    const r=await fetch(cfg.endpoint+'/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':cfg.token,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:cfg.model,max_tokens:Number(cfg.maxTokens)||2048,system,messages})
+    });
+    if(!r.ok){throw new Error('HTTP '+r.status);}
+    const d=await r.json();
+    return d?.content?.[0]?.text || d?.choices?.[0]?.message?.content || 'No response.';
+  } catch(e){ throw e; }
+}
+
+const LOOKS=[
+  {sk:'#d4a06a',hr:'#2a1408',ey:'#120800'},
+  {sk:'#f0cc88',hr:'#7a4a18',ey:'#1a0a00'},
+  {sk:'#7a4020',hr:'#100800',ey:'#060300'},
+  {sk:'#c07840',hr:'#160c04',ey:'#0a0400'},
+  {sk:'#e8b880',hr:'#d8a828',ey:'#1a0800'},
+  {sk:'#5a2e14',hr:'#080400',ey:'#030100'},
+];
+
+/* ══ PIXEL CHIBI SVG ═════════════════════════════════════════════ */
+function ChibiChar({li=0, shirt='#4466cc', isActive=false, isHugo=false}){
+  const {sk,hr,ey}=LOOKS[li%6];
+  const R=(x,y,w,h,c,op=1)=>React.createElement('rect',{x,y,width:w,height:h,fill:c,opacity:op});
+  const pt='#1c2040', sh='#141020';
+  return React.createElement('svg',{
+    width:72,height:96,viewBox:'0 0 24 32',
+    style:{imageRendering:'pixelated',display:'block',overflow:'visible',
+      filter:isActive?'drop-shadow(0 0 3px '+shirt+') drop-shadow(0 0 8px '+shirt+'99)':'drop-shadow(0 4px 6px rgba(0,0,0,0.8))'}
+  },
+    R(4,0,16,3,hr),R(2,1,2,5,hr),R(20,1,2,5,hr),
+    isHugo&&R(3,-2,18,3,'#ffd700'),isHugo&&R(5,-4,14,3,'#ffd700'),
+    R(3,2,18,11,sk),R(2,3,20,9,sk),R(1,4,22,7,sk),
+    R(0,5,1,4,sk),R(23,5,1,4,sk),
+    R(4,4,4,1,hr),R(16,4,4,1,hr),
+    R(4,5,5,5,'#f4f4f4'),R(5,6,3,3,ey),R(5,6,1,1,'rgba(255,255,255,0.85)'),
+    R(15,5,5,5,'#f4f4f4'),R(16,6,3,3,ey),R(16,6,1,1,'rgba(255,255,255,0.85)'),
+    R(2,9,3,2,'#ff8877',0.28),R(19,9,3,2,'#ff8877',0.28),
+    R(10,9,1,1,ey,0.3),R(13,9,1,1,ey,0.3),
+    R(7,11,2,1,ey),R(15,11,2,1,ey),R(9,12,6,1,ey),
+    R(9,13,6,2,sk),
+    R(5,15,14,8,shirt),R(5,15,14,2,'rgba(255,255,255,0.14)'),
+    R(10,15,4,3,'rgba(0,0,0,0.22)'),R(11,17,2,6,'rgba(0,0,0,0.14)'),
+    [18,20,22].map(y=>R(11,y,2,1,'rgba(255,255,255,0.55)')),
+    R(2,15,3,7,shirt),R(1,16,2,5,shirt),R(19,15,3,7,shirt),R(21,16,2,5,shirt),
+    R(1,21,4,2,sk),R(19,21,4,2,sk),
+    R(6,23,5,6,pt),R(13,23,5,6,pt),R(5,23,14,1,'rgba(0,0,0,0.3)'),
+    R(5,29,7,2,sh),R(12,29,7,2,sh),R(6,29,2,1,'rgba(255,255,255,0.18)'),R(13,29,2,1,'rgba(255,255,255,0.18)'),
+    React.createElement('ellipse',{cx:12,cy:31.5,rx:8,ry:1.8,fill:'rgba(0,0,0,0.35)'})
+  );
+}
+
+/* ══ CHAR AVATAR ═════════════════════════════════════════════════ */
+function CharAvatar({agent,deptColor,isActive,isHugo=false}){
+  const li=agent.id.charCodeAt(agent.id.length-1)%6;
+  const c=deptColor;
+  return React.createElement('div',{
+    style:{display:'flex',flexDirection:'column',alignItems:'center',cursor:'pointer',userSelect:'none',transition:'transform .15s'}
+  },
+    React.createElement('div',{style:{position:'relative'}},
+      React.createElement(ChibiChar,{li,shirt:c,isActive,isHugo}),
+      isActive&&React.createElement('div',{
+        style:{position:'absolute',inset:-4,border:'2px solid '+c,boxShadow:'0 0 14px '+c+', 0 0 24px '+c+'70',pointerEvents:'none',borderRadius:2}
+      }),
+      React.createElement('div',{
+        style:{position:'absolute',top:14,right:0,width:9,height:9,borderRadius:'50%',background:isActive?c:'#253050',border:'1.5px solid rgba(0,0,0,0.7)',boxShadow:isActive?'0 0 9px '+c:'none',zIndex:3}
+      })
+    ),
+    React.createElement('div',{
+      style:{fontFamily:"'Press Start 2P'",fontSize:'5px',padding:'3px 8px',borderRadius:2,background:'rgba(4,7,18,0.97)',color:isActive?c:'#b0c8e8',marginTop:2,whiteSpace:'nowrap',border:'1.5px solid '+(isActive?c+'70':'rgba(255,255,255,0.09)'),boxShadow:isActive?'0 0 12px '+c+'50':'none',letterSpacing:'.5px'}
+    },agent.name)
+  );
+}
+
+/* ══ 3D PC ═══════════════════════════════════════════════════════ */
+function PC({dc}){
+  return React.createElement('div',{className:'pc-wrap'},
+    React.createElement('div',{className:'mon-3d'},
+      React.createElement('div',{className:'mon-bezel'},
+        React.createElement('div',{className:'mon-cam'}),
+        React.createElement('div',{className:'mon-screen'},
+          React.createElement('div',{className:'scr-ref'}),
+          React.createElement('div',{className:'scr-in'},
+            React.createElement('div',{className:'scr-bar',style:{background:'#00d878',width:'80%'}}),
+            React.createElement('div',{className:'scr-row'},React.createElement('div',{className:'scr-dot',style:{background:dc,opacity:0.85}}),React.createElement('div',{className:'scr-line'})),
+            React.createElement('div',{className:'scr-bar',style:{background:'#0090ff',width:'65%'}}),
+            React.createElement('div',{className:'scr-row'},React.createElement('div',{className:'scr-dot',style:{background:'#60a5fa',opacity:0.7}}),React.createElement('div',{className:'scr-line'})),
+            React.createElement('div',{className:'scr-row'},
+              React.createElement('div',{className:'scr-bar',style:{background:'#ffd700',width:'50%',height:1}}),
+              React.createElement('div',{className:'scr-cur'})
+            )
+          )
+        )
+      ),
+      React.createElement('div',{className:'mon-neck'}),
+      React.createElement('div',{className:'mon-base'})
+    ),
+    React.createElement('div',{className:'kbd'}),
+    React.createElement('div',{className:'mse'})
+  );
+}
+
+/* ══ ZONE ═══════════════════════════════════════════════════════ */
+function Zone({dept,onAgentClick,activeId}){
+  const bH=dept.h-24;
+  const[a1,a2]=dept.agents;
+  const mug1=MUGS[a1.id.charCodeAt(a1.id.length-1)%MUGS.length];
+  const mug2=MUGS[a2.id.charCodeAt(a2.id.length-1)%MUGS.length];
+  return React.createElement('div',{className:'zone',style:{left:dept.x,top:dept.y,width:dept.w,height:dept.h,borderColor:dept.color+'55'}},
+    React.createElement('div',{className:'zone-head',style:{background:dept.color+'22',color:dept.color,borderBottom:'1px solid '+dept.color+'30'}},
+      React.createElement('span',null,dept.icon),
+      React.createElement('span',null,dept.name)
+    ),
+    React.createElement('div',{className:'zone-fill',style:{background:dept.color+'08'}}),
+    React.createElement('div',{className:'zone-body',style:{height:bH}},
+      React.createElement('div',{className:'desk',style:{left:4,top:8},onClick:()=>onAgentClick(a1,dept)},
+        React.createElement('div',{className:'desk-top'},
+          React.createElement(PC,{dc:dept.color}),
+          React.createElement('div',{className:'kbd'}),
+          React.createElement('div',{className:'mse'}),
+          React.createElement('div',{className:'desk-mug'},mug1)
+        ),
+        React.createElement('div',{className:'desk-front'})
+      ),
+      React.createElement('div',{className:'agent',style:{left:2,top:68},onClick:()=>onAgentClick(a1,dept)},
+        React.createElement(CharAvatar,{agent:a1,deptColor:dept.color,isActive:activeId===a1.id})
+      ),
+      React.createElement('div',{className:'desk',style:{left:dept.w-94,top:8},onClick:()=>onAgentClick(a2,dept)},
+        React.createElement('div',{className:'desk-top'},
+          React.createElement(PC,{dc:dept.color}),
+          React.createElement('div',{className:'kbd'}),
+          React.createElement('div',{className:'mse'}),
+          React.createElement('div',{className:'desk-mug'},mug2)
+        ),
+        React.createElement('div',{className:'desk-front'})
+      ),
+      React.createElement('div',{className:'agent',style:{left:dept.w-96,top:68},onClick:()=>onAgentClick(a2,dept)},
+        React.createElement(CharAvatar,{agent:a2,deptColor:dept.color,isActive:activeId===a2.id})
+      )
+    )
+  );
+}
+
+/* ══ CHAT PANEL ═════════════════════════════════════════════════ */
+function ChatPanel({agentData,dept,cfg,onClose}){
+  const[msgs,setMsgs]=React.useState([{id:uid(),role:'s',content:agentData.name+' online · '+agentData.role,time:tnow()}]);
+  const[inp,setInp]=React.useState('');
+  const[busy,setBusy]=React.useState(false);
+  const endRef=React.useRef(null);
+  React.useEffect(()=>{endRef.current?.scrollIntoView({behavior:'smooth'});},[msgs,busy]);
+
+  const send=React.useCallback(async(text)=>{
+    const t=(text||inp).trim();
+    if(!t||busy) return;
+    setInp('');
+    const hist=[];
+    const um={id:uid(),role:'u',content:t,time:tnow()};
+    setMsgs(p=>{p.forEach(m=>{if(m.role==='u')hist.push({role:'user',content:m.content});else if(m.role==='a')hist.push({role:'assistant',content:m.content});});return[...p,um];});
+    hist.push({role:'user',content:t});
+    setBusy(true);
+    try{
+      const r=await callAgent(cfg,agentData.sys,hist);
+      setMsgs(p=>[...p,{id:uid(),role:'a',content:r,time:tnow()}]);
+      if(window.speechSynthesis){window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(r.slice(0,250));window.speechSynthesis.speak(u);}
+    } catch(e){setMsgs(p=>[...p,{id:uid(),role:'s',content:'⚠ '+e.message,time:tnow()}]);}
+    finally{setBusy(false);}
+  },[inp,busy,cfg,agentData]);
+
+  const c=dept?.color||'#ffd700';
+  return React.createElement('div',{className:'cpanel'},
+    React.createElement('div',{className:'cp-head'},
+      React.createElement('div',{className:'cp-av',style:{borderColor:c,background:c+'15',fontSize:22},
+        React.createElement(ChibiChar,{li:agentData.id.charCodeAt(agentData.id.length-1)%6,shirt:c,isActive:true})
+      }),
+      React.createElement('div',{style:{marginLeft:4}},
+        React.createElement('div',{className:'cp-name',style:{color:c}},agentData.name),
+        React.createElement('div',{className:'cp-role'},agentData.role),
+        dept&&React.createElement('div',{className:'cp-dept',style:{color:c,borderColor:c+'40'}},dept.name)
+      ),
+      React.createElement('button',{className:'cp-x',onClick:onClose},'✕')
+    ),
+    React.createElement('div',{className:'cp-msgs'},
+      ...msgs.map(m=>React.createElement('div',{key:m.id,className:'cmsg '+(m.role==='u'?'u':'')},
+        m.role!=='s'&&React.createElement('div',{className:'cmsg-meta'},m.role==='u'?'YOU':agentData.name,' · ',m.time),
+        React.createElement('div',{className:'cmsg-b '+(m.role==='u'?'u':m.role==='a'?'a':'s'),style:m.role==='a'?{borderColor:c+'40'}:{}},m.content)
+      )),
+      busy&&React.createElement('div',{className:'cmsg-think',style:{borderColor:c+'40'}},
+        React.createElement('div',{className:'dot',style:{background:c}}),
+        React.createElement('div',{className:'dot',style:{background:c}}),
+        React.createElement('div',{className:'dot',style:{background:c}}),
+        React.createElement('span',{style:{color:c}},'Thinking...')
+      ),
+      React.createElement('div',{ref:endRef})
+    ),
+    React.createElement('div',{className:'cp-bar'},
+      React.createElement('textarea',{className:'cp-ta',value:inp,onChange:e=>setInp(e.target.value),onKeyDown:e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}},placeholder:'Message '+agentData.name+'...',rows:1}),
+      React.createElement('button',{className:'v-btn',onClick:()=>alert('Voice: Click the mic in your browser address bar or use Chrome speech input.')},'🎙'),
+      React.createElement('button',{className:'cp-send',onClick:()=>send(),disabled:!inp.trim()||busy,style:inp.trim()&&!busy?{background:c,color:'#000'}:{}},busy?'...':'▶')
+    )
+  );
+}
+
+/* ══ MEETING PANEL ═════════════════════════════════════════════ */
+function MeetingPanel({cfg,onClose}){
+  const[feed,setFeed]=React.useState([]);
+  const[inp,setInp]=React.useState('');
+  const[busy,setBusy]=React.useState(false);
+  const[thk,setThk]=React.useState({});
+  const endRef=React.useRef(null);
+  React.useEffect(()=>{endRef.current?.scrollIntoView({behavior:'smooth'});},[feed,thk]);
+
+  const run=React.useCallback(async(text)=>{
+    const t=(text||inp).trim();
+    if(!t||busy) return;
+    setInp('');setBusy(true);
+    setFeed(p=>[...p,{id:uid(),type:'user',content:t}]);
+    const init={};ALL_LEADS.forEach(a=>{init[a.id]=true;});setThk(init);
+    await Promise.all(ALL_LEADS.map(async ag=>{
+      try{
+        const r=await callAgent({...cfg,maxTokens:200},ag.sys+'\n\nYou are in a team meeting. Give a brief 2-3 sentence response from your department perspective.',[{role:'user',content:t}]);
+        setFeed(p=>[...p,{id:uid(),type:'agent',agent:ag,content:r}]);
+      } catch(e){}
+      setThk(p=>({...p,[ag.id]:false}));
+    }));
+    setBusy(false);setThk({});
+  },[inp,busy,cfg]);
+
+  return React.createElement('div',{className:'mpanel'},
+    React.createElement('div',{className:'mp-head'},
+      React.createElement('div',null,
+        React.createElement('div',{className:'mp-title'},'🐾 APEX TEAM MEETING'),
+        React.createElement('div',{className:'mp-chips'},
+          ...ALL_LEADS.map(a=>React.createElement('div',{key:a.id,className:'mp-chip',style:{color:a.deptColor,borderColor:a.deptColor+'40',background:a.deptColor+'10'}},a.name))
+        )
+      ),
+      React.createElement('button',{className:'mp-x',onClick:onClose},'✕')
+    ),
+    React.createElement('div',{className:'mp-feed'},
+      feed.length===0&&React.createElement('div',{style:{fontFamily:"'Press Start 2P'",fontSize:'6px',color:'#1a3050',textAlign:'center',marginTop:40}},'RAISE A TOPIC — ALL AGENTS RESPOND'),
+      ...feed.map(item=>item.type==='user'?(
+        React.createElement('div',{key:item.id,style:{display:'flex',justifyContent:'flex-end'}},
+          React.createElement('div',{style:{maxWidth:'60%',background:'rgba(96,165,250,.08)',border:'1px solid rgba(96,165,250,.25)',borderRadius:'4px 4px 0 4px',padding:'10px 14px',fontFamily:"'JetBrains Mono',monospace",fontSize:13,color:'#c8e0ff',lineHeight:1.65}},item.content)
+        )
+      ):(
+        React.createElement('div',{key:item.id,className:'mp-msg'},
+          React.createElement('div',{className:'mp-av',style:{borderColor:item.agent.deptColor,background:item.agent.deptColor+'12',fontSize:12},
+            React.createElement(ChibiChar,{li:item.agent.id.charCodeAt(item.agent.id.length-1)%6,shirt:item.agent.deptColor})
+          }),
+          React.createElement('div',{className:'mp-body'},
+            React.createElement('div',{className:'mp-mname',style:{color:item.agent.deptColor}},item.agent.name),
+            React.createElement('div',{className:'mp-text'},item.content)
+          )
+        )
+      )),
+      ...Object.entries(thk).filter(([,v])=>v).map(([id])=>{
+        const ag=ALL_LEADS.find(a=>a.id===id);
+        if(!ag)return null;
+        return React.createElement('div',{key:id,className:'mp-msg'},
+          React.createElement('div',{className:'mp-av',style:{borderColor:ag.deptColor,background:ag.deptColor+'12'},
+            React.createElement(ChibiChar,{li:ag.id.charCodeAt(ag.id.length-1)%6,shirt:ag.deptColor})
+          }),
+          React.createElement('div',{className:'mp-body'},
+            React.createElement('div',{className:'mp-mname',style:{color:ag.deptColor}},ag.name),
+            React.createElement('div',{className:'mp-think'},
+              React.createElement('div',{className:'dot',style:{background:ag.deptColor}}),
+              React.createElement('div',{className:'dot',style:{background:ag.deptColor}}),
+              React.createElement('div',{className:'dot',style:{background:ag.deptColor}}),
+              React.createElement('span',{style:{color:ag.deptColor}},'Speaking...')
+            )
+          )
+        );
+      }),
+      React.createElement('div',{ref:endRef})
+    ),
+    React.createElement('div',{className:'mp-bar'},
+      React.createElement('textarea',{className:'mp-ta',value:inp,onChange:e=>setInp(e.target.value),onKeyDown:e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();run();}},placeholder:'Raise a topic for the whole team...',rows:1}),
+      React.createElement('button',{className:'mp-vbtn'},'🎙'),
+      React.createElement('button',{className:'mp-send',onClick:()=>run(),disabled:!inp.trim()||busy},busy?'...':'ALL AGENTS ▶')
+    )
+  );
+}
+
+/* ══ HUGO'S DESK (inline 3D monitor) ═════════════════════════════ */
+function HugoDesk(){
+  return React.createElement('div',{style:{position:'absolute',top:2,left:'50%',transform:'translateX(-50%)',display:'flex',flexDirection:'column',alignItems:'center'}},
+    React.createElement('div',{style:{width:58,height:42,background:'linear-gradient(160deg,#2c2c2c,#1a1a1a)',border:'2px solid #0e0e0e',borderRadius:3,padding:3,position:'relative',boxShadow:'2px 4px 14px rgba(0,0,0,.85)'}},
+      React.createElement('div',{style:{position:'absolute',top:-7,left:1,right:1,height:7,background:'linear-gradient(180deg,#3c3c3c,#2a2a2a)',borderRadius:'3px 3px 0 0',border:'1px solid #0e0e0e',borderBottom:'none'}}),
+      React.createElement('div',{style:{position:'absolute',top:1,right:-6,bottom:1,width:6,background:'#181818',borderRadius:'0 3px 3px 0',border:'1px solid #0e0e0e',borderLeft:'none'}}),
+      React.createElement('div',{style:{width:'100%',height:'100%',background:'linear-gradient(160deg,#061828,#0a2444)',borderRadius:1,overflow:'hidden',position:'relative'}},
+        React.createElement('div',{style:{position:'absolute',inset:3,display:'flex',flexDirection:'column',gap:2}},
+        React.createElement('div',{style:{height:2,background:'#ffd700',width:'80%',opacity:0.85}}),
+        React.createElement('div',{style:{height:2,background:'#00c878',width:'60%',opacity:0.75}}),
+        React.createElement('div',{style:{height:2,background:'#0090ff',width:'70%',opacity:0.75}}),
+        React.createElement('div',{style:{display:'flex',gap:2,alignItems:'center'}},
+          React.createElement('div',{style:{width:3,height:3,borderRadius:'50%',background:'#ffd700',opacity:0.9}}),
+          React.createElement('div',{style:{flex:1,height:1,background:'rgba(255,255,255,0.1)'}}),
+          React.createElement('div',{style:{width:2,height:5,background:'#00ff88',animation:'cur .9s step-end infinite'}})
+        )
+      )
+    ),
+    React.createElement('div',{style:{width:6,height:9,background:'#2a2a2a'}}),
+    React.createElement('div',{style:{width:30,height:5,background:'#222',borderRadius:2}}),
+    React.createElement('div',{style:{position:'absolute',bottom:3,left:8,width:56,height:10,background:'linear-gradient(180deg,#2e2e2e,#222)',border:'1.5px solid #111',borderRadius:2,transform:'perspective(80px) rotateX(-14deg)',transformOrigin:'bottom center'}})
+  );
+}
+
+/* ══ MAIN ═══════════════════════════════════════════════════════ */
+function ApexOffice(){
+  const[cfg,setCfg]=React.useState(DEFAULT_CFG);
+  const[cfgD,setCfgD]=React.useState(DEFAULT_CFG);
+  const[showCfg,setShowCfg]=React.useState(false);
+  const[cfgRes,setCfgRes]=React.useState(null);
+  const[testing,setTesting]=React.useState(false);
+  const[active,setActive]=React.useState(null);
+  const[showMeet,setShowMeet]=React.useState(false);
+
+  const open=(agent,dept)=>{if(active?.agent.id===agent.id){setActive(null);return;}setActive({agent,dept});};
+
+  const testConn=async()=>{
+    setTesting(true);setCfgRes({t:'info',m:'Pinging...'});
+    try{
+      const r=await fetch(cfgD.endpoint+'/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfgD.token,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:cfgD.model,max_tokens:20,messages:[{role:'user',content:'Reply: OK'}]})});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const d=await r.json();
+      setCfgRes({t:'ok',m:'✓ CONNECTED — '+(d?.content?.[0]?.text||'').slice(0,50)});
+    } catch(e){setCfgRes({t:'err',m:'✗ '+e.message});}
+    finally{setTesting(false);}
+  };
+
+  return React.createElement(React.Fragment,null,
+
+    /* OFFICE BACKGROUND */
+    React.createElement('div',{className:'scene-outer'},
+      React.createElement('div',{className:'scene-wrap'},
+        React.createElement('div',{className:'office'},
+          React.createElement('div',{className:'back-wall'},
+            ...[0,1,2,3,4].map(i=>React.createElement('div',{key:i,className:'ww'},React.createElement('div',null),React.createElement('div',null),React.createElement('div',null),React.createElement('div',null)))
+          ),
+          React.createElement('div',{className:'rug',style:{left:220,top:243,width:200,height:185,background:'#5a3a8a'}}),
+          React.createElement('div',{className:'rug',style:{left:876,top:243,width:196,height:185,background:'#2a5a5a'}}),
+          React.createElement('div',{className:'rug',style:{left:10,top:466,width:420,height:200,background:'#3a5a3a'}}),
+          ...[[1300,10],[1300,200],[1300,400],[1300,590],[10,654],[230,656],[450,656],[660,656],[870,656],[1080,656],[0,445],[0,220]].map(([x,y],i)=>
+            React.createElement('div',{key:i,className:'plant',style:{left:x,top:y}},'🌿')
+          ),
+
+          /* ZONES */
+          ...DEPTS.map(d=>React.createElement(Zone,{key:d.id,dept:d,onAgentClick:open,activeId:active?.agent?.id})),
+
+          /* MEETING ROOM */
+          React.createElement('div',{className:'mzone',style:{left:MZONE.x,top:MZONE.y,width:MZONE.w,height:MZONE.h}},
+            React.createElement('div',{className:'mzone-head'},'🏢 ',React.createElement('span',null,'MEETING ROOM')),
+            React.createElement('div',{className:'mtable',style:{left:MZONE.w/2-74,top:28,width:148,height:108}},
+              React.createElement('span',{style:{fontSize:30}},'☕')
+            ),
+            React.createElement('div',{className:'meet-hint',onClick:()=>setShowMeet(true)},'▶ CLICK TABLE — START MEETING'),
+
+            /* HUGO IN MEETING ROOM */
+            React.createElement('div',{className:'hugo-wrap',style:{position:'absolute',left:MZONE.w/2-56,top:90},onClick:()=>open(HUGO,{color:'#ffd700',name:'EXECUTIVE'})},
+              React.createElement('div',{className:'hugo-desk'},
+                React.createElement(HugoDesk,null)
+              ),
+              React.createElement(CharAvatar,{agent:HUGO,deptColor:'#ffd700',isActive:active?.agent?.id==='hugo',isHugo:true})
+            )
+          ),
+
+          /* EXECUTIVE AREA LABEL */
+          React.createElement('div',{style:{position:'absolute',left:225,top:456,width:200,height:218,background:'rgba(255,215,0,.03)',border:'2px dashed rgba(255,215,0,.12)',borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center'}},
+            React.createElement('span',{style:{fontFamily:"'Press Start 2P'",fontSize:5,color:'rgba(255,215,0,0.18)'}},'EXECUTIVE AREA')
+          ),
+
+          /* FOOTER HINT */
+          React.createElement('div',{style:{position:'absolute',bottom:6,left:'50%',transform:'translateX(-50%)',fontFamily:"'Press Start 2P'",fontSize:'5px',color:'rgba(255,255,255,0.1)',pointerEvents:'none',whiteSpace:'nowrap'}},'CLICK AGENT TO CHAT · CLICK TABLE FOR MEETING'),
+
+          /* BOTTOM BAR */
+          React.createElement('div',{style:{position:'absolute',bottom:0,left:0,right:0,height:46,background:'rgba(5,8,18,0.98)',borderTop:'1px solid #1a3058',display:'flex',alignItems:'center',padding:'0 16px',gap:12}},
+            React.createElement('span',{style:{fontFamily:"'Press Start 2P'",fontSize:9,color:'#ffd700',textShadow:'0 0 12px #ffd70080',letterSpacing:1}},'🐾 APEX HQ'),
+            React.createElement('div',{style:{width:1,height:22,background:'#1a3058'}}),
+            React.createElement('span',{style:{fontFamily:"'Press Start 2P'",fontSize:5,color:'#3a5a7f'}},'AI OFFICE · 11 DEPTS · 23 AGENTS'),
+            React.createElement('div',{style:{marginLeft:'auto',display:'flex',gap:8}},
+              React.createElement('button',{style:{fontFamily:"'Press Start 2P'",fontSize:6,padding:'6px 11px',borderRadius:3,cursor:'pointer',border:'1px solid rgba(255,215,0,0.4)',background:'transparent',color:'#ffd700'},onClick:()=>setShowMeet(true)},'🏢 TEAM MEETING'),
+              React.createElement('button',{style:{fontFamily:"'Press Start 2P'",fontSize:6,padding:'6px 11px',borderRadius:3,cursor:'pointer',border:'1px solid #1a3058',background:'transparent',color:'#4a6a9f'},onClick:()=>{setCfgD(cfg);setShowCfg(true);setCfgRes(null);}},'⚙ CONFIG')
+            )
+          )
+        )
+      )
+    ),
+
+    /* OVERLAYS */
+    active&&React.createElement(ChatPanel,{agentData:active.agent,dept:active.dept,cfg,onClose:()=>setActive(null)}),
+    showMeet&&React.createElement(MeetingPanel,{cfg,onClose:()=>setShowMeet(false)}),
+
+    showCfg&&React.createElement('div',{className:'cfg-ov'},
+      React.createElement('div',{className:'cfg-box'},
+        React.createElement('div',{className:'cfg-title'},'⚙ OPENCLAW CONFIG'),
+        ...[['ENDPOINT','endpoint'],['API TOKEN','token'],['MODEL','model'],['MAX TOKENS','maxTokens']].map(([l,k])=>
+          React.createElement('div',{key:k,className:'cfg-f'},
+            React.createElement('div',{className:'cfg-l'},l),
+            React.createElement('input',{className:'cfg-i',type:k==='token'?'password':'text',value:cfgD[k],onChange:e=>setCfgD(p=>({...p,[k]:e.target.value}))})
+          )
+        ),
+        cfgRes&&React.createElement('div',{className:'cfg-res '+(cfgRes.t==='ok'?'cr-ok':cfgRes.t==='err'?'cr-err':'cr-info')},cfgRes.m),
+        React.createElement('div',{className:'cfg-btns'},
+          React.createElement('button',{className:'cfg-ok',onClick:()=>{setCfg(cfgD);setShowCfg(false);}},'SAVE & CLOSE'),
+          React.createElement('button',{className:'cfg-test',onClick:testConn,disabled:testing,style:{fontFamily:"'Press Start 2P'",fontSize:6,padding:'9px 13px',borderRadius:3,cursor:'pointer',border:'1px solid #60a5fa',background:'transparent',color:'#60a5fa'}},testing?'TESTING...':'TEST CONNECTION'),
+          React.createElement('button',{className:'cfg-cancel',onClick:()=>setShowCfg(false),style:{fontFamily:"'Press Start 2P'",fontSize:6,padding:'9px 12px',borderRadius:3,cursor:'pointer',border:'1px solid #1a3050',background:'transparent',color:'#2a4060'}},'CANCEL')
+        )
+      )
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(ApexOffice));
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 // APEX Web Office Server
 // Run: node server.js
-// Then open: http://192.168.0.208:3000 (from any device on your network)
+// Then open: http://192.168.0.207:3000 (from any device on your network)
 //
 // AI calls proxy to OpenClaw gateway — uses ALL your installed models for FREE
 
@@ -11,7 +11,7 @@ const path = require('path')
 const PORT = 3000
 const OPENCLAW_URL = 'http://127.0.0.1:18789'
 const OPENCLAW_TOKEN = 'fd6aa805e3747416b6e83eb3e66bfbc7969561eb903c22c3'
-const SERVE_FILE = path.join(__dirname, 'WEB-OFFICE.html')
+const SERVE_FILE = path.join(__dirname, 'pixel-office.html')
 
 const MIME = {
   '.html': 'text/html',
@@ -77,7 +77,7 @@ server.listen(PORT, '0.0.0.0', () => {
 🔥 APEX WEB OFFICE — SERVER MODE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    Local:   http://localhost:${PORT}
-   LAN:     http://192.168.0.208:${PORT}
+   LAN:     http://192.168.0.207:${PORT}
 
    Open this URL on any device on your network.
    AI proxies to OpenClaw gateway → uses your installed models.
