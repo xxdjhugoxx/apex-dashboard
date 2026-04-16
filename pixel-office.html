@@ -65,8 +65,33 @@ body{background:var(--bg);overflow:hidden;}
 .mse{position:absolute;bottom:5px;right:4px;width:10px;height:14px;background:linear-gradient(160deg,#333,#1e1e1e);border:1.5px solid #111;border-radius:5px 5px 4px 4px;box-shadow:2px 2px 6px rgba(0,0,0,.7);}
 .mse::before{content:'';position:absolute;top:3px;left:50%;transform:translateX(-50%);width:1.5px;height:6px;background:rgba(255,255,255,.15);}
 .desk-mug{position:absolute;top:4px;right:3px;font-size:12px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.65);}
+
+/* WALKER AGENT */
+.walker{position:absolute;display:flex;flex-direction:column;align-items:center;z-index:50;pointer-events:none;transition:none;}
+.walker-inner{position:relative;}
+/* Walking animation */
+.walker.walking .chibi-svg{animation:walkerBounce 0.3s ease-in-out infinite alternate;}
+@keyframes walkerBounce{from{transform:translateY(0) scaleY(1)}to{transform:translateY(-3px) scaleY(1.03)}}
+/* Working/typing animation */
+.walker.working .chibi-svg{animation:workerShake 0.4s ease-in-out infinite;}
+@keyframes workerShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-1.5px)}75%{transform:translateX(1.5px)}}
+/* Thinking animation */
+.walker.thinking .chibi-svg{animation:thinkerBob 1.2s ease-in-out infinite;}
+@keyframes thinkerBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+/* Handshake animation */
+.walker.handshake .chibi-svg{animation:handshakeShake 0.5s ease-in-out infinite alternate;}
+@keyframes handshakeShake{0%{transform:rotate(-8deg)}100%{transform:rotate(8deg)}}
+/* Bubble */
+.walker-bubble{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:rgba(4,7,18,.97);border:1.5px solid;border-radius:6px;padding:5px 8px;font-family:var(--mono);font-size:9px;max-width:140px;white-space:pre-wrap;word-break:break-word;color:#c8e0ff;line-height:1.5;pointer-events:none;z-index:60;margin-bottom:6px;}
+.walker-bubble::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(4,7,18,.97);}
+/* Idle at desk */
+.walker.idle .chibi-svg{animation:idleBreathe 3s ease-in-out infinite;}
+@keyframes idleBreathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.02)}}
+
 .agent{position:absolute;display:flex;flex-direction:column;align-items:center;cursor:pointer;z-index:10;transition:transform .15s;}
 .agent:hover{transform:scale(1.1) translateY(-5px);}
+
+/* CHAT PANEL */
 .cpanel{position:fixed;right:0;top:0;bottom:0;width:355px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;z-index:200;animation:sIn .2s ease-out;backdrop-filter:blur(14px);}
 @keyframes sIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
 .cp-head{padding:13px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px;background:rgba(8,14,32,.9);flex-shrink:0;}
@@ -84,6 +109,7 @@ body{background:var(--bg);overflow:hidden;}
 .cmsg-b.u{background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.25);color:#c8e0ff;border-bottom-right-radius:0;}
 .cmsg-b.a{background:rgba(12,22,46,.8);border:1px solid;color:#c8e0ff;border-bottom-left-radius:0;}
 .cmsg-b.s{background:rgba(0,0,0,.3);border:1px dashed #1a3050;color:#2a4a6f;font-family:var(--pixel);font-size:9px;align-self:center;max-width:100%;text-align:center;}
+.cmsg-b.ai2ai{background:rgba(255,215,0,.05);border:1px solid rgba(255,215,0,.2);color:#ffd700;border-bottom-left-radius:0;font-style:italic;}
 .cmsg-think{max-width:88%;padding:8px 12px;border-radius:4px;border:1px solid;border-bottom-left-radius:0;display:flex;gap:5px;align-items:center;background:rgba(12,22,46,.6);font-family:var(--pixel);font-size:5px;}
 .cp-bar{padding:10px;border-top:1px solid var(--border);display:flex;gap:7px;flex-shrink:0;background:rgba(5,8,18,.8);}
 .cp-ta{flex:1;background:rgba(12,22,46,.8);border:1px solid var(--border);color:#c8e0ff;font-family:var(--mono);font-size:13px;padding:8px 10px;border-radius:3px;resize:none;outline:none;min-height:38px;max-height:90px;}
@@ -98,6 +124,8 @@ body{background:var(--bg);overflow:hidden;}
 .dot{width:4px;height:4px;border-radius:50%;animation:dota 1.2s infinite;}
 .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
 @keyframes dota{0%,80%,100%{opacity:.2;transform:scale(.7)}40%{opacity:1;transform:scale(1)}}
+
+/* MEETING PANEL */
 .mpanel{position:fixed;inset:0;background:rgba(3,6,16,.97);display:flex;flex-direction:column;z-index:300;animation:fIn .25s ease-out;}
 @keyframes fIn{from{opacity:0}to{opacity:1}}
 .mp-head{padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;background:rgba(5,8,18,.9);flex-shrink:0;}
@@ -120,6 +148,9 @@ body{background:var(--bg);overflow:hidden;}
 .mp-send:disabled{background:#1a2a44;color:#2a3a54;cursor:not-allowed;}
 .mp-vbtn{width:44px;height:44px;border-radius:4px;border:1px solid var(--border);background:transparent;color:#3a5a7f;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .mp-vbtn:hover{border-color:#60a5fa;color:#60a5fa;}
+.mp-vbtn.on{border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.1);animation:pmic 1s infinite;}
+
+/* CONFIG MODAL */
 .cfg-ov{position:fixed;inset:0;background:rgba(3,6,16,.93);display:flex;align-items:center;justify-content:center;z-index:400;}
 .cfg-box{background:#080e20;border:1px solid var(--border);border-radius:8px;padding:26px 30px;width:450px;max-width:94vw;}
 .cfg-title{font-family:var(--pixel);font-size:8px;color:#60a5fa;margin-bottom:18px;}
@@ -129,18 +160,39 @@ body{background:var(--bg);overflow:hidden;}
 .cfg-i:focus{border-color:#60a5fa;}
 .cfg-btns{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
 .cfg-ok{background:#22c55e;color:#000;border:none;font-family:var(--pixel);font-size:6px;padding:9px 16px;border-radius:3px;cursor:pointer;}
-.cfg-test{background:transparent;color:#60a5fa;border:1px solid #60a5fa;font-family:var(--pixel);font-size:6px;padding:9px 13px;border-radius:3px;cursor:pointer;}
 .cfg-cancel{background:transparent;color:#2a4060;border:1px solid #1a3050;font-family:var(--pixel);font-size:6px;padding:9px 12px;border-radius:3px;cursor:pointer;margin-left:auto;}
 .cfg-res{font-family:var(--pixel);font-size:5px;padding:7px 10px;border-radius:3px;margin-top:10px;}
 .cr-ok{color:#22c55e;background:rgba(34,197,94,.07);border:1px solid #22c55e;}
 .cr-err{color:#f87171;background:rgba(248,113,113,.07);border:1px solid #f87171;}
 .cr-info{color:#60a5fa;background:rgba(96,165,250,.07);border:1px solid #60a5fa;}
+
+/* BOTTOM BAR */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;height:56px;background:rgba(5,8,18,0.98);border-top:1px solid #1a3058;display:flex;align-items:center;padding:0 16px;gap:12px;z-index:150;}
+.bb-logo{font-family:var(--pixel);font-size:8px;color:#ffd700;text-shadow:0 0 12px #ffd70080;letter-spacing:1px;white-space:nowrap;}
+.bb-div{width:1px;height:22px;background:#1a3058;flex-shrink:0;}
+.bb-status{font-family:var(--pixel);font-size:4px;color:#3a5a7f;white-space:nowrap;}
+.bb-input-wrap{flex:1;display:flex;gap:8px;align-items:center;}
+.bb-ta{flex:1;background:rgba(10,18,40,.9);border:1px solid #1a3058;color:#c8e0ff;font-family:var(--mono);font-size:14px;padding:10px 14px;border-radius:4px;resize:none;outline:none;max-height:80px;}
+.bb-ta:focus{border-color:#2a5a8f;}
+.bb-voice{width:44px;height:44px;border-radius:4px;border:1px solid #1a3058;background:transparent;color:#3a5a7f;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.bb-voice:hover{border-color:#60a5fa;color:#60a5fa;}
+.bb-voice.on{border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.1);animation:pmic 1s infinite;}
+.bb-send{background:#22c55e;color:#000;border:none;font-family:var(--pixel);font-size:7px;padding:0 18px;border-radius:4px;cursor:pointer;height:44px;flex-shrink:0;}
+.bb-send:hover{background:#16a34a;}
+.bb-meet{background:rgba(255,215,0,.1);color:#ffd700;border:1px solid rgba(255,215,0,.4);font-family:var(--pixel);font-size:6px;padding:0 14px;border-radius:4px;cursor:pointer;height:44px;flex-shrink:0;}
+.bb-meet:hover{background:rgba(255,215,0,.2);}
+.bb-cfg{background:transparent;color:#4a6a9f;border:1px solid #1a3058;font-family:var(--pixel);font-size:6px;padding:0 12px;border-radius:4px;cursor:pointer;height:44px;flex-shrink:0;}
+.bb-cfg:hover{color:#60a5fa;border-color:#60a5fa;}
+
 .rug{position:absolute;border-radius:6px;opacity:.45;}
 .plant{position:absolute;font-size:22px;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45));}
 ::-webkit-scrollbar{width:6px;height:6px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:#1a3058;border-radius:3px;}
 ::-webkit-scrollbar-thumb:hover{background:#2a4a78;}
+
+/* Typing cursor blink for monitors when agent is typing */
+.mon-typing .scr-cur{animation:cur .4s step-end infinite !important;}
 </style>
 </head>
 <body>
@@ -151,21 +203,44 @@ body{background:var(--bg);overflow:hidden;}
 <script type="text/babel">
 /* ══ DATA ═══════════════════════════════════════════════════════ */
 const DEPTS=[
- {id:'sales',name:'SALES',icon:'💼',color:'#4ade80',x:10,y:10,w:200,h:210,agents:[{id:'s1',name:'Alex',role:'Sales Lead',sys:'You are Alex, Sales Lead at APEX. Close deals and drive revenue. Be persuasive and confident.'},{id:'s2',name:'Sam',role:'Account Exec',sys:'You are Sam, Account Executive at APEX. Manage client relationships and pipeline. Be sharp.'}]},
- {id:'marketing',name:'MARKETING',icon:'📢',color:'#f472b6',x:225,y:10,w:200,h:210,agents:[{id:'m1',name:'Maya',role:'Brand Manager',sys:'You are Maya, Brand Manager at APEX. Shape brand identity and campaigns. Be creative and bold.'},{id:'m2',name:'Leo',role:'Growth Hacker',sys:'You are Leo, Growth Hacker at APEX. Find scalable growth channels. Be fearless and data-driven.'}]},
- {id:'operations',name:'OPERATIONS',icon:'⚙️',color:'#60a5fa',x:440,y:10,w:200,h:210,agents:[{id:'o1',name:'Ora',role:'Process Manager',sys:'You are Ora, Process Manager at APEX. Streamline workflows and operations. Be systematic.'},{id:'o2',name:'Rex',role:'Systems Admin',sys:'You are Rex, Systems Admin at APEX. Keep infrastructure solid. Be technical.'}]},
- {id:'finance',name:'FINANCE',icon:'💰',color:'#fbbf24',x:655,y:10,w:200,h:210,agents:[{id:'f1',name:'Max',role:'CFO Analyst',sys:'You are Max, CFO Analyst at APEX. Analyze financials and strategy. Be rigorous.'},{id:'f2',name:'Fia',role:'Budget Controller',sys:'You are Fia, Budget Controller at APEX. Save resources wisely. Be precise.'}]},
- {id:'aiops',name:'AI OPS',icon:'🤖',color:'#22d3ee',x:870,y:10,w:200,h:210,agents:[{id:'a1',name:'Nova',role:'AI Engineer',sys:'You are Nova, AI Engineer at APEX. Build and optimize AI models. Be innovative.'},{id:'a2',name:'Flux',role:'Model Ops',sys:'You are Flux, Model Ops at APEX. Monitor AI pipelines. Be agile.'}]},
- {id:'peoplehr',name:'PEOPLE/HR',icon:'👥',color:'#a78bfa',x:1085,y:10,w:235,h:210,agents:[{id:'h1',name:'Aria',role:'HR Lead',sys:'You are Aria, HR Lead at APEX. Manage culture, hiring and people ops. Be empathetic.'},{id:'h2',name:'Kai',role:'Talent Scout',sys:'You are Kai, Talent Scout at APEX. Find and recruit top talent. Be perceptive.'}]},
- {id:'product',name:'PRODUCT',icon:'🎨',color:'#fb923c',x:10,y:233,w:200,h:210,agents:[{id:'p1',name:'Dot',role:'Product Lead',sys:'You are Dot, Product Lead at APEX. Define product vision and roadmap. Be decisive.'},{id:'p2',name:'Nox',role:'UX Designer',sys:'You are Nox, UX Designer at APEX. Design great user experiences. Be detail-obsessed.'}]},
- {id:'instagram',name:'INSTAGRAM',icon:'📸',color:'#ec4899',x:225,y:233,w:200,h:210,agents:[{id:'i1',name:'Isla',role:'Content Creator',sys:'You are Isla, Content Creator at APEX. Make bold viral content. Be expressive.'},{id:'i2',name:'Zara',role:'Community Mgr',sys:'You are Zara, Community Mgr at APEX. Grow engagement and community. Be warm.'}]},
- {id:'support',name:'SUPPORT',icon:'🎧',color:'#2dd4bf',x:890,y:233,w:200,h:210,agents:[{id:'su1',name:'Ace',role:'Support Lead',sys:'You are Ace, Support Lead at APEX. Solve issues with strength. Be patient.'},{id:'su2',name:'Vex',role:'Tech Support',sys:'You are Vex, Tech Support at APEX. Dig into technical issues deeply. Be tenacious.'}]},
- {id:'data',name:'DATA',icon:'📊',color:'#818cf8',x:1105,y:233,w:215,h:210,agents:[{id:'d1',name:'Nix',role:'Data Scientist',sys:'You are Nix, Data Scientist at APEX. Find patterns in data. Be wise and analytical.'},{id:'d2',name:'Byte',role:'Analytics Eng',sys:'You are Byte, Analytics Eng at APEX. Build dashboards. Be precise.'}]},
- {id:'strategy',name:'STRATEGY',icon:'🎯',color:'#f87171',x:10,y:456,w:200,h:218,agents:[{id:'st1',name:'Gal',role:'Strategy Lead',sys:'You are Gal, Strategy Lead at APEX. Drive strategic direction. Be relentless.'},{id:'st2',name:'Orion',role:'Market Analyst',sys:'You are Orion, Market Analyst at APEX. Spot market opportunities. Be precise.'}]},
+ {id:'sales',name:'SALES',icon:'💼',color:'#4ade80',x:10,y:10,w:200,h:210,agents:[{id:'s1',name:'Alex',role:'Sales Lead',sys:'You are Alex, Sales Lead at APEX. Close deals and drive revenue. Be persuasive and confident.'},{id:'s2',name:'Sam',role:'Account Exec',sys:'You are Sam, Account Executive at APEX. Manage client relationships. Be sharp.'}]},
+ {id:'marketing',name:'MARKETING',icon:'📢',color:'#f472b6',x:225,y:10,w:200,h:210,agents:[{id:'m1',name:'Maya',role:'Brand Manager',sys:'You are Maya, Brand Manager at APEX. Shape brand identity. Be creative and bold.'},{id:'m2',name:'Leo',role:'Growth Hacker',sys:'You are Leo, Growth Hacker at APEX. Find growth channels. Be fearless.'}]},
+ {id:'operations',name:'OPERATIONS',icon:'⚙️',color:'#60a5fa',x:440,y:10,w:200,h:210,agents:[{id:'o1',name:'Ora',role:'Process Manager',sys:'You are Ora, Process Manager at APEX. Streamline workflows. Be systematic.'},{id:'o2',name:'Rex',role:'Systems Admin',sys:'You are Rex, Systems Admin at APEX. Keep infrastructure solid. Be technical.'}]},
+ {id:'finance',name:'FINANCE',icon:'💰',color:'#fbbf24',x:655,y:10,w:200,h:210,agents:[{id:'f1',name:'Max',role:'CFO Analyst',sys:'You are Max, CFO Analyst at APEX. Analyze financials. Be rigorous.'},{id:'f2',name:'Fia',role:'Budget Controller',sys:'You are Fia, Budget Controller at APEX. Save resources. Be precise.'}]},
+ {id:'aiops',name:'AI OPS',icon:'🤖',color:'#22d3ee',x:870,y:10,w:200,h:210,agents:[{id:'a1',name:'Nova',role:'AI Engineer',sys:'You are Nova, AI Engineer at APEX. Build AI models. Be innovative.'},{id:'a2',name:'Flux',role:'Model Ops',sys:'You are Flux, Model Ops at APEX. Monitor pipelines. Be agile.'}]},
+ {id:'peoplehr',name:'PEOPLE/HR',icon:'👥',color:'#a78bfa',x:1085,y:10,w:235,h:210,agents:[{id:'h1',name:'Aria',role:'HR Lead',sys:'You are Aria, HR Lead at APEX. Manage culture and hiring. Be empathetic.'},{id:'h2',name:'Kai',role:'Talent Scout',sys:'You are Kai, Talent Scout at APEX. Find top talent. Be perceptive.'}]},
+ {id:'product',name:'PRODUCT',icon:'🎨',color:'#fb923c',x:10,y:233,w:200,h:210,agents:[{id:'p1',name:'Dot',role:'Product Lead',sys:'You are Dot, Product Lead at APEX. Define vision. Be decisive.'},{id:'p2',name:'Nox',role:'UX Designer',sys:'You are Nox, UX Designer at APEX. Design great UX. Be detail-obsessed.'}]},
+ {id:'instagram',name:'INSTAGRAM',icon:'📸',color:'#ec4899',x:225,y:233,w:200,h:210,agents:[{id:'i1',name:'Isla',role:'Content Creator',sys:'You are Isla, Content Creator at APEX. Make bold content. Be expressive.'},{id:'i2',name:'Zara',role:'Community Mgr',sys:'You are Zara, Community Mgr at APEX. Grow community. Be warm.'}]},
+ {id:'support',name:'SUPPORT',icon:'🎧',color:'#2dd4bf',x:890,y:233,w:200,h:210,agents:[{id:'su1',name:'Ace',role:'Support Lead',sys:'You are Ace, Support Lead at APEX. Solve issues. Be patient.'},{id:'su2',name:'Vex',role:'Tech Support',sys:'You are Vex, Tech Support at APEX. Dig into issues. Be tenacious.'}]},
+ {id:'data',name:'DATA',icon:'📊',color:'#818cf8',x:1105,y:233,w:215,h:210,agents:[{id:'d1',name:'Nix',role:'Data Scientist',sys:'You are Nix, Data Scientist at APEX. Find patterns. Be wise.'},{id:'d2',name:'Byte',role:'Analytics Eng',sys:'You are Byte, Analytics Eng at APEX. Build dashboards. Be precise.'}]},
+ {id:'strategy',name:'STRATEGY',icon:'🎯',color:'#f87171',x:10,y:456,w:200,h:218,agents:[{id:'st1',name:'Gal',role:'Strategy Lead',sys:'You are Gal, Strategy Lead at APEX. Drive direction. Be relentless.'},{id:'st2',name:'Orion',role:'Market Analyst',sys:'You are Orion, Market Analyst at APEX. Spot opportunities. Be precise.'}]},
 ];
+
+// All agents flat list
+const ALL_AGENTS = DEPTS.reduce((acc, d) => {
+  d.agents.forEach(a => acc.push({...a, deptId:d.id, deptName:d.name, deptColor:d.color}));
+  return acc;
+}, []);
+
 const MZONE={x:440,y:233,w:435,h:210};
-const HUGO={id:'hugo',name:'Hugo',role:'CHIEF — APEX',sys:'You are Hugo, Chief of APEX. You oversee all 11 departments. You are powerful, decisive, and deeply technical. You delegate effectively.'};
-const ALL_LEADS=[...DEPTS.map(d=>({...d.agents[0],deptName:d.name,deptColor:d.color})),{...HUGO,deptName:'EXECUTIVE',deptColor:'#ffd700'}];
+// Table center in office coordinates
+const TABLE_CENTER={x:MZONE.x + MZONE.w/2, y:MZONE.y + 82};
+// Office dimensions
+const OFFICE_W=1330, OFFICE_H=690;
+// Agent desk positions (centered below their zone)
+const AGENT_POSITIONS={};
+DEPTS.forEach(d => {
+  const ax = d.x + 44; // center of first desk
+  const ay = d.y + 68; // desk surface y + offset for chibi
+  const bx = d.x + d.w - 44;
+  const by = d.y + 68;
+  AGENT_POSITIONS[d.agents[0].id] = {x:ax, y:ay, deskId:d.id};
+  AGENT_POSITIONS[d.agents[1].id] = {x:bx, y:by, deskId:d.id};
+});
+
+const HUGO={id:'hugo',name:'Hugo',role:'CHIEF',deptId:'hugo',deptName:'EXECUTIVE',deptColor:'#ffd700',sys:'You are Hugo, Chief of APEX. You oversee all 11 departments. You are powerful and decisive.'};
+const MZONE_AGENTS=[HUGO,...ALL_AGENTS.slice(0,5)]; // 6 agents visible in meeting area
+
 const DEFAULT_CFG={endpoint:'https://api.dragon-claw.com',token:'fd6aa805e3747416b6e83eb3e66bfbc7969561eb903c22c3',model:'openclaw/dragonclaw-web',maxTokens:2048};
 const MUGS=['☕','🧃','🫖','🥤','🧋','☕','🥤','🧃','☕','🫖','🥤'];
 
@@ -185,6 +260,9 @@ async function callAgent(cfg,system,messages){
   } catch(e){ throw e; }
 }
 
+// Ease function for smooth walking
+function easeInOut(t){return t<.5?2*t*t:-1+(4-2*t)*t;}
+
 const LOOKS=[
   {sk:'#d4a06a',hr:'#2a1408',ey:'#120800'},
   {sk:'#f0cc88',hr:'#7a4a18',ey:'#1a0a00'},
@@ -195,14 +273,14 @@ const LOOKS=[
 ];
 
 /* ══ PIXEL CHIBI SVG ═════════════════════════════════════════════ */
-function ChibiChar({li=0, shirt='#4466cc', isActive=false, isHugo=false}){
+function ChibiChar({li=0, shirt='#4466cc', isHugo=false, small=false, animClass=''}){
   const {sk,hr,ey}=LOOKS[li%6];
-  const R=(x,y,w,h,c,op=1)=>React.createElement('rect',{x,y,width:w,height:h,fill:c,opacity:op});
+  const R=(x,y,w,h,c,op=1)=>React.createElement('rect',{x,y,width:w,height:h,fill:c,opacity:op,className:animClass.includes('shake')?'chibi-shake':''});
   const pt='#1c2040', sh='#141020';
   return React.createElement('svg',{
-    width:72,height:96,viewBox:'0 0 24 32',
+    width:small?48:72, height:small?64:96, viewBox:'0 0 24 32',
     style:{imageRendering:'pixelated',display:'block',overflow:'visible',
-      filter:isActive?'drop-shadow(0 0 3px '+shirt+') drop-shadow(0 0 8px '+shirt+'99)':'drop-shadow(0 4px 6px rgba(0,0,0,0.8))'}
+      filter:animClass==='working'?'drop-shadow(0 0 3px '+shirt+')':animClass==='thinking'?'drop-shadow(0 0 5px '+shirt+')':'drop-shadow(0 4px 6px rgba(0,0,0,0.8))'}
   },
     R(4,0,16,3,hr),R(2,1,2,5,hr),R(20,1,2,5,hr),
     isHugo&&R(3,-2,18,3,'#ffd700'),isHugo&&R(5,-4,14,3,'#ffd700'),
@@ -226,31 +304,9 @@ function ChibiChar({li=0, shirt='#4466cc', isActive=false, isHugo=false}){
   );
 }
 
-/* ══ CHAR AVATAR ═════════════════════════════════════════════════ */
-function CharAvatar({agent,deptColor,isActive,isHugo=false}){
-  const li=agent.id.charCodeAt(agent.id.length-1)%6;
-  const c=deptColor;
-  return React.createElement('div',{
-    style:{display:'flex',flexDirection:'column',alignItems:'center',cursor:'pointer',userSelect:'none',transition:'transform .15s'}
-  },
-    React.createElement('div',{style:{position:'relative'}},
-      React.createElement(ChibiChar,{li,shirt:c,isActive,isHugo}),
-      isActive&&React.createElement('div',{
-        style:{position:'absolute',inset:-4,border:'2px solid '+c,boxShadow:'0 0 14px '+c+', 0 0 24px '+c+'70',pointerEvents:'none',borderRadius:2}
-      }),
-      React.createElement('div',{
-        style:{position:'absolute',top:14,right:0,width:9,height:9,borderRadius:'50%',background:isActive?c:'#253050',border:'1.5px solid rgba(0,0,0,0.7)',boxShadow:isActive?'0 0 9px '+c:'none',zIndex:3}
-      })
-    ),
-    React.createElement('div',{
-      style:{fontFamily:"'Press Start 2P'",fontSize:'5px',padding:'3px 8px',borderRadius:2,background:'rgba(4,7,18,0.97)',color:isActive?c:'#b0c8e8',marginTop:2,whiteSpace:'nowrap',border:'1.5px solid '+(isActive?c+'70':'rgba(255,255,255,0.09)'),boxShadow:isActive?'0 0 12px '+c+'50':'none',letterSpacing:'.5px'}
-    },agent.name)
-  );
-}
-
 /* ══ 3D PC ═══════════════════════════════════════════════════════ */
-function PC({dc}){
-  return React.createElement('div',{className:'pc-wrap'},
+function PC({dc,isTyping=false}){
+  return React.createElement('div',{className:'pc-wrap '+(isTyping?'mon-typing':'')},
     React.createElement('div',{className:'mon-3d'},
       React.createElement('div',{className:'mon-bezel'},
         React.createElement('div',{className:'mon-cam'}),
@@ -259,7 +315,7 @@ function PC({dc}){
           React.createElement('div',{className:'scr-in'},
             React.createElement('div',{className:'scr-bar',style:{background:'#00d878',width:'80%'}}),
             React.createElement('div',{className:'scr-row'},React.createElement('div',{className:'scr-dot',style:{background:dc,opacity:0.85}}),React.createElement('div',{className:'scr-line'})),
-            React.createElement('div',{className:'scr-bar',style:{background:'#0090ff',width:'65%'}}),
+            React.createElement('div',{className:'scr-bar',style:{background:'#0090ff',width:isTyping?'45%':'65%'}}),
             React.createElement('div',{className:'scr-row'},React.createElement('div',{className:'scr-dot',style:{background:'#60a5fa',opacity:0.7}}),React.createElement('div',{className:'scr-line'})),
             React.createElement('div',{className:'scr-row'},
               React.createElement('div',{className:'scr-bar',style:{background:'#ffd700',width:'50%',height:1}}),
@@ -277,48 +333,89 @@ function PC({dc}){
 }
 
 /* ══ ZONE ═══════════════════════════════════════════════════════ */
-function Zone({dept,onAgentClick,activeId}){
+function Zone({dept, walkers, onAgentClick, activeId}){
   const bH=dept.h-24;
   const[a1,a2]=dept.agents;
   const mug1=MUGS[a1.id.charCodeAt(a1.id.length-1)%MUGS.length];
   const mug2=MUGS[a2.id.charCodeAt(a2.id.length-1)%MUGS.length];
-  return React.createElement('div',{className:'zone',style:{left:dept.x,top:dept.y,width:dept.w,height:dept.h,borderColor:dept.color+'55'}},
+  // Check if agent is walking
+  const w1=walkers.find(w=>w.agentId===a1.id);
+  const w2=walkers.find(w=>w.agentId===a2.id);
+  // If walking, hide from desk
+  return React.createElement('div',{className:'zone',style:{left:dept.x,top:dept.y,width:dept.w,height:dept.h,borderColor:dept.color+'55',display:w1&&w1.atTable||w2&&w2.atTable?'none':'block'}},
     React.createElement('div',{className:'zone-head',style:{background:dept.color+'22',color:dept.color,borderBottom:'1px solid '+dept.color+'30'}},
       React.createElement('span',null,dept.icon),
       React.createElement('span',null,dept.name)
     ),
     React.createElement('div',{className:'zone-fill',style:{background:dept.color+'08'}}),
     React.createElement('div',{className:'zone-body',style:{height:bH}},
-      React.createElement('div',{className:'desk',style:{left:4,top:8},onClick:()=>onAgentClick(a1,dept)},
+      !w1&&React.createElement('div',{className:'desk',style:{left:4,top:8},onClick:()=>onAgentClick(a1,dept)},
         React.createElement('div',{className:'desk-top'},
-          React.createElement(PC,{dc:dept.color}),
+          React.createElement(PC,{dc:dept.color,isTyping:false}),
           React.createElement('div',{className:'kbd'}),
           React.createElement('div',{className:'mse'}),
           React.createElement('div',{className:'desk-mug'},mug1)
         ),
         React.createElement('div',{className:'desk-front'})
       ),
-      React.createElement('div',{className:'agent',style:{left:2,top:68},onClick:()=>onAgentClick(a1,dept)},
-        React.createElement(CharAvatar,{agent:a1,deptColor:dept.color,isActive:activeId===a1.id})
+      !w1&&React.createElement('div',{className:'agent',style:{left:2,top:68},onClick:()=>onAgentClick(a1,dept)},
+        React.createElement('div',{style:{display:'flex',flexDirection:'column',alignItems:'center'}},
+          React.createElement(ChibiChar,{li:a1.id.charCodeAt(a1.id.length-1)%6,shirt:dept.color,isHugo:false}),
+          React.createElement('div',{style:{fontFamily:"'Press Start 2P'",fontSize:'5px',padding:'2px 6px',borderRadius:2,background:'rgba(4,7,18,.97)',color:activeId===a1.id?dept.color:'#b0c8e8',marginTop:2,border:'1px solid '+(activeId===a1.id?dept.color+'70':'rgba(255,255,255,.09)')}},a1.name)
+        )
       ),
-      React.createElement('div',{className:'desk',style:{left:dept.w-94,top:8},onClick:()=>onAgentClick(a2,dept)},
+      !w2&&React.createElement('div',{className:'desk',style:{left:dept.w-94,top:8},onClick:()=>onAgentClick(a2,dept)},
         React.createElement('div',{className:'desk-top'},
-          React.createElement(PC,{dc:dept.color}),
+          React.createElement(PC,{dc:dept.color,isTyping:false}),
           React.createElement('div',{className:'kbd'}),
           React.createElement('div',{className:'mse'}),
           React.createElement('div',{className:'desk-mug'},mug2)
         ),
         React.createElement('div',{className:'desk-front'})
       ),
-      React.createElement('div',{className:'agent',style:{left:dept.w-96,top:68},onClick:()=>onAgentClick(a2,dept)},
-        React.createElement(CharAvatar,{agent:a2,deptColor:dept.color,isActive:activeId===a2.id})
+      !w2&&React.createElement('div',{className:'agent',style:{left:dept.w-96,top:68},onClick:()=>onAgentClick(a2,dept)},
+        React.createElement('div',{style:{display:'flex',flexDirection:'column',alignItems:'center'}},
+          React.createElement(ChibiChar,{li:a2.id.charCodeAt(a2.id.length-1)%6,shirt:dept.color,isHugo:false}),
+          React.createElement('div',{style:{fontFamily:"'Press Start 2P'",fontSize:'5px',padding:'2px 6px',borderRadius:2,background:'rgba(4,7,18,.97)',color:activeId===a2.id?dept.color:'#b0c8e8',marginTop:2,border:'1px solid '+(activeId===a2.id?dept.color+'70':'rgba(255,255,255,.09)')}},a2.name)
+        )
       )
     )
   );
 }
 
+/* ══ WALKING AGENT ═════════════════════════════════════════════ */
+function WalkingAgent({walker}){
+  const {agent, x, y, targetX, targetY, progress, animClass, bubble, atTable, tableSlot} = walker;
+  const li=agent.id.charCodeAt(agent.id.length-1)%6;
+  // Table slot offsets: spread agents around the table
+  const slotOffsets=[
+    {x:-60,y:-10},{x:0,y:-20},{x:60,y:-10},
+    {x:-80,y:20},{x:80,y:20}
+  ];
+  const slot=slotOffsets[tableSlot%slotOffsets.length];
+  const displayX=atTable?(TABLE_CENTER.x+slot.x-36):(x+(targetX-x)*easeInOut(progress)-36);
+  const displayY=atTable?(TABLE_CENTER.y+slot.y-48):(y+(targetY-y)*easeInOut(progress)-48);
+  const deptColor=agent.deptColor||'#ffd700';
+  return React.createElement('div',{
+    className:'walker '+(atTable?'atTable':'walking')+' '+(animClass||''),
+    style:{
+      left:Math.max(0,Math.min(displayX, OFFICE_W-72))+'px',
+      top:Math.max(0,Math.min(displayY, OFFICE_H-96))+'px',
+      zIndex: atTable?(50+tableSlot):50
+    }
+  },
+    bubble&&React.createElement('div',{
+      className:'walker-bubble',
+      style:{borderColor:deptColor,color:bubble.color||'#c8e0ff'}
+    },bubble.text),
+    React.createElement('div',{className:'walker-inner'},
+      React.createElement(ChibiChar,{li,shirt:deptColor,isHugo:agent.id==='hugo',small:atTable,animClass})
+    )
+  );
+}
+
 /* ══ CHAT PANEL ═════════════════════════════════════════════════ */
-function ChatPanel({agentData,dept,cfg,onClose}){
+function ChatPanel({agentData,dept,cfg,onClose,isAiMsg}){
   const[msgs,setMsgs]=React.useState([{id:uid(),role:'s',content:agentData.name+' online · '+agentData.role,time:tnow()}]);
   const[inp,setInp]=React.useState('');
   const[busy,setBusy]=React.useState(false);
@@ -329,36 +426,36 @@ function ChatPanel({agentData,dept,cfg,onClose}){
     const t=(text||inp).trim();
     if(!t||busy) return;
     setInp('');
-    const hist=[];
     const um={id:uid(),role:'u',content:t,time:tnow()};
-    setMsgs(p=>{p.forEach(m=>{if(m.role==='u')hist.push({role:'user',content:m.content});else if(m.role==='a')hist.push({role:'assistant',content:m.content});});return[...p,um];});
-    hist.push({role:'user',content:t});
+    setMsgs(p=>[...p,um]);
     setBusy(true);
     try{
+      const hist=msgs.filter(m=>m.role==='u'||m.role==='a').map(m=>({role:m.role==='u'?'user':'assistant',content:m.content}));
+      hist.push({role:'user',content:t});
       const r=await callAgent(cfg,agentData.sys,hist);
-      setMsgs(p=>[...p,{id:uid(),role:'a',content:r,time:tnow()}]);
+      setMsgs(p=>[...p,{id:uid(),role:'a',content:r,time:tnow(),isAi:true}]);
       if(window.speechSynthesis){window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(r.slice(0,250));window.speechSynthesis.speak(u);}
     } catch(e){setMsgs(p=>[...p,{id:uid(),role:'s',content:'⚠ '+e.message,time:tnow()}]);}
     finally{setBusy(false);}
-  },[inp,busy,cfg,agentData]);
+  },[inp,busy,cfg,agentData,msgs]);
 
-  const c=dept?.color||'#ffd700';
+  const c=dept?.deptColor||'#ffd700';
   return React.createElement('div',{className:'cpanel'},
     React.createElement('div',{className:'cp-head'},
       React.createElement('div',{className:'cp-av',style:{borderColor:c,background:c+'15',fontSize:22},
-        React.createElement(ChibiChar,{li:agentData.id.charCodeAt(agentData.id.length-1)%6,shirt:c,isActive:true})
-      }),
+        React.createElement(ChibiChar,{li:agentData.id.charCodeAt(agentData.id.length-1)%6,shirt:c,isHugo:false})
+      ),
       React.createElement('div',{style:{marginLeft:4}},
         React.createElement('div',{className:'cp-name',style:{color:c}},agentData.name),
         React.createElement('div',{className:'cp-role'},agentData.role),
-        dept&&React.createElement('div',{className:'cp-dept',style:{color:c,borderColor:c+'40'}},dept.name)
+        dept&&React.createElement('div',{className:'cp-dept',style:{color:c,borderColor:c+'40'}},dept.deptName||dept.name)
       ),
       React.createElement('button',{className:'cp-x',onClick:onClose},'✕')
     ),
     React.createElement('div',{className:'cp-msgs'},
       ...msgs.map(m=>React.createElement('div',{key:m.id,className:'cmsg '+(m.role==='u'?'u':'')},
         m.role!=='s'&&React.createElement('div',{className:'cmsg-meta'},m.role==='u'?'YOU':agentData.name,' · ',m.time),
-        React.createElement('div',{className:'cmsg-b '+(m.role==='u'?'u':m.role==='a'?'a':'s'),style:m.role==='a'?{borderColor:c+'40'}:{}},m.content)
+        React.createElement('div',{className:'cmsg-b '+(m.role==='u'?'u':m.role==='a'?(m.isAi?'a':'s'):'s'),style:m.role==='a'&&m.isAi?{borderColor:c+'40'}:{}},m.content)
       )),
       busy&&React.createElement('div',{className:'cmsg-think',style:{borderColor:c+'40'}},
         React.createElement('div',{className:'dot',style:{background:c}}),
@@ -370,7 +467,7 @@ function ChatPanel({agentData,dept,cfg,onClose}){
     ),
     React.createElement('div',{className:'cp-bar'},
       React.createElement('textarea',{className:'cp-ta',value:inp,onChange:e=>setInp(e.target.value),onKeyDown:e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}},placeholder:'Message '+agentData.name+'...',rows:1}),
-      React.createElement('button',{className:'v-btn',onClick:()=>alert('Voice: Click the mic in your browser address bar or use Chrome speech input.')},'🎙'),
+      React.createElement('button',{className:'v-btn',onClick:()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){const r=new SR();r.lang='en-US';r.continuous=false;r.onresult=ev=>{setInp(ev.results[0][0].transcript);};r.onerror=()=>alert('Speech error');r.start();}else alert('Voice not supported in this browser.')}},'🎙'),
       React.createElement('button',{className:'cp-send',onClick:()=>send(),disabled:!inp.trim()||busy,style:inp.trim()&&!busy?{background:c,color:'#000'}:{}},busy?'...':'▶')
     )
   );
@@ -390,8 +487,8 @@ function MeetingPanel({cfg,onClose}){
     if(!t||busy) return;
     setInp('');setBusy(true);
     setFeed(p=>[...p,{id:uid(),type:'user',content:t}]);
-    const init={};ALL_LEADS.forEach(a=>{init[a.id]=true;});setThk(init);
-    await Promise.all(ALL_LEADS.map(async ag=>{
+    const init={};ALL_AGENTS.slice(0,6).forEach(a=>{init[a.id]=true;});setThk(init);
+    await Promise.all(ALL_AGENTS.slice(0,6).map(async ag=>{
       try{
         const r=await callAgent({...cfg,maxTokens:200},ag.sys+'\n\nYou are in a team meeting. Give a brief 2-3 sentence response from your department perspective.',[{role:'user',content:t}]);
         setFeed(p=>[...p,{id:uid(),type:'agent',agent:ag,content:r}]);
@@ -404,9 +501,9 @@ function MeetingPanel({cfg,onClose}){
   return React.createElement('div',{className:'mpanel'},
     React.createElement('div',{className:'mp-head'},
       React.createElement('div',null,
-        React.createElement('div',{className:'mp-title'},'🐾 APEX TEAM MEETING'),
+        React.createElement('div',{className:'mp-title'},'🐾 TEAM MEETING'),
         React.createElement('div',{className:'mp-chips'},
-          ...ALL_LEADS.map(a=>React.createElement('div',{key:a.id,className:'mp-chip',style:{color:a.deptColor,borderColor:a.deptColor+'40',background:a.deptColor+'10'}},a.name))
+          ...ALL_AGENTS.slice(0,6).map(a=>React.createElement('div',{key:a.id,className:'mp-chip',style:{color:a.deptColor,borderColor:a.deptColor+'40',background:a.deptColor+'10'}},a.name))
         )
       ),
       React.createElement('button',{className:'mp-x',onClick:onClose},'✕')
@@ -420,8 +517,8 @@ function MeetingPanel({cfg,onClose}){
       ):(
         React.createElement('div',{key:item.id,className:'mp-msg'},
           React.createElement('div',{className:'mp-av',style:{borderColor:item.agent.deptColor,background:item.agent.deptColor+'12',fontSize:12},
-            React.createElement(ChibiChar,{li:item.agent.id.charCodeAt(item.agent.id.length-1)%6,shirt:item.agent.deptColor})
-          }),
+            React.createElement(ChibiChar,{li:item.agent.id.charCodeAt(item.agent.id.length-1)%6,shirt:item.agent.deptColor,small:true})
+          ),
           React.createElement('div',{className:'mp-body'},
             React.createElement('div',{className:'mp-mname',style:{color:item.agent.deptColor}},item.agent.name),
             React.createElement('div',{className:'mp-text'},item.content)
@@ -429,12 +526,12 @@ function MeetingPanel({cfg,onClose}){
         )
       )),
       ...Object.entries(thk).filter(([,v])=>v).map(([id])=>{
-        const ag=ALL_LEADS.find(a=>a.id===id);
+        const ag=ALL_AGENTS.find(a=>a.id===id);
         if(!ag)return null;
         return React.createElement('div',{key:id,className:'mp-msg'},
           React.createElement('div',{className:'mp-av',style:{borderColor:ag.deptColor,background:ag.deptColor+'12'},
-            React.createElement(ChibiChar,{li:ag.id.charCodeAt(ag.id.length-1)%6,shirt:ag.deptColor})
-          }),
+            React.createElement(ChibiChar,{li:ag.id.charCodeAt(ag.id.length-1)%6,shirt:ag.deptColor,small:true})
+          ),
           React.createElement('div',{className:'mp-body'},
             React.createElement('div',{className:'mp-mname',style:{color:ag.deptColor}},ag.name),
             React.createElement('div',{className:'mp-think'},
@@ -450,13 +547,13 @@ function MeetingPanel({cfg,onClose}){
     ),
     React.createElement('div',{className:'mp-bar'},
       React.createElement('textarea',{className:'mp-ta',value:inp,onChange:e=>setInp(e.target.value),onKeyDown:e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();run();}},placeholder:'Raise a topic for the whole team...',rows:1}),
-      React.createElement('button',{className:'mp-vbtn'},'🎙'),
+      React.createElement('button',{className:'mp-vbtn',onClick:()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){const r=new SR();r.lang='en-US';r.continuous=false;r.onresult=ev=>{setInp(ev.results[0][0].transcript);setTimeout(()=>run(ev.results[0][0].transcript),300);};r.onerror=()=>alert('Speech error');r.start();}else alert('Voice not supported.')}},'🎙'),
       React.createElement('button',{className:'mp-send',onClick:()=>run(),disabled:!inp.trim()||busy},busy?'...':'ALL AGENTS ▶')
     )
   );
 }
 
-/* ══ HUGO'S DESK (inline 3D monitor) ═════════════════════════════ */
+/* ══ HUGO DESK ═══════════════════════════════════════════════ */
 function HugoDesk(){
   return React.createElement('div',{style:{position:'absolute',top:2,left:'50%',transform:'translateX(-50%)',display:'flex',flexDirection:'column',alignItems:'center'}},
     React.createElement('div',{style:{width:58,height:42,background:'linear-gradient(160deg,#2c2c2c,#1a1a1a)',border:'2px solid #0e0e0e',borderRadius:3,padding:3,position:'relative',boxShadow:'2px 4px 14px rgba(0,0,0,.85)'}},
@@ -464,13 +561,13 @@ function HugoDesk(){
       React.createElement('div',{style:{position:'absolute',top:1,right:-6,bottom:1,width:6,background:'#181818',borderRadius:'0 3px 3px 0',border:'1px solid #0e0e0e',borderLeft:'none'}}),
       React.createElement('div',{style:{width:'100%',height:'100%',background:'linear-gradient(160deg,#061828,#0a2444)',borderRadius:1,overflow:'hidden',position:'relative'}},
         React.createElement('div',{style:{position:'absolute',inset:3,display:'flex',flexDirection:'column',gap:2}},
-        React.createElement('div',{style:{height:2,background:'#ffd700',width:'80%',opacity:0.85}}),
-        React.createElement('div',{style:{height:2,background:'#00c878',width:'60%',opacity:0.75}}),
-        React.createElement('div',{style:{height:2,background:'#0090ff',width:'70%',opacity:0.75}}),
-        React.createElement('div',{style:{display:'flex',gap:2,alignItems:'center'}},
-          React.createElement('div',{style:{width:3,height:3,borderRadius:'50%',background:'#ffd700',opacity:0.9}}),
-          React.createElement('div',{style:{flex:1,height:1,background:'rgba(255,255,255,0.1)'}}),
-          React.createElement('div',{style:{width:2,height:5,background:'#00ff88',animation:'cur .9s step-end infinite'}})
+          React.createElement('div',{style:{height:2,background:'#ffd700',width:'80%',opacity:0.85}}),
+          React.createElement('div',{style:{height:2,background:'#00c878',width:'60%',opacity:0.75}}),
+          React.createElement('div',{style:{height:2,background:'#0090ff',width:'70%',opacity:0.75}}),
+          React.createElement('div',{style:{display:'flex',gap:2,alignItems:'center'}},
+            React.createElement('div',{style:{width:3,height:3,borderRadius:'50%',background:'#ffd700',opacity:0.9}}),
+            React.createElement('div',{style:{flex:1,height:1,background:'rgba(255,255,255,0.1)'}}),
+            React.createElement('div',{style:{width:2,height:5,background:'#00ff88',animation:'cur .9s step-end infinite'}})
         )
       )
     ),
@@ -480,7 +577,7 @@ function HugoDesk(){
   );
 }
 
-/* ══ MAIN ═══════════════════════════════════════════════════════ */
+/* ══ MAIN APP ════════════════════════════════════════════════════ */
 function ApexOffice(){
   const[cfg,setCfg]=React.useState(DEFAULT_CFG);
   const[cfgD,setCfgD]=React.useState(DEFAULT_CFG);
@@ -489,9 +586,152 @@ function ApexOffice(){
   const[testing,setTesting]=React.useState(false);
   const[active,setActive]=React.useState(null);
   const[showMeet,setShowMeet]=React.useState(false);
+  const[bbInp,setBbInp]=React.useState('');
+  const[bbBusy,setBbBusy]=React.useState(false);
+  const[walkers,setWalkers]=React.useState([]);
+  const[voiceOn,setVoiceOn]=React.useState(false);
+  const[chatLog,setChatLog]=React.useState([]); // shared chat history
 
-  const open=(agent,dept)=>{if(active?.agent.id===agent.id){setActive(null);return;}setActive({agent,dept});};
+  // Animation frame ref
+  const animRef=React.useRef(null);
+  const walkStateRef=React.useRef({walkers:[], nextSpawn:0, meetingMode:false});
 
+  /* ── WALKER AI THINK LOOP ─────────────────────────────── */
+  React.useEffect(()=>{
+    let lastTime=0;
+    function tick(time){
+      const dt=time-lastTime;
+      lastTime=time;
+      const ws=walkStateRef.current;
+      ws.nextSpawn-=dt;
+      // Move walkers
+      let changed=false;
+      ws.walkers=ws.walkers.map(w=>{
+        if(w.phase==='walk'){
+          w.progress+=dt/1800;
+          if(w.progress>=1){w.progress=1;w.phase='arrived';w.x=w.targetX;w.y=w.targetY;}
+          changed=true;
+        } else if(w.phase==='arrived'){
+          if(!w.atTable){
+            w.atTable=true;
+            w.progress=0;
+            changed=true;
+          } else {
+            w.progress+=dt/5000;
+            if(w.progress>=1){w.phase='return';w.progress=0;changed=true;}
+          }
+        } else if(w.phase==='return'){
+          w.progress+=dt/1800;
+          if(w.progress>=1){w.phase='done';changed=true;}
+        }
+        return w;
+      }).filter(w=>w.phase!=='done');
+      if(changed) setWalkers([...ws.walkers]);
+      animRef.current=requestAnimationFrame(tick);
+    }
+    animRef.current=requestAnimationFrame(tick);
+    return()=>cancelAnimationFrame(animRef.current);
+  },[]);
+
+  /* ── SPAWN WALKER ──────────────────────────────────── */
+  const spawnWalker=React.useCallback((agent,targetX,targetY,atTable,slot,bubble,animClass)=>{
+    const pos=AGENT_POSITIONS[agent.id]||{x:665,y:300};
+    const w={
+      id:uid(),agentId:agent.id,agent,
+      x:pos.x,y:pos.y,
+      targetX:targetX||TABLE_CENTER.x-36,
+      targetY:targetY||TABLE_CENTER.y-48,
+      progress:0,phase:'walk',
+      atTable:false,tableSlot:slot||0,
+      bubble:bubble||null,
+      animClass:animClass||'thinking'
+    };
+    walkStateRef.current.walkers.push(w);
+    setWalkers([...walkStateRef.current.walkers]);
+    return w;
+  },[]);
+
+  /* ── SEND TO ALL ────────────────────────────────────── */
+  const sendToAll=React.useCallback(async(text)=>{
+    if(!text.trim()||bbBusy) return;
+    setBbBusy(true);
+    // Add to shared chat log
+    setChatLog(p=>[...p,{id:uid(),role:'u',content:text,time:tnow()}]);
+    // Find best agent + alsoCouldHelp
+    const agentList=ALL_AGENTS.map(a=>({...a,score:0}));
+    try {
+      const selResp=await callAgent({...cfg,maxTokens:300},
+        'You are a team coordinator. Hugo asked: "'+text+'"\n\nYour team:\n'+ALL_AGENTS.map(a=>a.name+' ('+a.deptName+', '+a.role+')').join('\n')+'\n\nRespond with JSON only:\n{"primary":"agent-id","alsoCouldHelp":[{"agent":"agent-id","says":"short offer"}],"reasoning":"1 sentence"}\n\nChoose the BEST match for this query. Also list 1-3 others who could help with a SHORT specific offer (max 5 words each).',
+        [{role:'user',content:text}]
+      );
+      let parsed=null;
+      try{parsed=JSON.parse(selResp.replace(/```json\n?|\n?```/g,'').trim());}catch(e){}
+      // Primary agent walks in
+      const primary=parsed?ALL_AGENTS.find(a=>a.id===parsed.primary):ALL_AGENTS[Math.floor(Math.random()*ALL_AGENTS.length)];
+      // Thinking animation first
+      spawnWalker(primary,TABLE_CENTER.x-36,TABLE_CENTER.y-48,true,0,{text:'Let me think...',color:primary.deptColor},'thinking');
+      await new Promise(r=>setTimeout(r,800));
+      // Get actual response
+      const hist=[{role:'user',content:text}];
+      const r=await callAgent(cfg,primary.sys,hist);
+      // Update bubble with actual response
+      const wIdx=walkStateRef.current.walkers.findIndex(w=>w.agentId===primary.id&&w.phase!=='return'&&w.phase!=='done');
+      if(wIdx>=0){
+        walkStateRef.current.walkers[wIdx].bubble={text:r.slice(0,120),color:primary.deptColor};
+        walkStateRef.current.walkers[wIdx].animClass='working';
+        setWalkers([...walkStateRef.current.walkers]);
+      }
+      // Add to chat
+      setChatLog(p=>[...p,{id:uid(),role:'a',agent:primary,content:r,time:tnow()}]);
+      // AlsoCouldHelp walk in
+      if(parsed?.alsoCouldHelp){
+        parsed.alsoCouldHelp.slice(0,2).forEach((h,i)=>{
+          const ag=ALL_AGENTS.find(a=>a.id===h.agent);
+          if(ag) spawnWalker(ag,TABLE_CENTER.x+(i+1)*60-36,TABLE_CENTER.y-48+20,true,i+1,{text:h.says,color:ag.deptColor},'thinking');
+        });
+      }
+      // Return after delay
+      setTimeout(()=>{
+        const wi=walkStateRef.current.walkers.findIndex(w=>w.agentId===primary.id);
+        if(wi>=0){walkStateRef.current.walkers[wi].phase='return';walkStateRef.current.walkers[wi].progress=0;walkStateRef.current.walkers[wi].bubble=null;setWalkers([...walkStateRef.current.walkers]);}
+      },5000);
+    } catch(e){
+      setChatLog(p=>[...p,{id:uid(),role:'s',content:'⚠ '+e.message,time:tnow()}]);
+    }
+    setBbBusy(false);
+  },[cfg,bbBusy]);
+
+  /* ── VOICE TO ALL ────────────────────────────────────── */
+  const voiceToAll=React.useCallback(()=>{
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){alert('Voice not supported in this browser.');return;}
+    setVoiceOn(true);
+    const r=new SR();
+    r.lang='en-US';r.continuous=false;r.interimResults=false;
+    r.onresult=ev=>{
+      const txt=ev.results[0][0].transcript;
+      setBbInp(txt);
+      setTimeout(()=>sendToAll(txt),200);
+      setVoiceOn(false);
+    };
+    r.onend=()=>setVoiceOn(false);
+    r.onerror=()=>setVoiceOn(false);
+    r.start();
+  },[sendToAll]);
+
+  /* ── START MEETING ─────────────────────────────────── */
+  const startMeeting=React.useCallback(()=>{
+    setShowMeet(true);
+    // Walk first 6 agents to table
+    walkStateRef.current.meetingMode=true;
+    ALL_AGENTS.slice(0,6).forEach((ag,i)=>{
+      setTimeout(()=>{
+        spawnWalker(ag,TABLE_CENTER.x-36,TABLE_CENTER.y-48,true,i,null,'thinking');
+      },i*400);
+    });
+  },[spawnWalker]);
+
+  /* ── TEST CONN ───────────────────────────────────────── */
   const testConn=async()=>{
     setTesting(true);setCfgRes({t:'info',m:'Pinging...'});
     try{
@@ -499,28 +739,40 @@ function ApexOffice(){
       if(!r.ok)throw new Error('HTTP '+r.status);
       const d=await r.json();
       setCfgRes({t:'ok',m:'✓ CONNECTED — '+(d?.content?.[0]?.text||'').slice(0,50)});
-    } catch(e){setCfgRes({t:'err',m:'✗ '+e.message});}
+    }catch(e){setCfgRes({t:'err',m:'✗ '+e.message});}
     finally{setTesting(false);}
+  };
+
+  /* ── OPEN AGENT ─────────────────────────────────────── */
+  const open=(agent,dept)=>{
+    if(active?.agent.id===agent.id){setActive(null);return;}
+    setActive({agent,dept});
   };
 
   return React.createElement(React.Fragment,null,
 
-    /* OFFICE BACKGROUND */
+    /* OFFICE */
     React.createElement('div',{className:'scene-outer'},
       React.createElement('div',{className:'scene-wrap'},
         React.createElement('div',{className:'office'},
+
+          /* BACK WALL */
           React.createElement('div',{className:'back-wall'},
-            ...[0,1,2,3,4].map(i=>React.createElement('div',{key:i,className:'ww'},React.createElement('div',null),React.createElement('div',null),React.createElement('div',null),React.createElement('div',null)))
+            ...[0,1,2,3,4].map(i=>React.createElement('div',{key:i,className:'ww'},
+              React.createElement('div',null),React.createElement('div',null),React.createElement('div',null),React.createElement('div',null)))
           ),
+
+          /* RUGS */
           React.createElement('div',{className:'rug',style:{left:220,top:243,width:200,height:185,background:'#5a3a8a'}}),
           React.createElement('div',{className:'rug',style:{left:876,top:243,width:196,height:185,background:'#2a5a5a'}}),
           React.createElement('div',{className:'rug',style:{left:10,top:466,width:420,height:200,background:'#3a5a3a'}}),
+
+          /* PLANTS */
           ...[[1300,10],[1300,200],[1300,400],[1300,590],[10,654],[230,656],[450,656],[660,656],[870,656],[1080,656],[0,445],[0,220]].map(([x,y],i)=>
-            React.createElement('div',{key:i,className:'plant',style:{left:x,top:y}},'🌿')
-          ),
+            React.createElement('div',{key:i,className:'plant',style:{left:x,top:y}},'🌿')),
 
           /* ZONES */
-          ...DEPTS.map(d=>React.createElement(Zone,{key:d.id,dept:d,onAgentClick:open,activeId:active?.agent?.id})),
+          ...DEPTS.map(d=>React.createElement(Zone,{key:d.id,dept:d,onAgentClick:open,activeId:active?.agent?.id,walkers})),
 
           /* MEETING ROOM */
           React.createElement('div',{className:'mzone',style:{left:MZONE.x,top:MZONE.y,width:MZONE.w,height:MZONE.h}},
@@ -528,43 +780,58 @@ function ApexOffice(){
             React.createElement('div',{className:'mtable',style:{left:MZONE.w/2-74,top:28,width:148,height:108}},
               React.createElement('span',{style:{fontSize:30}},'☕')
             ),
-            React.createElement('div',{className:'meet-hint',onClick:()=>setShowMeet(true)},'▶ CLICK TABLE — START MEETING'),
+            React.createElement('div',{className:'meet-hint',onClick:startMeeting},'▶ CLICK TABLE — START MEETING'),
 
-            /* HUGO IN MEETING ROOM */
-            React.createElement('div',{className:'hugo-wrap',style:{position:'absolute',left:MZONE.w/2-56,top:90},onClick:()=>open(HUGO,{color:'#ffd700',name:'EXECUTIVE'})},
+            /* HUGO IN MEETING */
+            React.createElement('div',{className:'hugo-wrap',style:{position:'absolute',left:MZONE.w/2-56,top:90},onClick:()=>open(HUGO,{deptName:'EXECUTIVE',deptColor:'#ffd700'})},
               React.createElement('div',{className:'hugo-desk'},
                 React.createElement(HugoDesk,null)
               ),
-              React.createElement(CharAvatar,{agent:HUGO,deptColor:'#ffd700',isActive:active?.agent?.id==='hugo',isHugo:true})
+              React.createElement('div',{style:{display:'flex',flexDirection:'column',alignItems:'center'}},
+                React.createElement(ChibiChar,{li:0,shirt:'#ffd700',isHugo:true}),
+                React.createElement('div',{style:{fontFamily:"'Press Start 2P'",fontSize:'5px',padding:'2px 6px',borderRadius:2,background:'rgba(4,7,18,.97)',color:'#ffd700',marginTop:2}},HUGO.name)
+              )
             )
           ),
 
-          /* EXECUTIVE AREA LABEL */
-          React.createElement('div',{style:{position:'absolute',left:225,top:456,width:200,height:218,background:'rgba(255,215,0,.03)',border:'2px dashed rgba(255,215,0,.12)',borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center'}},
-            React.createElement('span',{style:{fontFamily:"'Press Start 2P'",fontSize:5,color:'rgba(255,215,0,0.18)'}},'EXECUTIVE AREA')
-          ),
+          /* WALKING AGENTS */
+          ...walkers.map(w=>React.createElement(WalkingAgent,{key:w.id,walker:w})),
 
           /* FOOTER HINT */
           React.createElement('div',{style:{position:'absolute',bottom:6,left:'50%',transform:'translateX(-50%)',fontFamily:"'Press Start 2P'",fontSize:'5px',color:'rgba(255,255,255,0.1)',pointerEvents:'none',whiteSpace:'nowrap'}},'CLICK AGENT TO CHAT · CLICK TABLE FOR MEETING'),
-
-          /* BOTTOM BAR */
-          React.createElement('div',{style:{position:'absolute',bottom:0,left:0,right:0,height:46,background:'rgba(5,8,18,0.98)',borderTop:'1px solid #1a3058',display:'flex',alignItems:'center',padding:'0 16px',gap:12}},
-            React.createElement('span',{style:{fontFamily:"'Press Start 2P'",fontSize:9,color:'#ffd700',textShadow:'0 0 12px #ffd70080',letterSpacing:1}},'🐾 APEX HQ'),
-            React.createElement('div',{style:{width:1,height:22,background:'#1a3058'}}),
-            React.createElement('span',{style:{fontFamily:"'Press Start 2P'",fontSize:5,color:'#3a5a7f'}},'AI OFFICE · 11 DEPTS · 23 AGENTS'),
-            React.createElement('div',{style:{marginLeft:'auto',display:'flex',gap:8}},
-              React.createElement('button',{style:{fontFamily:"'Press Start 2P'",fontSize:6,padding:'6px 11px',borderRadius:3,cursor:'pointer',border:'1px solid rgba(255,215,0,0.4)',background:'transparent',color:'#ffd700'},onClick:()=>setShowMeet(true)},'🏢 TEAM MEETING'),
-              React.createElement('button',{style:{fontFamily:"'Press Start 2P'",fontSize:6,padding:'6px 11px',borderRadius:3,cursor:'pointer',border:'1px solid #1a3058',background:'transparent',color:'#4a6a9f'},onClick:()=>{setCfgD(cfg);setShowCfg(true);setCfgRes(null);}},'⚙ CONFIG')
-            )
-          )
         )
       )
     ),
 
-    /* OVERLAYS */
-    active&&React.createElement(ChatPanel,{agentData:active.agent,dept:active.dept,cfg,onClose:()=>setActive(null)}),
+    /* BOTTOM BAR */
+    React.createElement('div',{className:'bottom-bar'},
+      React.createElement('span',{className:'bb-logo'},'🐾 APEX HQ'),
+      React.createElement('div',{className:'bb-div'}),
+      React.createElement('span',{className:'bb-status'},'11 DEPTS · 23 AGENTS'),
+      React.createElement('div',{className:'bb-input-wrap'},
+        React.createElement('textarea',{
+          className:'bb-ta',value:bbInp,
+          onChange:e=>setBbInp(e.target.value),
+          onKeyDown:e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendToAll(bbInp);}},
+          placeholder:'Ask anything — best agent will respond...',rows:1
+        }),
+        React.createElement('button',{className:'bb-voice '+(voiceOn?'on':''),onClick:voiceToAll,title:'Voice input'},'🎙'),
+        React.createElement('button',{
+          className:'bb-send',onClick:()=>sendToAll(bbInp),disabled:!bbInp.trim()||bbBusy,
+          style:bbInp.trim()&&!bbBusy?{background:'#22c55e',color:'#000'}:{}
+        },bbBusy?'...':'SEND TO ALL ▶')
+      ),
+      React.createElement('button',{className:'bb-meet',onClick:startMeeting},'🏢 MEETING'),
+      React.createElement('button',{className:'bb-cfg',onClick:()=>{setCfgD(cfg);setShowCfg(true);setCfgRes(null);}},'⚙')
+    ),
+
+    /* CHAT OVERLAY */
+    active&&React.createElement(ChatPanel,{agentData:active.agent,dept:active.dept,cfg,onClose:()=>setActive(null),isAiMsg:true}),
+
+    /* MEETING OVERLAY */
     showMeet&&React.createElement(MeetingPanel,{cfg,onClose:()=>setShowMeet(false)}),
 
+    /* CONFIG OVERLAY */
     showCfg&&React.createElement('div',{className:'cfg-ov'},
       React.createElement('div',{className:'cfg-box'},
         React.createElement('div',{className:'cfg-title'},'⚙ OPENCLAW CONFIG'),
@@ -577,8 +844,8 @@ function ApexOffice(){
         cfgRes&&React.createElement('div',{className:'cfg-res '+(cfgRes.t==='ok'?'cr-ok':cfgRes.t==='err'?'cr-err':'cr-info')},cfgRes.m),
         React.createElement('div',{className:'cfg-btns'},
           React.createElement('button',{className:'cfg-ok',onClick:()=>{setCfg(cfgD);setShowCfg(false);}},'SAVE & CLOSE'),
-          React.createElement('button',{className:'cfg-test',onClick:testConn,disabled:testing,style:{fontFamily:"'Press Start 2P'",fontSize:6,padding:'9px 13px',borderRadius:3,cursor:'pointer',border:'1px solid #60a5fa',background:'transparent',color:'#60a5fa'}},testing?'TESTING...':'TEST CONNECTION'),
-          React.createElement('button',{className:'cfg-cancel',onClick:()=>setShowCfg(false),style:{fontFamily:"'Press Start 2P'",fontSize:6,padding:'9px 12px',borderRadius:3,cursor:'pointer',border:'1px solid #1a3050',background:'transparent',color:'#2a4060'}},'CANCEL')
+          React.createElement('button',{className:'cfg-ok',onClick:testConn,disabled:testing,style:{background:testing?'#1a3050':'#60a5fa',color:testing?'#2a4060':'#000'}},testing?'TESTING...':'TEST CONNECTION'),
+          React.createElement('button',{className:'cfg-cancel',onClick:()=>setShowCfg(false)},'CANCEL')
         )
       )
     )
