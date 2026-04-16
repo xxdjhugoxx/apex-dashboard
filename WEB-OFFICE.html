@@ -95,7 +95,6 @@ background-size:40px 40px}
 .chat-dept{font-size:8px;color:var(--muted);margin-left:auto}
 .chat-text{font-size:9px;line-height:1.5;color:var(--text)}
 .chat-time{font-size:7px;color:var(--muted);margin-top:3px}
-.thinking{color:var(--muted);font-style:italic}
 .agents-panel{display:none;flex-direction:column;gap:5px;padding:8px;flex:1;overflow-y:auto}
 .agent-card{background:var(--surface2);border-radius:10px;padding:8px 10px;border:1px solid var(--border);display:flex;align-items:center;gap:8px}
 .agent-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid rgba(255,255,255,0.2)}
@@ -367,7 +366,7 @@ const ADMIN_TABS = {
       </div>
     </div>
     <div class="api-sec">
-      <div class="api-sec-title">📊 LIVE METRICS (DEMO)</div>
+      <div class="api-sec-title">📊 LIVE METRICS</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         ${METRICS.map(m => `
           <div style="background:var(--surface2);border-radius:8px;padding:8px">
@@ -588,7 +587,6 @@ function renderWalkers() {
 // ═══════════════════════════════════════════════════════════════
 // CHAT — AI POWERED
 // ═══════════════════════════════════════════════════════════════
-let isThinking = false
 
 async function fetchAI(prompt, agentId) {
   const { minimaxKey, provider } = CFG
