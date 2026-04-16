@@ -186,9 +186,8 @@ background-size:40px 40px}
       </div>
       <div class="chat-feed" id="chat-feed">
         <div class="no-msgs" id="no-msgs">
-          <div class="no-msgs-icon">🤖</div>
-          <div>AI agents will start talking<br>once connected</div>
-          <div style="font-size:8px">Open ADMIN → add your API key → SAVE</div>
+          <div class="no-msgs-icon">🐉</div>
+          <div>AI is ready.<br>Type a message below to start.</div>
         </div>
       </div>
       <div class="agents-panel" id="agents-panel"></div>
@@ -256,10 +255,10 @@ const AGENTS = [
 ]
 
 const METRICS = [
-  {label:'REVENUE',  icon:'💰', color:'#10B981', value:12840, target:15000, prefix:'$'},
-  {label:'LEADS',    icon:'🎯', color:'#7C3AED', value:22,    target:30,   prefix:''},
-  {label:'TASKS',     icon:'✅', color:'#2563EB', value:312,   target:400,  prefix:''},
-  {label:'AGENTS',   icon:'🤖', color:'#FF6B35', value:11,   target:11,   prefix:''},
+  {label:'REVENUE',  icon:'💰', color:'#10B981', value:0, target:0, prefix:'$'},
+  {label:'LEADS',    icon:'🎯', color:'#7C3AED', value:0, target:0, prefix:''},
+  {label:'TASKS',     icon:'✅', color:'#2563EB', value:0, target:0, prefix:''},
+  {label:'AGENTS',   icon:'🤖', color:'#FF6B35', value:0, target:0, prefix:''},
 ]
 
 // ═══════════════════════════════════════════════════════════════
@@ -701,47 +700,7 @@ async function sendChat() {
   while (feed.children.length > 20) feed.removeChild(feed.firstChild)
 }
 
-async function cycleAgent() {
-  if (isThinking) return
-  const a = AGENTS[Math.floor(Math.random() * AGENTS.length)]
-  isThinking = true
-  const feed = document.getElementById('chat-feed')
-  const noMsgs = document.getElementById('no-msgs')
-
-  // Show thinking
-  if (noMsgs) noMsgs.remove()
-  const thinkDiv = document.createElement('div')
-  thinkDiv.className = 'chat-msg'
-  thinkDiv.id = 'thinking'
-  thinkDiv.innerHTML = `
-    <div class="chat-header">
-      <div class="chat-avatar" style="background:${a.color}20;border:1.5px solid ${a.color}40">${a.emoji}</div>
-      <div class="chat-name" style="color:${a.color}">${a.name}</div>
-      <div class="chat-dept">${a.dept}</div>
-    </div>
-    <div class="chat-text thinking">Thinking...</div>
-    <div class="chat-time">Just now</div>`
-  feed.appendChild(thinkDiv)
-  feed.scrollTop = feed.scrollHeight
-
-  const response = await fetchAI(AGENT_PROMPTS[a.id] || AGENT_PROMPTS.ceo, a.id)
-  const thinkEl = document.getElementById('thinking')
-  if (response && thinkEl) {
-    thinkEl.querySelector('.chat-text').textContent = response
-    thinkEl.querySelector('.chat-text').classList.remove('thinking')
-    thinkEl.querySelector('.chat-name').textContent = a.name + ' 🤖'
-  } else if (thinkEl) {
-    thinkEl.remove()
-    // Show offline msg
-    if (feed.children.length === 0) {
-      const div = document.createElement('div')
-      div.className = 'chat-msg'
-      div.innerHTML = `<div class="no-msgs" style="flex:unset"><div style="font-size:8px">⚠️ No AI connected. Add your API key in ADMIN → AI tab.</div></div>`
-      feed.appendChild(div)
-    }
-  }
-  isThinking = false
-}
+// Auto-agent chat removed — only Hugo sends messages now. Agents respond on demand.
 
 // ═══════════════════════════════════════════════════════════════
 // AGENTS PANEL
@@ -791,9 +750,6 @@ function init() {
       setTimeout(() => spawnWalker(), i * 1500)
     }
   }, 800)
-  // Start agent chat
-  setTimeout(cycleAgent, 2000)
-  setInterval(cycleAgent, 12000)
   requestAnimationFrame(animate)
 }
 
