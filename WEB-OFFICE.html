@@ -299,34 +299,31 @@ function saveConfig() {
 const ADMIN_TABS = {
   ai: `
     <div class="api-sec">
-      <div class="api-sec-title">🤖 AI PROVIDER</div>
-      <div class="api-field">
-        <label>PROVIDER</label>
-        <select id="f-provider">
-          <option value="minimax" ${CFG.provider==='minimax'?'selected':''}>MiniMax (your token plan)</option>
-          <option value="ollama" ${CFG.provider==='ollama'?'selected':''}>Ollama (local, FREE)</option>
-          <option value="both" ${CFG.provider==='both'?'selected':''}>Both — MiniMax primary, Ollama fallback</option>
-        </select>
-      </div>
+      <div class="api-sec-title">🚀 SERVER MODE — USE YOUR FREE MODELS</div>
+      <p class="api-note" style="font-size:9px;line-height:1.6">
+        Run <b>node server.js</b> on your server → open <b>http://192.168.0.208:3000</b>.<br>
+        AI calls go through your OpenClaw gateway — Gemma, Gemini, MiniMax, Qwen,<br>
+        Trinity, Nemotron — ALL your installed models. <b>No API keys needed.</b>
+      </p>
     </div>
     <div class="api-sec">
-      <div class="api-sec-title">🔶 MINIMAX — 💰 YOUR TOKEN PLAN</div>
+      <div class="api-sec-title">🔶 MINIMAX — DIRECT (no server needed)</div>
       <div class="api-field">
         <label>API KEY</label>
         <input type="password" id="f-minimax" placeholder="sk-cp-xxxxxxxx" value="${CFG.minimaxKey}" />
       </div>
       <div class="api-status">
-        <div class="api-dot disconnected" id="s-minimax"></div>
-        <span class="status-txt" id="t-minimax">Add your MiniMax API key to enable AI agents</span>
+        <div class="api-dot ${CFG.minimaxKey?'connected':'disconnected'}" id="s-minimax"></div>
+        <span class="status-txt" id="t-minimax">${CFG.minimaxKey?'✅ Key saved — will use MiniMax direct':'❌ No key — uses server proxy AI'}</span>
       </div>
       <button class="test-btn" onclick="testMinimax()">🧪 TEST</button>
     </div>
     <div class="api-sec">
-      <div class="api-sec-title">🖥️ OLLAMA — FREE · LOCAL</div>
+      <div class="api-sec-title">🖥️ OLLAMA — LOCAL SERVER MODELS</div>
       <div class="api-grid">
         <div class="api-field">
           <label>URL</label>
-          <input type="text" id="f-ollama-url" placeholder="http://localhost:11434" value="${CFG.ollamaUrl}" />
+          <input type="text" id="f-ollama-url" value="${CFG.ollamaUrl}" />
         </div>
         <div class="api-field">
           <label>MODEL</label>
@@ -336,10 +333,10 @@ const ADMIN_TABS = {
             <option value="mistral" ${CFG.ollamaModel==='mistral'?'selected':''}>Mistral 7B</option>
             <option value="qwen2.5-coder" ${CFG.ollamaModel==='qwen2.5-coder'?'selected':''}>Qwen Coder</option>
             <option value="phi3" ${CFG.ollamaModel==='phi3'?'selected':''}>Phi-3</option>
+            <option value="gemma4" ${CFG.ollamaModel==='gemma4'?'selected':''}>Gemma 4</option>
           </select>
         </div>
       </div>
-      <p class="api-note">Run <b>ollama serve</b> first. Browser calls localhost directly — no CORS issues.</p>
     </div>`,
   tele: `
     <div class="api-sec">
@@ -587,9 +584,25 @@ function renderWalkers() {
 let isThinking = false
 
 async function fetchAI(prompt, agentId) {
-  const { minimaxKey, ollamaUrl, ollamaModel, provider } = CFG
+  const { minimaxKey, provider } = CFG
 
-  // Try MiniMax
+  // Priority 1: Try server proxy (OpenClaw gateway — all your models: MiniMax, Gemma, Gemini, etc.)
+  // Server must be running: node server.js
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'openclaw/main',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 80,
+      })
+    })
+    const data = await res.json()
+    if (data.choices?.[0]?.message?.content) return data.choices[0].message.content.trim()
+  } catch(e) {}
+
+  // Priority 2: MiniMax direct (if key provided)
   if (minimaxKey && (provider === 'minimax' || provider === 'both')) {
     try {
       const res = await fetch('https://api.minimax.io/v1/chat/completions', {
@@ -602,16 +615,16 @@ async function fetchAI(prompt, agentId) {
     } catch(e) {}
   }
 
-  // Try Ollama
+  // Priority 3: Ollama local (if selected)
   if (provider === 'ollama' || provider === 'both') {
     try {
-      const res = await fetch(ollamaUrl + '/api/chat', {
+      const res = await fetch('http://localhost:11434/v1/chat/completions', {
         method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({model:ollamaModel,messages:[{role:'user',content:prompt}],stream:false})
+        headers:{'Content-Type':'application/json','Authorization':'Bearer ollama'},
+        body:JSON.stringify({model:CFG.ollamaModel||'llama3',messages:[{role:'user',content:prompt}]})
       })
       const data = await res.json()
-      if (data.message?.content) return data.message.content.trim()
+      if (data.choices?.[0]?.message?.content) return data.choices[0].message.content.trim()
     } catch(e) {}
   }
 
