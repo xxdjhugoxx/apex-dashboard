@@ -93,7 +93,7 @@
   @keyframes fade-up { 0%{opacity:0;transform:translateY(6px)} 15%{opacity:1;transform:translateY(0)} 80%{opacity:1} 100%{opacity:0} }
 
   /* ── DEPT GRID ── */
-  .dept-grid { flex: 1; display: grid; grid-template-columns: repeat(5, 1fr);
+  .dept-grid { flex: 1; display: grid; grid-template-columns: repeat(6, 1fr);
     grid-template-rows: repeat(2, 1fr); gap: 10px; overflow: hidden; }
 
   /* ── DEPT CARD ── */
@@ -564,7 +564,8 @@ const DEPTS = [
   { id:'aiops',      name:'AI OPS',         color:'#DB2777', emoji:'🧬', agents:[{n:'Dr. V',e:'🧬',role:'AI Ops Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Model Router',c:'#DB2777'},{n:'Fine Tuner',c:'#DB2777'},{n:'Prompt Opt',c:'#DB2777'},{n:'Guardrail Eng',c:'#DB2777'}] },
   { id:'hr',         name:'PEOPLE / HR',   color:'#DC2626', emoji:'👩', agents:[{n:'Jessica',e:'👩',role:'HR Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Resume Screen',c:'#DC2626'},{n:'Welcome Bot',c:'#DC2626'},{n:'Culture Scan',c:'#DC2626'},{n:'Onboard Flow',c:'#DC2626'}] },
   { id:'product',    name:'PRODUCT',        color:'#4F46E5', emoji:'🧑', agents:[{n:'Tom',e:'🧑',role:'Product Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Market Scan',c:'#4F46E5'},{n:'Roadmap Mgr',c:'#4F46E5'},{n:'Feature Rank',c:'#4F46E5'},{n:'Release Log',c:'#4F46E5'}] },
-  { id:'instagram',  name:'INSTAGRAM',      color:'#EA580C', emoji:'📸', agents:[{n:'Blaze',e:'📸',role:'Social Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Content Creator',c:'#EA580C'},{n:'Pixel (Design)',c:'#EA580C'},{n:'Ad Manager',c:'#EA580C'},{n:'Analytics',c:'#EA580C'}] },
+  { id:'instagram',  name:'INSTAGRAM',      color:'#EC4899', emoji:'📸', agents:[{n:'Blaze',e:'📸',role:'Social Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Content Creator',c:'#EC4899'},{n:'Pixel (Design)',c:'#EC4899'},{n:'Ad Manager',c:'#EC4899'},{n:'Analytics',c:'#EC4899'}] },
+  { id:'support',   name:'SUPPORT',        color:'#EA580C', emoji:'📷', agents:[{n:'Blaze',e:'📷',role:'Support Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Intent Classify',c:'#EA580C'},{n:'KB Searcher',c:'#EA580C'},{n:'Ticket Router',c:'#EA580C'},{n:'CSAT Tracker',c:'#EA580C'}] },
   { id:'data',       name:'DATA',           color:'#0891B2', emoji:'🤖', agents:[{n:'Atlas',e:'🤖',role:'Data Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Stream Conn',c:'#0891B2'},{n:'Schema Map',c:'#0891B2'},{n:'Report Gen',c:'#0891B2'},{n:'Anomaly Det',c:'#0891B2'}] },
   { id:'strategy',   name:'STRATEGY',      color:'#D97706', emoji:'👩‍💼', agents:[{n:'Sophia',e:'👩‍💼',role:'Strategy Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Trend Radar',c:'#D97706'},{n:'OKR Manager',c:'#D97706'},{n:'Competitor Watch',c:'#D97706'},{n:'Risk Scorer',c:'#D97706'}] },
 ]
@@ -577,8 +578,8 @@ const CHAT_MESSAGES = [
   { agent:'Dr. V',  dept:'AI Ops',     emoji:'🧬', color:'#DB2777', text:'Model router updated — GPT-4 latency down 18ms.' },
   { agent:'Jessica',dept:'People/HR',  emoji:'👩', color:'#DC2626', text:'23 candidates screened. Top 5 advancing to phone screen.' },
   { agent:'Tom',    dept:'Product',    emoji:'🧑', color:'#4F46E5', text:'Sprint 12 on track. Onboarding drop-off fix identified.' },
-  { agent:'Blaze',  dept:'Instagram',  emoji:'📸', color:'#EA580C', text:'Reel hit 12K views. 4 new posts scheduled. Ad campaign live.' },
-  { agent:'Pixel',  dept:'Design',     emoji:'🎨', color:'#EA580C', text:'New carousel designed for product launch. Ready for review.' },
+  { agent:'Blaze',  dept:'Instagram',  emoji:'📸', color:'#EC4899', text:'Reel hit 12K views. 4 new posts scheduled. Ad campaign live.' },
+  { agent:'Blaze',  dept:'Support',    emoji:'📷', color:'#EA580C', text:'Ticket #847 resolved. CSAT holding at 4.7/5. KB updated.' },
   { agent:'Atlas',  dept:'Data',       emoji:'🤖', color:'#0891B2', text:'Schema sync complete. 3 anomalies flagged, auto-escalated.' },
   { agent:'Sophia', dept:'Strategy',   emoji:'👩‍💼', color:'#D97706', text:'Competitor watch: market shift in 2 segments. OKR 78%.' },
 ]
@@ -591,8 +592,9 @@ const AGENTS_PANEL = [
   { name:'Dr. V',  dept:'AI Ops',     emoji:'🧬', color:'#DB2777', status:'active', task:'Model routing optimized' },
   { name:'Jessica',dept:'People/HR',  emoji:'👩', color:'#DC2626', status:'active', task:'Screening resumes' },
   { name:'Tom',    dept:'Product',    emoji:'🧑', color:'#4F46E5', status:'working', task:'Sprint 12 planning' },
-  { name:'Blaze',  dept:'Instagram',  emoji:'📸', color:'#EA580C', status:'active', task:'Scheduling posts + ads' },
-  { name:'Pixel',  dept:'Design',     emoji:'🎨', color:'#EA580C', status:'working', task:'Creating IG carousel' },
+  { name:'Blaze',  dept:'Instagram',  emoji:'📸', color:'#EC4899', status:'active', task:'Scheduling posts + ads' },
+  { name:'Blaze',  dept:'Support',    emoji:'📷', color:'#EA580C', status:'active', task:'Ticket routing + KB search' },
+  { name:'Pixel',  dept:'Design',     emoji:'🎨', color:'#EC4899', status:'working', task:'Creating IG carousel' },
   { name:'Atlas',  dept:'Data',       emoji:'🤖', color:'#0891B2', status:'active', task:'Anomaly detection' },
   { name:'Sophia', dept:'Strategy',   emoji:'👩‍💼', color:'#D97706', status:'working', task:'Q3 OKR review' },
 ]
@@ -668,9 +670,9 @@ function renderDepts() {
       </div>
       <div class="dept-agents">
         ${d.agents.map((a,i) => `<div class="agent-avatar">
-          <div class="agent-circle ${i===0?'main-agent':''}" style="background:${d.color}">
+          <div class="agent-circle ${i===0?'main-agent':''}" style="background:${d.color};position:relative">
             ${a.e}
-            <div class="agent-status-dot ${primary}" style="background:${primary==='active'?'#86EFAC':primary==='working'?'#FDE047':'#94A3B8'}"></div>
+            <div style="position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:#22c55e;border:2px solid var(--surface2);${a.e==='🤖'?'box-shadow:0 0 4px #3b82f6':''}"></div>
           </div>
           <div class="agent-name">${a.n}</div>
           <div class="agent-role">${a.role}</div>
