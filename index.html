@@ -573,18 +573,6 @@ const DEPTS = [
   { id:'data',      name:'DATA',         color:'#0891B2', emoji:'🤖', lead:'Atlas',   role:'Data Lead',       subs:['Stream Conn','Schema Map','Report Gen','Anomaly Det'] },
   { id:'strategy',  name:'STRATEGY',     color:'#D97706', emoji:'👩‍💼', lead:'Sophia', role:'Strategy Lead',  subs:['Trend Radar','OKR Manager','Competitor Watch','Risk Scorer'] },
 ]
-  { agent:'Phoenix', dept:'Marketing',   emoji:'🦚', color:'#7C3AED', text:'A/B variant C hitting 4.2% CTR. Scaling campaign.' },
-  { agent:'Axel',    dept:'Operations', emoji:'🦡', color:'#2563EB', text:'Workflow #47 deployed. Lead delivery time cut 34%.' },
-  { agent:'Bruno',   dept:'Finance',    emoji:'🐻', color:'#059669', text:'Burn rate 94%. Runway 4.2 months. Invoices on track.' },
-  { agent:'Dr. V',  dept:'AI Ops',     emoji:'🧬', color:'#DB2777', text:'Model router updated — GPT-4 latency down 18ms.' },
-  { agent:'Jessica',dept:'People/HR',  emoji:'👩', color:'#DC2626', text:'23 candidates screened. Top 5 advancing to phone screen.' },
-  { agent:'Tom',    dept:'Product',    emoji:'🧑', color:'#4F46E5', text:'Sprint 12 on track. Onboarding drop-off fix identified.' },
-  { agent:'Blaze',  dept:'Instagram',  emoji:'📸', color:'#EC4899', text:'Reel hit 12K views. 4 new posts scheduled.' },
-  { agent:'Blaze',  dept:'Support',    emoji:'📷', color:'#EA580C', text:'Ticket #847 resolved. CSAT 4.7/5. KB updated.' },
-  { agent:'Atlas',  dept:'Data',       emoji:'🤖', color:'#0891B2', text:'Schema sync complete. 3 anomalies auto-escalated.' },
-  { agent:'Sophia', dept:'Strategy',   emoji:'👩‍💼', color:'#D97706', text:'Market shift detected in 2 segments. OKR 78%.' },
-  { agent:'Pixel',  dept:'Design',     emoji:'🎨', color:'#EC4899', text:'New carousel ready for product launch. Review?' },
-]
 
 const AGENTS_PANEL = [
   { name:'Felix',   dept:'Sales',      emoji:'🦊', color:'#10B981', status:'active', task:'Qualifying $42K deal' },
@@ -922,12 +910,6 @@ function getAgentPrompt(id) {
 }
 
 async function fetchAgentMessage(agentId) {
-  const saved = JSON.parse(localStorage.getItem('apex_api_config') || '{}')
-  const minimaxKey = saved.minimax
-  const ollamaUrl = saved.ollamaUrl || 'http://localhost:11434'
-  const ollamaModel = saved.ollamaModel || 'llama3.2'
-  const activeProvider = saved.activeAiProvider || 'minimax'
-
   const prompts = {
     sales:'You are Felix, Sales Lead at APEX. Reply with ONE short sentence about what you are working on right now. Be specific and confident.',
     marketing:'You are Phoenix, Marketing Lead at APEX. Reply with ONE short sentence about the most important marketing metric or campaign you are focused on right now. Bold and punchy.',
@@ -944,42 +926,51 @@ async function fetchAgentMessage(agentId) {
   }
 
   const userPrompt = prompts[agentId] || prompts.ceo
+  const saved = JSON.parse(localStorage.getItem('apex_api_config') || '{}')
 
-  // Try MiniMax direct first
-  if (minimaxKey && (activeProvider === 'minimax' || activeProvider === 'both')) {
+  // Try local server proxy first (when hosted on same machine as OpenClaw — no CORS issues)
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'openclaw/main',
+        messages: [{ role: 'user', content: userPrompt }],
+        max_tokens: 80,
+      })
+    })
+    const data = await res.json()
+    if (data.choices?.[0]?.message?.content) return data.choices[0].message.content.trim()
+  } catch(e) { /* local proxy not available, try direct APIs */ }
+
+  // Fall back to direct MiniMax API
+  const minimaxKey = saved.minimax
+  if (minimaxKey) {
     try {
       const res = await fetch('https://api.minimax.io/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + minimaxKey },
-        body: JSON.stringify({
-          model: 'MiniMax-M2.7',
-          messages: [{ role: 'user', content: userPrompt }],
-          max_tokens: 80,
-        })
+        body: JSON.stringify({ model: 'MiniMax-M2.7', messages: [{ role: 'user', content: userPrompt }], max_tokens: 80 })
       })
       const data = await res.json()
       if (data.choices?.[0]?.message?.content) return data.choices[0].message.content.trim()
     } catch(e) { /* try next */ }
   }
 
-  // Try Ollama (local)
-  if (activeProvider === 'ollama' || activeProvider === 'both') {
-    try {
-      const res = await fetch(ollamaUrl + '/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: ollamaModel,
-          messages: [{ role: 'user', content: userPrompt }],
-          stream: false,
-        })
-      })
-      const data = await res.json()
-      if (data.message?.content) return data.message.content.trim()
-    } catch(e) { /* fail silently */ }
-  }
+  // Fall back to Ollama local
+  const ollamaUrl = saved.ollamaUrl || 'http://localhost:11434'
+  const ollamaModel = saved.ollamaModel || 'llama3.2'
+  try {
+    const res = await fetch(ollamaUrl + '/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: ollamaModel, messages: [{ role: 'user', content: userPrompt }], stream: false })
+    })
+    const data = await res.json()
+    if (data.message?.content) return data.message.content.trim()
+  } catch(e) {}
 
-  return null // All providers failed
+  return null
 }
 
 function addChatMsg(agent, dept, emoji, color, text, isAi) {
