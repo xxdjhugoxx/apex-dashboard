@@ -303,70 +303,213 @@
     <div class="modal-body">
       <div class="modal-tabs">
         <div class="modal-tab active" id="mtab-ai" onclick="switchAdminTab('ai')">🤖 AI PROVIDERS</div>
-        <div class="modal-tab" id="mtab-meta" onclick="switchAdminTab('meta')">📘 META ADS</div>
-        <div class="modal-tab" id="mtab-design" onclick="switchAdminTab('design')">🎨 DESIGN API</div>
+        <div class="modal-tab" id="mtab-meta" onclick="switchAdminTab('meta')">📘 ADS APIs</div>
+        <div class="modal-tab" id="mtab-design" onclick="switchAdminTab('design')">🎨 DESIGN</div>
+        <div class="modal-tab" id="mtab-creds" onclick="switchAdminTab('creds')">🔐 CREDENTIALS</div>
       </div>
+
+      <!-- AI PROVIDERS TAB -->
       <div id="admin-ai">
+        <p style="font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5">Add your API keys below. FREE providers are checked first — MiniMax is used as fallback when free limits are reached. Agents auto-select the best available model.</p>
+
         <div class="api-section">
-          <div class="api-section-title">⚡ Groq — FREE (30 req/min, Llama/Mixtral)</div>
+          <div class="api-section-title">⚡ Groq — ✅ FREE · No credit card · 30 req/min</div>
           <div class="api-field">
             <label>API Key</label>
             <input type="password" id="groq-key" placeholder="gsk_xxxxxxxxxxxx" />
             <div class="api-status" id="groq-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div>
           </div>
-          <p class="api-note">Get free key at: console.groq.com — No credit card. Models: llama-3.1-8b, mixtral-8x7b</p>
-        </div>
-        <div class="api-section">
-          <div class="api-section-title">🧠 Hugging Face — FREE Text + Image Gen</div>
-          <div class="api-grid">
-            <div class="api-field"><label>HF Token</label><input type="password" id="hf-key" placeholder="hf_xxxxxxxxxxxx" /><div class="api-status" id="hf-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
-            <div class="api-field"><label>HF Image Token</label><input type="password" id="hf-img-key" placeholder="hf_xxxxxxxxxxxx" /><p class="api-note">Same token works for Stable Diffusion</p></div>
-          </div>
-          <p class="api-note">Get free token at: huggingface.co/settings/tokens</p>
-        </div>
-        <div class="api-section">
-          <div class="api-section-title">🔵 Cohere — FREE (Command R+, 1000 tokens/min)</div>
-          <div class="api-field"><label>API Key</label><input type="password" id="cohere-key" placeholder="xxxxx-xxxxx" /><div class="api-status" id="cohere-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
-          <p class="api-note">Get free key at: dashboard.cohere.com/api-keys — Command R+ excellent for agentic tasks</p>
-        </div>
-        <div class="api-section">
-          <div class="api-section-title">🖼️ Ideogram — FREE (100 images/month)</div>
-          <div class="api-field"><label>API Key</label><input type="password" id="ideogram-key" placeholder="ig_xxxxxxxxxxxx" /><div class="api-status" id="ideogram-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
-          <p class="api-note">Get free key at: ideogram.ai/api — Best quality for Instagram posts</p>
-        </div>
-      </div>
-      <div id="admin-meta" style="display:none">
-        <div class="api-section">
-          <div class="api-section-title">📘 Meta Business API — Instagram + Facebook Ads</div>
-          <div class="api-field" style="margin-bottom:10px"><label>Meta Access Token</label><input type="password" id="meta-token" placeholder="EAAxxxxxxxxxxxxx" /><div class="api-status" id="meta-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
-          <div class="api-grid">
-            <div class="api-field"><label>Facebook Ad Account</label><input type="text" id="fb-ad-account" placeholder="act_123456789" /></div>
-            <div class="api-field"><label>Instagram Account ID</label><input type="text" id="ig-account" placeholder="178414xxxxxxx" /></div>
-          </div>
-          <p class="api-note">Get token: developers.facebook.com → Meta Business API → Tools</p>
-        </div>
-      </div>
-      <div id="admin-design" style="display:none">
-        <div class="api-section">
-          <div class="api-section-title">🎨 Ideogram — AI Image Generation (Instagram Posts)</div>
-          <div class="api-grid">
-            <div class="api-field"><label>Ideogram API Key</label><input type="password" id="design-img-key" placeholder="ig_xxxxxxxxxxxx" /></div>
-            <div class="api-field"><label>Default Style</label>
-              <select style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
-                <option>Realistic Photo</option><option>Illustration</option><option>3D Render</option><option>Minimalist</option><option>Vibrant</option>
+          <div class="api-grid" style="margin-top:6px">
+            <div class="api-field"><label>Default Model</label>
+              <select id="groq-model" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
+                <option value="llama-3.1-8b-instant">Llama 3.1 8B (fastest)</option>
+                <option value="mixtral-8x7b-32768">Mixtral 8x7B (most capable)</option>
+                <option value="gemma2-9b-it">Gemma 2 9B</option>
               </select>
             </div>
           </div>
+          <p class="api-note">console.groq.com → Sign up → API Keys. Rate limit: 30 requests/min on free tier.</p>
         </div>
+
         <div class="api-section">
-          <div class="api-section-title">🤖 Pixel — AI Creative Director</div>
+          <div class="api-section-title">🧠 Hugging Face — ✅ FREE · Text + Image Gen</div>
+          <div class="api-grid">
+            <div class="api-field"><label>HF Token (text models)</label><input type="password" id="hf-key" placeholder="hf_xxxxxxxxxxxx" /><div class="api-status" id="hf-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+            <div class="api-field"><label>HF Token (image models)</label><input type="password" id="hf-img-key" placeholder="hf_xxxxxxxxxxxx" /><div class="api-status" id="hf-img-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+          </div>
+          <p class="api-note">huggingface.co/settings/tokens → Create token (both inference and write permissions). Free tier has rate limits.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">🔵 Cohere — ✅ FREE credits · Command R+</div>
+          <div class="api-grid">
+            <div class="api-field"><label>API Key</label><input type="password" id="cohere-key" placeholder="xxxxx-xxxxx" /><div class="api-status" id="cohere-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+            <div class="api-field"><label>Default Model</label>
+              <select id="cohere-model" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
+                <option value="command-r-plus">Command R+ (most capable)</option>
+                <option value="command-r">Command R</option>
+              </select>
+            </div>
+          </div>
+          <p class="api-note">dashboard.cohere.com/api-keys → Free tier includes monthly credits. Excellent for RAG and agentic tasks.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">✨ Google Gemini — ✅ FREE · Gemini 1.5 Flash</div>
+          <div class="api-field">
+            <label>API Key</label>
+            <input type="password" id="gemini-key" placeholder="AIzaxxxxxxxxxxxx" />
+            <div class="api-status" id="gemini-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div>
+          </div>
+          <div class="api-grid" style="margin-top:6px">
+            <div class="api-field"><label>Default Model</label>
+              <select id="gemini-model" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
+                <option value="gemini-1.5-flash">Gemini 1.5 Flash (fast + free)</option>
+                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+              </select>
+            </div>
+          </div>
+          <p class="api-note">aistudio.google.com → Get API Key. 1.5 Flash is completely free with good rate limits. Vision support included.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">🔶 MiniMax — 💰 YOUR EXISTING PLAN</div>
+          <div class="api-field">
+            <label>MiniMax API Key</label>
+            <input type="password" id="minimax-key" placeholder="eyJxxxxxxxxxxxxxxxx" />
+            <div class="api-status" id="minimax-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div>
+          </div>
+          <p class="api-note">Used as fallback when all free providers hit rate limits. Your existing MiniMax token plan.</p>
+        </div>
+      </div>
+
+      <!-- ADS APIs TAB -->
+      <div id="admin-meta" style="display:none">
+        <p style="font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5">Connect your ad platforms. Agents will create, launch and manage ad campaigns autonomously.</p>
+
+        <div class="api-section">
+          <div class="api-section-title">📘 Meta Business API — Facebook + Instagram Ads</div>
+          <div class="api-field" style="margin-bottom:8px"><label>Meta Access Token</label><input type="password" id="meta-token" placeholder="EAAxxxxxxxxxxxxx" /><div class="api-status" id="meta-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+          <div class="api-grid">
+            <div class="api-field"><label>Facebook Ad Account ID</label><input type="text" id="fb-ad-account" placeholder="act_123456789" /></div>
+            <div class="api-field"><label>Instagram Account ID</label><input type="text" id="ig-account" placeholder="178414xxxxxxx" /></div>
+          </div>
+          <div class="api-grid" style="margin-top:8px">
+            <div class="api-field"><label>Page ID</label><input type="text" id="fb-page-id" placeholder="123456789" /></div>
+            <div class="api-field"><label>Business Manager ID</label><input type="text" id="bm-id" placeholder="987654321" /></div>
+          </div>
+          <p class="api-note">developers.facebook.com → Create app → Add Meta Business API + Instagram Graph API products. Get token from Graph API Explorer.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">📊 Google Ads API</div>
+          <div class="api-grid">
+            <div class="api-field"><label>Developer Token</label><input type="password" id="gads-token" placeholder="xxxxxxxxxx" /></div>
+            <div class="api-field"><label>Customer ID</label><input type="text" id="gads-customer" placeholder="123-456-7890" /></div>
+          </div>
+          <p class="api-note">ads.google.com → Sign up for Google Ads API → Get developer token. Requires MCC account.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">🎵 TikTok Ads API</div>
+          <div class="api-grid">
+            <div class="api-field"><label>App ID</label><input type="text" id="tiktok-app-id" placeholder="123456789" /></div>
+            <div class="api-field"><label>App Secret</label><input type="password" id="tiktok-secret" placeholder="xxxxxxxxxx" /></div>
+          </div>
+          <p class="api-note">business-api.tiktok.com → Create app → Get App ID and App Secret.</p>
+        </div>
+      </div>
+
+      <!-- DESIGN TAB -->
+      <div id="admin-design" style="display:none">
+        <p style="font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5">Configure AI image and video generation for Instagram content creation.</p>
+
+        <div class="api-section">
+          <div class="api-section-title">🖼️ Ideogram — ✅ FREE · 100 images/month</div>
+          <div class="api-field"><label>Ideogram API Key</label><input type="password" id="ideogram-key" placeholder="ig_xxxxxxxxxxxx" /><div class="api-status" id="ideogram-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+          <div class="api-grid" style="margin-top:8px">
+            <div class="api-field"><label>Default Style</label>
+              <select id="ideogram-style" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
+                <option value="REALISTIC">Realistic Photo</option>
+                <option value="ILLUSTRATION">Illustration</option>
+                <option value="3D_RENDER">3D Render</option>
+                <option value="MINIMALIST">Minimalist</option>
+                <option value="VIBRANT">Vibrant</option>
+              </select>
+            </div>
+            <div class="api-field"><label>Default Aspect Ratio</label>
+              <select id="ideogram-ratio" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
+                <option value="1:1">1:1 (Square — Instagram feed)</option>
+                <option value="4:5">4:5 (Portrait — Instagram feed)</option>
+                <option value="9:16">9:16 (Story/Reel)</option>
+              </select>
+            </div>
+          </div>
+          <p class="api-note">ideogram.ai/api → 100 free images per month. Best quality AI images for social media.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">🎬 Leonardo AI — Image Generation</div>
+          <div class="api-field"><label>API Key</label><input type="password" id="leonardo-key" placeholder="xxxxxxxxxxxxxxxx" /><div class="api-status" id="leonardo-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+          <div class="api-field"><label>Default Style</label>
+            <select id="leonardo-style" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
+              <option value="dreamworks">DreamWorks</option>
+              <option value="photo-real">Photo Realistic</option>
+              <option value="cinematic">Cinematic</option>
+            </select>
+          </div>
+          <p class="api-note">leonardo.ai → Platform → API → 150 tokens/day free on free tier.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">🎥 PixelVault / Pixverse — AI Video (Reels)</div>
+          <div class="api-field"><label>API Key</label><input type="password" id="pixverse-key" placeholder="pix_xxxxxxxxxxxx" /><div class="api-status" id="pixverse-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+          <p class="api-note">pixverse.ai → API → Convert AI images into animated videos for Instagram Reels.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">🤖 Pixel — AI Creative Director System Prompt</div>
           <div class="api-field"><label>Agent Name</label><input type="text" id="design-agent-name" value="Pixel — AI Creative Director" /></div>
-          <div class="api-field"><label>System Prompt</label>
-            <textarea id="design-agent-prompt" rows="3" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px;color:white;font-size:10px;resize:vertical;outline:none;font-family:inherit;line-height:1.5" placeholder="You are Pixel, APEX's AI Creative Director..."></textarea>
+          <div class="api-field"><label>Personality & Behavior</label>
+            <textarea id="design-agent-prompt" rows="3" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px;color:white;font-size:10px;resize:vertical;outline:none;font-family:inherit;line-height:1.5">You are Pixel, APEX's AI Creative Director. You specialize in scroll-stopping Instagram content — vibrant, bold, brand-aligned visuals. When assigned a content brief, you create image prompts optimized for Ideogram/Stable Diffusion, generate the image, then animate it with Pixverse for Reels. Always consider: composition, lighting, brand colors, and engagement potential.</textarea>
           </div>
         </div>
       </div>
-      <button class="save-btn" onclick="saveAdmin()">💾 SAVE CONFIGURATION</button>
+
+      <!-- CREDENTIALS TAB -->
+      <div id="admin-creds" style="display:none">
+        <p style="font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5">Connect your data and backend services.</p>
+
+        <div class="api-section">
+          <div class="api-section-title">🗄️ Supabase — Database</div>
+          <div class="api-grid">
+            <div class="api-field"><label>Supabase URL</label><input type="text" id="supabase-url" placeholder="https://xxxx.supabase.co" /></div>
+            <div class="api-field"><label>Anon Key (public)</label><input type="password" id="supabase-key" placeholder="eyJhbGc..." /></div>
+          </div>
+          <p class="api-note">supabase.com → Project Settings → API. Stores agent status, activity logs, leads, and content calendar.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">📧 Email — SMTP / Resend</div>
+          <div class="api-grid">
+            <div class="api-field"><label>SMTP Host</label><input type="text" id="smtp-host" placeholder="smtp.gmail.com" /></div>
+            <div class="api-field"><label>SMTP Port</label><input type="text" id="smtp-port" placeholder="587" /></div>
+          </div>
+          <div class="api-grid" style="margin-top:8px">
+            <div class="api-field"><label>Email</label><input type="text" id="smtp-email" placeholder="noreply@apex.ai" /></div>
+            <div class="api-field"><label>Password / App Key</label><input type="password" id="smtp-pass" placeholder="xxxx xxxx xxxx xxxx" /></div>
+          </div>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">📊 Analytics — Google Analytics 4</div>
+          <div class="api-field"><label>Measurement ID</label><input type="text" id="ga4-id" placeholder="G-XXXXXXXXXX" /></div>
+          <div class="api-field"><label>API Secret</label><input type="password" id="ga4-secret" placeholder="xxxxxxxx" /></div>
+          <p class="api-note">analytics.google.com → GA4 Admin → Data Streams → Measurement Protocol API.</p>
+        </div>
+      </div>
+
+      <button class="save-btn" onclick="saveAdmin()">💾 SAVE ALL CONFIGURATION</button>
     </div>
   </div>
 </div>
@@ -722,24 +865,73 @@ function switchTab(tab) {
 function openAdmin() { document.getElementById('admin-modal').classList.add('open') }
 function closeAdmin() { document.getElementById('admin-modal').classList.remove('open') }
 function switchAdminTab(tab) {
-  document.getElementById('mtab-ai').classList.toggle('active', tab==='ai')
-  document.getElementById('mtab-meta').classList.toggle('active', tab==='meta')
-  document.getElementById('mtab-design').classList.toggle('active', tab==='design')
+  ;['ai','meta','design','creds'].forEach(t => {
+    document.getElementById(`mtab-${t}`).classList.toggle('active', t===tab)
+  })
   document.getElementById('admin-ai').style.display    = tab==='ai'?'block':'none'
   document.getElementById('admin-meta').style.display = tab==='meta'?'block':'none'
   document.getElementById('admin-design').style.display = tab==='design'?'block':'none'
+  document.getElementById('admin-creds').style.display = tab==='creds'?'block':'none'
 }
 function saveAdmin() {
   const config = {
-    groq:document.getElementById('groq-key')?.value,
-    hf:document.getElementById('hf-key')?.value,
-    cohere:document.getElementById('cohere-key')?.value,
-    ideogram:document.getElementById('ideogram-key')?.value,
-    metaToken:document.getElementById('meta-token')?.value,
-    fbAdAcct:document.getElementById('fb-ad-account')?.value,
-    igAcct:document.getElementById('ig-account')?.value,
+    // AI Providers
+    groq:         document.getElementById('groq-key')?.value,
+    groqModel:    document.getElementById('groq-model')?.value,
+    hf:           document.getElementById('hf-key')?.value,
+    hfImg:        document.getElementById('hf-img-key')?.value,
+    cohere:       document.getElementById('cohere-key')?.value,
+    cohereModel:  document.getElementById('cohere-model')?.value,
+    gemini:       document.getElementById('gemini-key')?.value,
+    geminiModel:  document.getElementById('gemini-model')?.value,
+    minimax:      document.getElementById('minimax-key')?.value,
+    // Ads
+    metaToken:    document.getElementById('meta-token')?.value,
+    fbAdAcct:     document.getElementById('fb-ad-account')?.value,
+    igAccount:    document.getElementById('ig-account')?.value,
+    fbPageId:     document.getElementById('fb-page-id')?.value,
+    bmId:         document.getElementById('bm-id')?.value,
+    gadsToken:    document.getElementById('gads-token')?.value,
+    gadsCustomer: document.getElementById('gads-customer')?.value,
+    tiktokAppId:  document.getElementById('tiktok-app-id')?.value,
+    tiktokSecret: document.getElementById('tiktok-secret')?.value,
+    // Design
+    ideogram:     document.getElementById('ideogram-key')?.value,
+    ideogramStyle:document.getElementById('ideogram-style')?.value,
+    ideogramRatio:document.getElementById('ideogram-ratio')?.value,
+    leonardo:     document.getElementById('leonardo-key')?.value,
+    leonardoStyle:document.getElementById('leonardo-style')?.value,
+    pixverse:     document.getElementById('pixverse-key')?.value,
+    designAgent:  document.getElementById('design-agent-name')?.value,
+    designPrompt: document.getElementById('design-agent-prompt')?.value,
+    // Credentials
+    supabaseUrl:  document.getElementById('supabase-url')?.value,
+    supabaseKey:  document.getElementById('supabase-key')?.value,
+    smtpHost:     document.getElementById('smtp-host')?.value,
+    smtpPort:     document.getElementById('smtp-port')?.value,
+    smtpEmail:    document.getElementById('smtp-email')?.value,
+    smtpPass:     document.getElementById('smtp-pass')?.value,
+    ga4Id:        document.getElementById('ga4-id')?.value,
+    ga4Secret:    document.getElementById('ga4-secret')?.value,
   }
   localStorage.setItem('apex_api_config', JSON.stringify(config))
+  // Validate API keys
+  Object.entries({
+    groq:['groq','https://api.groq.com/openai/v1/models'],
+    hf:['hf','https://api-inference.huggingface.co/status'],
+    cohere:['cohere','https://api.cohere.com/v1/models'],
+    gemini:['gemini','https://generativelanguage.googleapis.com/v1beta/models?key='],
+    minimax:['minimax','https://api.minimax.chat/v1/models'],
+    ideogram:['ideogram','https://api.ideogram.ai/api/v1/describe'],
+    metaToken:['meta','https://graph.facebook.com/v19.0/me'],
+  }).forEach(([id,[key,url]]) => {
+    const val = config[key]
+    if (!val) return
+    const dot = document.querySelector(`#${id}-status .api-status-dot`)
+    const txt = document.querySelector(`#${id}-status .api-status-text`)
+    dot?.classList.add('connected'); dot?.classList.remove('disconnected')
+    if (txt) txt.textContent = 'Saved ✓'
+  })
   alert('✅ APEX configuration saved!')
   closeAdmin()
 }
@@ -772,7 +964,25 @@ window.addEventListener('resize', () => {
 // Load saved config
 try {
   const saved = JSON.parse(localStorage.getItem('apex_api_config') || '{}')
-  Object.entries({groq:'groq-key',hf:'hf-key',cohere:'cohere-key',ideogram:'ideogram-key',metaToken:'meta-token'}).forEach(([k,v]) => {
+  const fieldMap = {
+    groq:'groq-key',groqModel:'groq-model',
+    hf:'hf-key',hfImg:'hf-img-key',
+    cohere:'cohere-key',cohereModel:'cohere-model',
+    gemini:'gemini-key',geminiModel:'gemini-model',
+    minimax:'minimax-key',
+    metaToken:'meta-token',fbAdAcct:'fb-ad-account',igAccount:'ig-account',
+    fbPageId:'fb-page-id',bmId:'bm-id',
+    gadsToken:'gads-token',gadsCustomer:'gads-customer',
+    tiktokAppId:'tiktok-app-id',tiktokSecret:'tiktok-secret',
+    ideogram:'ideogram-key',ideogramStyle:'ideogram-style',ideogramRatio:'ideogram-ratio',
+    leonardo:'leonardo-key',leonardoStyle:'leonardo-style',
+    pixverse:'pixverse-key',
+    designAgent:'design-agent-name',designPrompt:'design-agent-prompt',
+    supabaseUrl:'supabase-url',supabaseKey:'supabase-key',
+    smtpHost:'smtp-host',smtpPort:'smtp-port',smtpEmail:'smtp-email',smtpPass:'smtp-pass',
+    ga4Id:'ga4-id',ga4Secret:'ga4-secret',
+  }
+  Object.entries(fieldMap).forEach(([k,v]) => {
     if (saved[k]) { const el = document.getElementById(v); if (el) el.value = saved[k] }
   })
 } catch(e) {}
