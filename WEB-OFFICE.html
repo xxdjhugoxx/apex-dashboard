@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX AI OFFICE</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a12;--surface:#12121f;--surface2:#1a1a2e;--border:#1e1e30;
+  --text:#e0e0f0;--muted:#6b7280;--accent:#FF6B35;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,system-ui,sans-serif;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh}
+/* HEADER */
+.header{display:flex;align-items:center;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);gap:12px;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:900;letter-spacing:2px;color:var(--accent)}
+.logo-icon{width:28px;height:28px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.header-center{flex:1;display:flex;justify-content:center}
+.live-badge{background:#111;border:1px solid #222;border-radius:20px;padding:4px 12px;font-size:9px;font-weight:700;letter-spacing:2px;color:#4ade80;display:flex;align-items:center;gap:6px}
+.live-dot{width:6px;height:6px;background:#4ade80;border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.status-btns{display:flex;gap:8px}
+.status-btn{padding:5px 10px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:1px;border:none;cursor:pointer}
+.status-btn.in-office{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid #4ade8030}
+.status-btn.away{background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid var(--border)}
+.admin-btn{background:rgba(255,107,53,0.15);color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:1px}
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.metric{background:var(--surface2);border-radius:10px;padding:8px 10px;border:1px solid var(--border)}
+.metric-top{display:flex;align-items:center;gap:5px;margin-bottom:5px}
+.metric-icon{font-size:14px}
+.metric-label{font-size:8px;font-weight:800;letter-spacing:1px;color:var(--muted)}
+.metric-value{font-size:18px;font-weight:900;color:var(--text)}
+.metric-bar{height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:4px;overflow:hidden}
+.metric-fill{height:100%;border-radius:2px;transition:width 0.6s}
+/* MAIN */
+.main{display:flex;flex:1;min-height:0}
+/* OFFICE FLOOR */
+.office{flex:1;position:relative;overflow:hidden;background:var(--bg)}
+.wall{position:absolute;top:0;left:0;right:0;height:50px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:20px;z-index:5}
+.wall-window{width:48px;height:28px;background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);border-radius:4px}
+.floor{position:absolute;inset:0;background:
+  linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px);
+background-size:40px 40px}
+.boss-area{position:absolute;top:50px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:10}
+.boss-label{font-size:8px;font-weight:900;color:#EF4444;letter-spacing:3px;margin-bottom:4px;text-align:center}
+.boss-desk{width:96px;height:58px;background:#1e1e30;border:3px solid #EF4444;border-radius:8px;display:flex;align-items:center;justify-content:center;position:relative}
+.boss-monitor{width:38px;height:26px;background:#0d0d1a;border:2px solid #EF4444;border-radius:4px;display:flex;align-items:center;justify-content:center}
+.boss-screen{width:30px;height:18px;background:rgba(239,68,68,0.15);border-radius:2px}
+.boss-person{display:flex;flex-direction:column;align-items:center;position:absolute;bottom:-22px}
+.boss-crown{font-size:12px;margin-bottom:-4px;z-index:3}
+.boss-head{width:32px;height:32px;background:#FDE68A;border:2px solid #EF4444;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px}
+.boss-title{font-size:7px;color:#EF4444;letter-spacing:2px;margin-top:20px;text-align:center}
+/* DESKS */
+.desks{position:absolute;inset:0}
+.desk{position:absolute}
+.desk-surface{background:var(--surface2);border-radius:8px;padding:4px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.desk-name{font-size:7px;font-weight:900;letter-spacing:1px;margin-bottom:1px}
+.desk-row{display:flex;gap:3px;align-items:center;width:100%;justify-content:center}
+.desk-agent{display:flex;flex-direction:column;align-items:center;flex:1}
+.desk-agent-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;border:1.5px solid}
+.desk-agent-name{font-size:6px;color:var(--muted);margin-top:1px}
+.desk-monitor{width:28px;height:16px;background:#0d0d1a;border:1.5px solid;border-radius:3px;display:flex;align-items:center;justify-content:center}
+.desk-screen{width:22px;height:11px;border-radius:2px;opacity:0.5}
+.desk-divider{width:1px;height:20px;opacity:0.3}
+.desk-label{font-size:7px;font-weight:700;text-align:center;margin-top:3px;letter-spacing:0.5px}
+.desk-subs-row{display:flex;gap:3px;margin-top:2px}
+.desk-dot{width:4px;height:4px;border-radius:50%}
+/* WALKING AGENTS */
+.walker{position:absolute;display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:20;transition:none}
+.walker-head{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid rgba(255,255,255,0.3)}
+.walker-body{width:26px;height:8px;border-radius:6px 6px 0 0;margin-top:-2px}
+/* SPEECH BUBBLE */
+.bubble{position:absolute;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:6px 9px;font-size:8px;max-width:120px;color:var(--text);z-index:30;pointer-events:none;line-height:1.4}
+.bubble::before{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--surface2)}
+/* SIDEBAR */
+.sidebar{width:280px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.tab{flex:1;padding:8px;font-size:9px;font-weight:700;text-align:center;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all 0.2s}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.chat-feed{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+.chat-feed::-webkit-scrollbar{width:3px}
+.chat-feed::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1)}
+.chat-msg{background:var(--surface2);border-radius:10px;padding:8px 10px;border:1px solid var(--border);animation:fadeIn 0.3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.chat-header{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.chat-avatar{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px}
+.chat-name{font-size:9px;font-weight:800}
+.chat-dept{font-size:8px;color:var(--muted);margin-left:auto}
+.chat-text{font-size:9px;line-height:1.5;color:var(--text)}
+.chat-time{font-size:7px;color:var(--muted);margin-top:3px}
+.thinking{color:var(--muted);font-style:italic}
+.agents-panel{display:none;flex-direction:column;gap:5px;padding:8px;flex:1;overflow-y:auto}
+.agent-card{background:var(--surface2);border-radius:10px;padding:8px 10px;border:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.agent-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid rgba(255,255,255,0.2)}
+.agent-info{flex:1}
+.agent-name{font-size:9px;font-weight:900}
+.agent-task{font-size:8px;color:var(--muted);margin-top:2px}
+.agent-dot{width:6px;height:6px;border-radius:50%}
+.no-msgs{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-size:9px;gap:8px;text-align:center;padding:20px}
+.no-msgs-icon{font-size:32px;opacity:0.3}
+/* FOOTER */
+.footer{flex-shrink:0;text-align:center;padding:4px;font-size:7px;color:rgba(255,255,255,0.07);letter-spacing:2px;border-top:1px solid var(--border)}
+/* ADMIN MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface2);border:2px solid #333;border-radius:20px;width:min(580px,95vw);max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 60px rgba(0,0,0,0.5)}
+.modal-hdr{display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-hdr h2{font-size:12px;font-weight:900;letter-spacing:2px;flex:1}
+.modal-close{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px}
+.modal-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-tab{flex:1;padding:8px 6px;font-size:9px;font-weight:700;text-align:center;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all 0.2s}
+.modal-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.modal-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+.modal-footer{padding:10px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.save-btn{background:var(--accent);color:white;border:none;border-radius:10px;padding:9px 20px;font-size:10px;font-weight:800;letter-spacing:1px;cursor:pointer;width:100%}
+.api-sec{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.api-sec-title{font-size:10px;font-weight:900;letter-spacing:1px;margin-bottom:2px}
+.api-field{display:flex;flex-direction:column;gap:3px}
+.api-field label{font-size:8px;font-weight:700;color:var(--muted);letter-spacing:1px}
+.api-field input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:10px;outline:none}
+.api-field input:focus{border-color:var(--accent)}
+.api-field select{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:10px;outline:none}
+.api-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.api-note{font-size:8px;color:var(--muted);line-height:1.5}
+.api-status{display:flex;align-items:center;gap:5px;margin-top:2px}
+.api-dot{width:6px;height:6px;border-radius:50%}
+.connected{background:#4ade80}
+.disconnected{background:#94A3B8}
+.waiting{background:#facc15}
+.test-btn{background:rgba(255,107,53,0.15);border:1px solid var(--accent);border-radius:8px;padding:5px 12px;color:var(--accent);font-size:9px;font-weight:700;cursor:pointer;align-self:flex-start}
+.status-txt{font-size:8px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo"><div class="logo-icon">🔱</div>APEX AI OFFICE</div>
+    <div class="header-center"><div class="live-badge"><div class="live-dot"></div>LIVE</div></div>
+    <div class="status-btns">
+      <div class="status-btn in-office" id="presence-btn" onclick="togglePresence()">● IN OFFICE</div>
+      <button class="admin-btn" onclick="openAdmin()">⚙ ADMIN</button>
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metrics" id="metrics"></div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="office" id="office">
+      <div class="wall">
+        <div class="wall-window"></div><div class="wall-window"></div>
+        <div style="font-size:9px;font-weight:900;letter-spacing:3px;color:var(--muted)">APEX HQ — FLOOR 1</div>
+        <div class="wall-window"></div><div class="wall-window"></div>
+      </div>
+      <div class="floor"></div>
+      <div class="boss-area">
+        <div class="boss-label">HUGO — CHIEF</div>
+        <div class="boss-desk">
+          <div class="boss-monitor"><div class="boss-screen"></div></div>
+          <div class="boss-person">
+            <div class="boss-crown">👑</div>
+            <div class="boss-head">🦁</div>
+          </div>
+        </div>
+        <div class="boss-title">CHIEF OF AI ORCHESTRATION</div>
+      </div>
+      <div class="desks" id="desks"></div>
+      <div id="walkers"></div>
+      <div id="bubbles"></div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-tabs">
+        <div class="tab active" id="tab-activity" onclick="switchTab('activity')">LIVE ACTIVITY</div>
+        <div class="tab" id="tab-agents" onclick="switchTab('agents')">AGENTS</div>
+      </div>
+      <div class="chat-feed" id="chat-feed">
+        <div class="no-msgs" id="no-msgs">
+          <div class="no-msgs-icon">🤖</div>
+          <div>AI agents will start talking<br>once connected</div>
+          <div style="font-size:8px">Open ADMIN → add your API key → SAVE</div>
+        </div>
+      </div>
+      <div class="agents-panel" id="agents-panel"></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">APEX AI OFFICE — AUTONOMOUS OPERATIONS</div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div class="modal-overlay" id="admin-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2>⚙️ ADMIN — API CONFIGURATION</h2>
+      <button class="modal-close" onclick="closeAdmin()">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <div class="modal-tab active" id="mtab-ai" onclick="switchMTab('ai')">🤖 AI</div>
+      <div class="modal-tab" id="mtab-tele" onclick="switchMTab('tele')">📱 TELEGRAM</div>
+      <div class="modal-tab" id="mtab-pres" onclick="switchMTab('pres')">👤 PRESENCE</div>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="save-btn" onclick="saveConfig()">💾 SAVE CONFIGURATION</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════════
+const DEPARTMENTS = [
+  {id:'sales',    name:'SALES',       color:'#10B981', emoji:'🦊', lead:'Felix',   role:'Sales Lead',    subs:['Intent Signals','ICP Match','Stage Forecast']},
+  {id:'marketing',name:'MARKETING',   color:'#7C3AED', emoji:'🦚', lead:'Phoenix', role:'Mktg Lead',     subs:['Topic Research','Brief Gen','A/B Test']},
+  {id:'ops',      name:'OPS',         color:'#2563EB', emoji:'🦡', lead:'Axel',    role:'Ops Lead',      subs:['Flow Builder','API Connect','Health']},
+  {id:'finance',  name:'FINANCE',     color:'#059669', emoji:'🐻', lead:'Bruno',   role:'Finance Lead',  subs:['Invoice Proc','Budget','Audit']},
+  {id:'aiops',    name:'AI OPS',      color:'#DB2777', emoji:'🧬', lead:'Dr. V',   role:'AI Ops Lead',   subs:['Model Router','Fine Tune','Guardrails']},
+  {id:'hr',       name:'HR',          color:'#DC2626', emoji:'👩', lead:'Jessica', role:'HR Lead',       subs:['Resume Screen','Welcome Bot','Onboard']},
+  {id:'product',  name:'PRODUCT',     color:'#4F46E5', emoji:'🧑', lead:'Tom',     role:'Product Lead',  subs:['Market Scan','Roadmap','Feature Rank']},
+  {id:'instagram',name:'INSTAGRAM',   color:'#EC4899', emoji:'📸', lead:'Blaze',   role:'Social Lead',   subs:['Content','Pixel','Ad Mgr']},
+  {id:'support',  name:'SUPPORT',     color:'#EA580C', emoji:'📷', lead:'Blaze',   role:'Support Lead',  subs:['Ticket Route','KB Search','CSAT']},
+  {id:'data',     name:'DATA',        color:'#0891B2', emoji:'🤖', lead:'Atlas',    role:'Data Lead',     subs:['Schema Map','Report Gen','Anomaly']},
+  {id:'strategy', name:'STRATEGY',    color:'#D97706', emoji:'👩‍💼', lead:'Sophia',  role:'Strategy Lead', subs:['Trend Radar','OKR Mgr','Competitor']},
+]
+
+const AGENTS = [
+  {name:'Felix',   dept:'Sales',      emoji:'🦊', color:'#10B981', id:'sales'},
+  {name:'Phoenix', dept:'Marketing',   emoji:'🦚', color:'#7C3AED', id:'marketing'},
+  {name:'Axel',    dept:'Ops',         emoji:'🦡', color:'#2563EB', id:'ops'},
+  {name:'Bruno',   dept:'Finance',     emoji:'🐻', color:'#059669', id:'finance'},
+  {name:'Dr. V',   dept:'AI Ops',     emoji:'🧬', color:'#DB2777', id:'aiops'},
+  {name:'Jessica', dept:'HR',          emoji:'👩', color:'#DC2626', id:'hr'},
+  {name:'Tom',     dept:'Product',     emoji:'🧑', color:'#4F46E5', id:'product'},
+  {name:'Blaze',   dept:'Instagram',   emoji:'📸', color:'#EC4899', id:'instagram'},
+  {name:'Blaze',   dept:'Support',     emoji:'📷', color:'#EA580C', id:'support'},
+  {name:'Atlas',   dept:'Data',        emoji:'🤖', color:'#0891B2', id:'data'},
+  {name:'Sophia',  dept:'Strategy',    emoji:'👩‍💼', color:'#D97706', id:'strategy'},
+  {name:'Hugo',    dept:'CEO',         emoji:'🦁', color:'#EF4444', id:'ceo'},
+]
+
+const METRICS = [
+  {label:'REVENUE',  icon:'💰', color:'#10B981', value:12840, target:15000, prefix:'$'},
+  {label:'LEADS',    icon:'🎯', color:'#7C3AED', value:22,    target:30,   prefix:''},
+  {label:'TASKS',     icon:'✅', color:'#2563EB', value:312,   target:400,  prefix:''},
+  {label:'AGENTS',   icon:'🤖', color:'#FF6B35', value:11,   target:11,   prefix:''},
+]
+
+// ═══════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════
+let CFG = {
+  minimaxKey: '',
+  ollamaUrl: 'http://localhost:11434',
+  ollamaModel: 'llama3.2',
+  provider: 'minimax',
+  telegramToken: '8630499476:AAHUJu5--MgIF4RcFo59UBS7GlrHRQwLRH4',
+  telegramChatId: '8432475368',
+  presenceUrl: '',
+  presenceToken: '',
+  officeName: 'APEX HQ',
+}
+
+function loadCfg() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('apex_config') || '{}')
+    CFG = {...CFG, ...saved}
+  } catch(e) {}
+}
+loadCfg()
+
+function saveConfig() {
+  // Gather all inputs
+  CFG.minimaxKey   = document.getElementById('f-minimax')?.value || CFG.minimaxKey
+  CFG.ollamaUrl     = document.getElementById('f-ollama-url')?.value || CFG.ollamaUrl
+  CFG.ollamaModel   = document.getElementById('f-ollama-model')?.value || CFG.ollamaModel
+  CFG.provider      = document.getElementById('f-provider')?.value || CFG.provider
+  CFG.telegramToken  = document.getElementById('f-tele-token')?.value || CFG.telegramToken
+  CFG.telegramChatId = document.getElementById('f-tele-chatid')?.value || CFG.telegramChatId
+  CFG.presenceUrl    = document.getElementById('f-pres-url')?.value || CFG.presenceUrl
+  CFG.presenceToken = document.getElementById('f-pres-token')?.value || CFG.presenceToken
+  CFG.officeName     = document.getElementById('f-office-name')?.value || CFG.officeName
+  localStorage.setItem('apex_config', JSON.stringify(CFG))
+  closeAdmin()
+  updatePresenceBtn()
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN MODAL
+// ═══════════════════════════════════════════════════════════════
+const ADMIN_TABS = {
+  ai: `
+    <div class="api-sec">
+      <div class="api-sec-title">🤖 AI PROVIDER</div>
+      <div class="api-field">
+        <label>PROVIDER</label>
+        <select id="f-provider">
+          <option value="minimax" ${CFG.provider==='minimax'?'selected':''}>MiniMax (your token plan)</option>
+          <option value="ollama" ${CFG.provider==='ollama'?'selected':''}>Ollama (local, FREE)</option>
+          <option value="both" ${CFG.provider==='both'?'selected':''}>Both — MiniMax primary, Ollama fallback</option>
+        </select>
+      </div>
+    </div>
+    <div class="api-sec">
+      <div class="api-sec-title">🔶 MINIMAX — 💰 YOUR TOKEN PLAN</div>
+      <div class="api-field">
+        <label>API KEY</label>
+        <input type="password" id="f-minimax" placeholder="sk-cp-xxxxxxxx" value="${CFG.minimaxKey}" />
+      </div>
+      <div class="api-status">
+        <div class="api-dot disconnected" id="s-minimax"></div>
+        <span class="status-txt" id="t-minimax">Add your MiniMax API key to enable AI agents</span>
+      </div>
+      <button class="test-btn" onclick="testMinimax()">🧪 TEST</button>
+    </div>
+    <div class="api-sec">
+      <div class="api-sec-title">🖥️ OLLAMA — FREE · LOCAL</div>
+      <div class="api-grid">
+        <div class="api-field">
+          <label>URL</label>
+          <input type="text" id="f-ollama-url" placeholder="http://localhost:11434" value="${CFG.ollamaUrl}" />
+        </div>
+        <div class="api-field">
+          <label>MODEL</label>
+          <select id="f-ollama-model">
+            <option value="llama3.2" ${CFG.ollamaModel==='llama3.2'?'selected':''}>Llama 3.2</option>
+            <option value="llama3" ${CFG.ollamaModel==='llama3'?'selected':''}>Llama 3</option>
+            <option value="mistral" ${CFG.ollamaModel==='mistral'?'selected':''}>Mistral 7B</option>
+            <option value="qwen2.5-coder" ${CFG.ollamaModel==='qwen2.5-coder'?'selected':''}>Qwen Coder</option>
+            <option value="phi3" ${CFG.ollamaModel==='phi3'?'selected':''}>Phi-3</option>
+          </select>
+        </div>
+      </div>
+      <p class="api-note">Run <b>ollama serve</b> first. Browser calls localhost directly — no CORS issues.</p>
+    </div>`,
+  tele: `
+    <div class="api-sec">
+      <div class="api-sec-title">📱 TELEGRAM BOT — FOR OUTSIDE NETWORK</div>
+      <div class="api-field"><label>Bot Token</label><input type="password" id="f-tele-token" placeholder="123456:ABC-..." value="${CFG.telegramToken}" /></div>
+      <div class="api-field"><label>Your Chat ID</label><input type="text" id="f-tele-chatid" placeholder="8432475368" value="${CFG.telegramChatId}" /></div>
+      <p class="api-note">When AI fails on web, agents can message you via Telegram. Bot must be running in OpenClaw.</p>
+    </div>
+    <div class="api-sec">
+      <div class="api-sec-title">🔗 HUGO PRESENCE — SUPABASE</div>
+      <div class="api-field"><label>Presence Webhook URL</label><input type="text" id="f-pres-url" placeholder="https://your-project.supabase.co" value="${CFG.presenceUrl}" /></div>
+      <div class="api-field"><label>Presence API Key</label><input type="password" id="f-pres-token" placeholder="eyJ..." value="${CFG.presenceToken}" /></div>
+      <p class="api-note">Updates your IN OFFICE / AWAY status. Leave blank to use OpenClaw gateway.</p>
+    </div>`,
+  pres: `
+    <div class="api-sec">
+      <div class="api-sec-title">🏢 OFFICE NAME</div>
+      <div class="api-field">
+        <label>NAME</label>
+        <input type="text" id="f-office-name" placeholder="APEX HQ" value="${CFG.officeName}" />
+      </div>
+    </div>
+    <div class="api-sec">
+      <div class="api-sec-title">📊 LIVE METRICS (DEMO)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${METRICS.map(m => `
+          <div style="background:var(--surface2);border-radius:8px;padding:8px">
+            <div style="font-size:8px;color:${m.color};font-weight:800">${m.label}</div>
+            <div style="font-size:20px;font-weight:900">${m.prefix}${m.value.toLocaleString()}</div>
+            <div style="font-size:8px;color:var(--muted)">/ ${m.prefix}${m.target.toLocaleString()}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="api-sec">
+      <div class="api-sec-title">🗑️ CLEAR ALL DATA</div>
+      <button onclick="clearAllData()" style="background:rgba(220,38,38,0.15);border:1px solid #DC2626;border-radius:8px;padding:7px 14px;color:#DC2626;font-size:10px;font-weight:700;cursor:pointer">🗑️ Reset Everything</button>
+    </div>`,
+}
+
+function openAdmin() {
+  document.getElementById('admin-modal').classList.add('open')
+  document.getElementById('modal-body').innerHTML = ADMIN_TABS.ai
+}
+function closeAdmin() { document.getElementById('admin-modal').classList.remove('open') }
+function switchMTab(tab) {
+  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'))
+  document.getElementById('mtab-' + tab)?.classList.add('active')
+  document.getElementById('modal-body').innerHTML = ADMIN_TABS[tab] || ''
+}
+
+async function testMinimax() {
+  const key = document.getElementById('f-minimax')?.value
+  const dot = document.getElementById('s-minimax')
+  const txt = document.getElementById('t-minimax')
+  if (!key) { if (txt) txt.textContent = '❌ Add your API key first'; return }
+  if (txt) txt.textContent = '⏳ Testing...'
+  try {
+    const res = await fetch('https://api.minimax.io/v1/chat/completions', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model:'MiniMax-M2.7',messages:[{role:'user',content:'Reply: OK'}],max_tokens:5})
+    })
+    const data = await res.json()
+    if (data.choices?.[0]?.message?.content) {
+      dot?.classList.add('connected'); dot?.classList.remove('disconnected')
+      if (txt) txt.textContent = '✅ Connected!'
+    } else { throw new Error(data.error?.message || 'Failed') }
+  } catch(e) {
+    dot?.classList.add('disconnected'); dot?.classList.remove('connected')
+    if (txt) txt.textContent = '❌ ' + (e.message||'').substring(0,60)
+  }
+}
+
+function clearAllData() {
+  if (confirm('Reset all config and local data?')) {
+    localStorage.removeItem('apex_config')
+    location.reload()
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PRESENCE
+// ═══════════════════════════════════════════════════════════════
+let isInOffice = true
+function updatePresenceBtn() {
+  const btn = document.getElementById('presence-btn')
+  if (!btn) return
+  if (isInOffice) {
+    btn.className = 'status-btn in-office'
+    btn.textContent = '● IN OFFICE'
+  } else {
+    btn.className = 'status-btn away'
+    btn.textContent = '○ AWAY'
+  }
+}
+function togglePresence() {
+  isInOffice = !isInOffice
+  updatePresenceBtn()
+  updatePresence()
+}
+async function updatePresence() {
+  if (!CFG.presenceUrl || !CFG.presenceToken) return
+  try {
+    await fetch(CFG.presenceUrl + '/rest/v1/hugo_status', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':CFG.presenceToken,'Prefer':'return=minimal'},
+      body:JSON.stringify({status: isInOffice ? 'in_office' : 'away', updated_at: new Date().toISOString()})
+    })
+  } catch(e) {}
+}
+updatePresenceBtn()
+
+// ═══════════════════════════════════════════════════════════════
+// METRICS
+// ═══════════════════════════════════════════════════════════════
+function renderMetrics() {
+  const m = document.getElementById('metrics')
+  m.innerHTML = METRICS.map(mt => `
+    <div class="metric">
+      <div class="metric-top">
+        <div class="metric-icon">${mt.icon}</div>
+        <div class="metric-label">${mt.label}</div>
+      </div>
+      <div class="metric-value">${mt.prefix}${mt.value.toLocaleString()}</div>
+      <div class="metric-bar"><div class="metric-fill" style="width:${Math.min(100,mt.value/mt.target*100)}%;background:${mt.color}"></div></div>
+    </div>`).join('')
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DESKS
+// ═══════════════════════════════════════════════════════════════
+function getDeskPositions() {
+  const office = document.getElementById('office')
+  const w = office.clientWidth
+  const h = office.clientHeight
+  const bossH = 110
+  const row1Y = 50 + bossH + 12
+  const row2Y = row1Y + 78 + 16
+  const deskW = 120
+  const gap = Math.floor((w - 6 * deskW) / 7)
+  const startX = Math.floor(gap / 2)
+  return DEPARTMENTS.map((d, i) => {
+    const row = i < 6 ? 0 : 1
+    const col = i < 6 ? i : i - 6
+    return {
+      ...d,
+      x: startX + col * (deskW + gap),
+      y: row === 0 ? row1Y : row2Y,
+      deskW, deskH: 56
+    }
+  })
+}
+
+function renderDesks() {
+  const container = document.getElementById('desks')
+  const positions = getDeskPositions()
+  container.innerHTML = positions.map(p => `
+    <div class="desk" id="desk-${p.id}" style="left:${p.x}px;top:${p.y}px">
+      <div class="desk-surface" style="width:${p.deskW}px;height:${p.deskH}px;border:2px solid ${p.color}40">
+        <div class="desk-name" style="color:${p.color}">${p.name}</div>
+        <div class="desk-row">
+          <div class="desk-agent">
+            <div class="desk-agent-icon" style="background:${p.color}20;border-color:${p.color}60">${p.emoji}</div>
+            <div class="desk-agent-name">${p.lead}</div>
+          </div>
+          <div class="desk-divider" style="background:${p.color}40"></div>
+          <div class="desk-agent">
+            <div class="desk-agent-icon" style="background:${p.color}20;border-color:${p.color}40">🤖</div>
+            <div class="desk-agent-name">AI</div>
+          </div>
+        </div>
+        <div class="desk-monitor" style="border-color:${p.color}40">
+          <div class="desk-screen" style="background:${p.color}40"></div>
+        </div>
+      </div>
+      <div class="desk-label" style="color:${p.color}">${p.role}</div>
+      <div class="desk-subs-row">
+        ${p.subs.slice(0,3).map(() => `<div class="desk-dot" style="background:#86EFAC"></div>`).join('')}
+      </div>
+    </div>`).join('')
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WALKING AGENTS
+// ═══════════════════════════════════════════════════════════════
+let walkers = []
+let bubbles = []
+
+function spawnWalker() {
+  const positions = getDeskPositions()
+  const dept = positions[Math.floor(Math.random() * positions.length)]
+  if (!dept) return
+  walkers.push({
+    id: dept.id,
+    emoji: dept.emoji,
+    color: dept.color,
+    x: dept.x + dept.deskW / 2,
+    y: dept.y + dept.deskH + 30,
+    targetX: document.getElementById('office').clientWidth / 2,
+    targetY: 90,
+    progress: 0,
+    phase: 'walk',
+  })
+}
+
+function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t }
+
+function updateWalkers(dt) {
+  walkers.forEach(w => {
+    if (w.phase === 'walk') {
+      w.progress += dt / 1200
+      if (w.progress >= 1) { w.progress = 1; w.phase = 'arrived' }
+    } else if (w.phase === 'arrived') {
+      // Show bubble then return
+    } else if (w.phase === 'return') {
+      w.progress += dt / 1200
+      if (w.progress >= 1) { w.progress = 1; w.phase = 'done' }
+    }
+  })
+  walkers = walkers.filter(w => w.phase !== 'done')
+  renderWalkers()
+}
+
+function renderWalkers() {
+  const container = document.getElementById('walkers')
+  container.innerHTML = walkers.map(w => {
+    const t = easeInOut(Math.min(1, w.progress))
+    const cx = w.phase === 'walk'
+      ? w.x + (w.targetX - w.x) * t
+      : w.targetX + (w.x - w.targetX) * t
+    const cy = w.phase === 'walk'
+      ? w.y + (w.targetY - w.y) * t
+      : w.targetY + (w.y - w.targetY) * t
+    const bounce = w.phase === 'arrived' ? 'translateY(-4px)' : ''
+    return `<div class="walker" style="left:${cx-13}px;top:${cy-26}px;transform:${bounce}">
+      <div class="walker-head" style="background:${w.color}40;border-color:${w.color}">${w.emoji}</div>
+      <div class="walker-body" style="background:${w.color}"></div>
+    </div>`
+  }).join('')
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHAT — AI POWERED
+// ═══════════════════════════════════════════════════════════════
+let isThinking = false
+
+async function fetchAI(prompt, agentId) {
+  const { minimaxKey, ollamaUrl, ollamaModel, provider } = CFG
+
+  // Try MiniMax
+  if (minimaxKey && (provider === 'minimax' || provider === 'both')) {
+    try {
+      const res = await fetch('https://api.minimax.io/v1/chat/completions', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+minimaxKey},
+        body:JSON.stringify({model:'MiniMax-M2.7',messages:[{role:'user',content:prompt}],max_tokens:80})
+      })
+      const data = await res.json()
+      if (data.choices?.[0]?.message?.content) return data.choices[0].message.content.trim()
+    } catch(e) {}
+  }
+
+  // Try Ollama
+  if (provider === 'ollama' || provider === 'both') {
+    try {
+      const res = await fetch(ollamaUrl + '/api/chat', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:ollamaModel,messages:[{role:'user',content:prompt}],stream:false})
+      })
+      const data = await res.json()
+      if (data.message?.content) return data.message.content.trim()
+    } catch(e) {}
+  }
+
+  return null
+}
+
+const AGENT_PROMPTS = {
+  sales:    'You are Felix, Sales Lead at APEX. Reply with ONE short confident sentence about what you are working on right now.',
+  marketing:'You are Phoenix, Marketing Lead at APEX. Reply with ONE short bold sentence about the most important marketing metric right now.',
+  ops:      'You are Axel, Ops Lead at APEX. Reply with ONE short technical sentence about a key operational improvement.',
+  finance:  'You are Bruno, Finance Lead at APEX. Reply with ONE short precise sentence about the most critical financial metric.',
+  instagram:'You are Blaze, Instagram Lead at APEX. Reply with ONE short engaging sentence about an Instagram or social metric.',
+  support:  'You are Blaze, Support Lead at APEX. Reply with ONE short efficient sentence about a critical support ticket.',
+  aiops:    'You are Dr. V, AI Ops Lead at APEX. Reply with ONE short technical sentence about AI infrastructure.',
+  data:     'You are Atlas, Data Lead at APEX. Reply with ONE short precise sentence about a data pipeline or metric.',
+  strategy: 'You are Sophia, Strategy Lead at APEX. Reply with ONE sharp analytical sentence about strategy.',
+  hr:       'You are Jessica, HR Lead at APEX. Reply with ONE short warm sentence about people or culture.',
+  product:  'You are Tom, Product Lead at APEX. Reply with ONE short focused sentence about product or roadmap.',
+  ceo:      'You are Hugo Ferrari, CEO of APEX. Reply with ONE sharp strategic directive. Bold and direct.',
+}
+
+function addChatMsg(agent, dept, emoji, color, text, isAi) {
+  const feed = document.getElementById('chat-feed')
+  const noMsgs = document.getElementById('no-msgs')
+  if (noMsgs) noMsgs.remove()
+  const div = document.createElement('div')
+  div.className = 'chat-msg'
+  div.innerHTML = `
+    <div class="chat-header">
+      <div class="chat-avatar" style="background:${color}20;border:1.5px solid ${color}40">${emoji}</div>
+      <div class="chat-name" style="color:${color}">${agent}${isAi?' 🤖':''}</div>
+      <div class="chat-dept">${dept}</div>
+    </div>
+    <div class="chat-text">${text}</div>
+    <div class="chat-time">Just now</div>`
+  feed.appendChild(div)
+  feed.scrollTop = feed.scrollHeight
+  while (feed.children.length > 20) feed.removeChild(feed.firstChild)
+}
+
+async function cycleAgent() {
+  if (isThinking) return
+  const a = AGENTS[Math.floor(Math.random() * AGENTS.length)]
+  isThinking = true
+  const feed = document.getElementById('chat-feed')
+  const noMsgs = document.getElementById('no-msgs')
+
+  // Show thinking
+  if (noMsgs) noMsgs.remove()
+  const thinkDiv = document.createElement('div')
+  thinkDiv.className = 'chat-msg'
+  thinkDiv.id = 'thinking'
+  thinkDiv.innerHTML = `
+    <div class="chat-header">
+      <div class="chat-avatar" style="background:${a.color}20;border:1.5px solid ${a.color}40">${a.emoji}</div>
+      <div class="chat-name" style="color:${a.color}">${a.name}</div>
+      <div class="chat-dept">${a.dept}</div>
+    </div>
+    <div class="chat-text thinking">Thinking...</div>
+    <div class="chat-time">Just now</div>`
+  feed.appendChild(thinkDiv)
+  feed.scrollTop = feed.scrollHeight
+
+  const response = await fetchAI(AGENT_PROMPTS[a.id] || AGENT_PROMPTS.ceo, a.id)
+  const thinkEl = document.getElementById('thinking')
+  if (response && thinkEl) {
+    thinkEl.querySelector('.chat-text').textContent = response
+    thinkEl.querySelector('.chat-text').classList.remove('thinking')
+    thinkEl.querySelector('.chat-name').textContent = a.name + ' 🤖'
+  } else if (thinkEl) {
+    thinkEl.remove()
+    // Show offline msg
+    if (feed.children.length === 0) {
+      const div = document.createElement('div')
+      div.className = 'chat-msg'
+      div.innerHTML = `<div class="no-msgs" style="flex:unset"><div style="font-size:8px">⚠️ No AI connected. Add your API key in ADMIN → AI tab.</div></div>`
+      feed.appendChild(div)
+    }
+  }
+  isThinking = false
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AGENTS PANEL
+// ═══════════════════════════════════════════════════════════════
+function renderAgentsPanel() {
+  const panel = document.getElementById('agents-panel')
+  panel.innerHTML = AGENTS.map(a => `
+    <div class="agent-card">
+      <div class="agent-avatar" style="background:${a.color}20;border-color:${a.color}40">${a.emoji}</div>
+      <div class="agent-info">
+        <div class="agent-name" style="color:${a.color}">${a.name}</div>
+        <div class="agent-task">${a.dept} · ${a.role}</div>
+      </div>
+      <div class="agent-dot" style="background:#86EFAC;animation:pulse 1.5s infinite"></div>
+    </div>`).join('')
+}
+
+function switchTab(tab) {
+  document.getElementById('tab-activity').classList.toggle('active', tab === 'activity')
+  document.getElementById('tab-agents').classList.toggle('active', tab === 'agents')
+  document.getElementById('chat-feed').style.display = tab === 'activity' ? 'flex' : 'none'
+  document.getElementById('agents-panel').style.display = tab === 'agents' ? 'flex' : 'none'
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+let lastTime = 0
+let walkerTimer = 0
+
+function animate(time) {
+  const dt = time - lastTime
+  lastTime = time
+  walkerTimer += dt
+  if (walkerTimer > 4000) { walkerTimer = 0; spawnWalker() }
+  updateWalkers(dt)
+  requestAnimationFrame(animate)
+}
+
+function init() {
+  renderMetrics()
+  renderDesks()
+  renderAgentsPanel()
+  // Spawn first walkers
+  setTimeout(() => {
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => spawnWalker(), i * 1500)
+    }
+  }, 800)
+  // Start agent chat
+  setTimeout(cycleAgent, 2000)
+  setInterval(cycleAgent, 12000)
+  requestAnimationFrame(animate)
+}
+
+window.addEventListener('resize', () => { renderDesks() })
+init()
+</script>
+</body>
+</html>
