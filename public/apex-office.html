@@ -14,17 +14,13 @@
   html, body { height: 100%; background: var(--bg); color: var(--text);
     font-family: 'Inter', -apple-system, sans-serif; overflow: hidden; }
 
-  .grid-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-    background-size: 40px 40px; }
-
-  .app { display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 1; }
+  .app { display: flex; flex-direction: column; height: 100vh; }
 
   /* ── HEADER ── */
   .header { display: flex; align-items: center; gap: 16px; padding: 10px 20px;
     background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-  .logo { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 900; letter-spacing: 2px; color: var(--accent); }
+  .logo { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 900;
+    letter-spacing: 2px; color: var(--accent); }
   .logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px;
     display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; }
   .header-center { flex: 1; display: flex; align-items: center; justify-content: center; }
@@ -33,7 +29,7 @@
     font-size: 10px; font-weight: 700; color: #4ade80; letter-spacing: 1px; }
   .live-dot { width: 6px; height: 6px; background: #4ade80; border-radius: 50%;
     animation: pulse-green 1.5s infinite; }
-  @keyframes pulse-green { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.5)} 50%{box-shadow:0 0 0 5px rgba(74,222,128,0)} } 
+  @keyframes pulse-green { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.5)} 50%{box-shadow:0 0 0 5px rgba(74,222,128,0)} }
   .header-right { display: flex; align-items: center; gap: 10px; }
   .clock { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .presence-badge { padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 10px;
@@ -45,102 +41,117 @@
 
   /* ── METRICS BAR ── */
   .metrics-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
-    padding: 12px 20px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-  .metric { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px;
+    padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .metric { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 10px;
     background: var(--surface2); border: 1px solid var(--border); }
-  .metric-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center;
-    justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .metric-icon { width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center;
+    justify-content: center; font-size: 14px; flex-shrink: 0; }
   .metric-info { flex: 1; min-width: 0; }
-  .metric-label { font-size: 9px; color: var(--muted); font-weight: 600; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .metric-label { font-size: 8px; color: var(--muted); font-weight: 600; letter-spacing: 0.5px; margin-bottom: 3px; }
   .metric-row { display: flex; align-items: baseline; gap: 4px; }
-  .metric-val { font-size: 16px; font-weight: 800; }
-  .metric-target { font-size: 10px; color: var(--muted); }
-  .metric-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 5px; overflow: hidden; }
+  .metric-val { font-size: 14px; font-weight: 800; }
+  .metric-target { font-size: 9px; color: var(--muted); }
+  .metric-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px; overflow: hidden; }
   .metric-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
 
-  /* ── MAIN ── */
-  .main { display: flex; flex: 1; min-height: 0; overflow: hidden; }
-  .office-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 14px 16px 12px; gap: 14px; }
+  /* ── MAIN OFFICE ── */
+  .office-main { flex: 1; display: flex; min-height: 0; overflow: hidden; }
 
-  /* ── CHIEF CARD ── */
-  .chief-section { flex-shrink: 0; display: flex; justify-content: center; }
-  .chief-card { position: relative; background: var(--surface2); border: 2px solid #EF4444;
-    border-radius: 16px; padding: 14px 24px; display: flex; align-items: center; gap: 20px;
-    min-width: 480px; box-shadow: 0 0 30px rgba(239,68,68,0.15); }
-  .chief-avatar-wrap { position: relative; flex-shrink: 0; }
-  .chief-avatar { width: 64px; height: 64px; border-radius: 50%;
-    background: linear-gradient(135deg, #7f1d1d, #991b1b); border: 3px solid #EF4444;
-    display: flex; align-items: center; justify-content: center; font-size: 32px;
-    box-shadow: 0 0 20px rgba(239,68,68,0.3); }
-  .chief-live-ring { position: absolute; inset: -4px; border-radius: 50%;
-    border: 2px solid #EF4444; animation: ring-pulse 2s infinite; }
-  @keyframes ring-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.1)} }
-  .chief-info { text-align: center; }
-  .chief-crown { font-size: 24px; margin-bottom: -8px; }
-  .chief-name { font-size: 14px; font-weight: 900; color: #EF4444; letter-spacing: 2px; }
-  .chief-title { font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; }
-  .chief-desks { display: flex; gap: 6px; align-items: flex-end; }
-  .chief-desk-monitor { width: 28px; height: 20px; background: #1f2937; border: 2px solid #EF4444;
-    border-radius: 3px; position: relative; }
-  .chief-desk-monitor::after { content:''; position:absolute; inset:2px;
-    background: rgba(239,68,68,0.3); border-radius: 2px; }
-  .chief-desk-surface { width: 36px; height: 5px; background: #78350f; border-radius: 2px; }
-  .speech-bubble { position: absolute; padding: 7px 12px; border-radius: 12px;
-    font-size: 10px; font-weight: 600; max-width: 150px; text-align: center;
-    animation: fade-up 3s ease-out forwards; white-space: nowrap; color: white; }
-  .speech-left { background: #1e3a8a; left: -110px; top: 5px; }
-  .speech-right { background: #1e3a8a; right: -110px; top: 5px; }
-  @keyframes fade-up { 0%{opacity:0;transform:translateY(6px)} 15%{opacity:1;transform:translateY(0)} 80%{opacity:1} 100%{opacity:0} }
+  /* ── OFFICE FLOOR ── */
+  .office-floor { flex: 1; position: relative; overflow: hidden;
+    background-color: #131320;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
 
-  /* ── DEPT GRID ── */
-  .dept-grid { flex: 1; display: grid; grid-template-columns: repeat(6, 1fr);
-    grid-template-rows: repeat(2, 1fr); gap: 10px; overflow: hidden; }
+  /* Wall at top */
+  .office-wall { position: absolute; top: 0; left: 0; right: 0; height: 52px;
+    background: linear-gradient(180deg, #1a1a2e 0%, #16162a 100%);
+    border-bottom: 3px solid #222240;
+    display: flex; align-items: center; padding: 0 20px; gap: 16px; z-index: 5; }
+  .wall-window { width: 50px; height: 30px; border-radius: 4px;
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+    box-shadow: 0 0 12px rgba(59,130,246,0.4), inset 0 0 8px rgba(96,165,250,0.2);
+    border: 1px solid rgba(96,165,250,0.3); }
+  .wall-label { font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.3);
+    letter-spacing: 3px; margin-left: auto; margin-right: auto; }
 
-  /* ── DEPT CARD ── */
-  .dept-card { background: var(--surface2); border-radius: 12px; border: 2px solid transparent;
-    overflow: hidden; cursor: pointer; transition: transform 0.2s, border-color 0.3s, box-shadow 0.3s;
-    display: flex; flex-direction: column; }
-  .dept-card:hover { transform: translateY(-2px); }
-  .dept-card.active { border-color: var(--dept-color); box-shadow: 0 0 20px var(--dept-glow); }
-  .dept-header { display: flex; align-items: center; justify-content: space-between;
-    padding: 5px 8px; background: var(--dept-color); flex-shrink: 0; }
-  .dept-name { font-size: 8px; font-weight: 900; color: white; letter-spacing: 1.5px; }
-  .dept-status { font-size: 7px; font-weight: 700; padding: 1px 5px; border-radius: 5px;
-    background: rgba(255,255,255,0.25); color: white; }
-  .dept-agents { display: flex; justify-content: center; gap: 8px; padding: 6px 6px 4px; flex-shrink: 0; }
-  .agent-avatar { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-  .agent-circle { width: 32px; height: 32px; border-radius: 50%; display: flex;
-    align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: white;
-    border: 2px solid rgba(255,255,255,0.3); position: relative; }
-  .agent-circle.main-agent { border-color: white; }
-  .agent-status-dot { position: absolute; bottom: -1px; right: -1px; width: 8px; height: 8px;
-    border-radius: 50%; border: 2px solid var(--surface2); }
-  @keyframes status-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3)} }
-  .agent-status-dot.active { animation: status-pulse 1.5s infinite; }
-  .agent-name { font-size: 7px; font-weight: 700; color: var(--muted); text-align: center; }
-  .agent-role { font-size: 6px; color: rgba(255,255,255,0.3); text-align: center; }
-  .dept-label { font-size: 7px; color: rgba(255,255,255,0.3); text-align: center; padding: 0 4px 3px; }
+  /* Boss area */
+  .boss-area { position: absolute; top: 65px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; z-index: 10; }
+  .boss-name-label { font-size: 9px; font-weight: 900; color: #EF4444; letter-spacing: 3px; margin-bottom: 4px; }
+  .boss-desk { width: 100px; height: 60px; background: #1e1e30; border: 3px solid #EF4444;
+    border-radius: 8px; position: relative; display: flex; align-items: center; justify-content: center; }
+  .boss-monitor { width: 40px; height: 28px; background: #0d0d1a; border: 2px solid #EF4444;
+    border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+  .boss-monitor-screen { width: 32px; height: 20px; background: rgba(239,68,68,0.2);
+    border-radius: 2px; }
+  .boss-person { position: absolute; bottom: -24px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; }
+  .boss-head { width: 36px; height: 36px; border-radius: 50%; background: #FDE68A;
+    border: 2px solid #EF4444; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; position: relative; z-index: 2; }
+  .boss-crown { font-size: 14px; margin-bottom: -6px; position: relative; z-index: 3; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+  .boss-body { width: 46px; height: 14px; background: #7f1d1d; border: 2px solid #EF4444;
+    border-top: none; border-radius: 0 0 10px 10px; margin-top: -4px; }
+  .boss-label { font-size: 8px; font-weight: 900; color: #EF4444; letter-spacing: 2px; margin-top: 6px; }
 
-  .sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; padding: 0 6px 6px; flex: 1; }
-  .sub-agent { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 6px; padding: 4px 5px; display: flex; flex-direction: column; gap: 3px; }
-  .sub-agent-top { display: flex; align-items: center; gap: 4px; }
-  .sub-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-  .sub-name { font-size: 7px; color: rgba(255,255,255,0.6); font-weight: 600; flex: 1; }
-  .sub-bar { height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px; overflow: hidden; }
-  .sub-fill { height: 100%; border-radius: 1px; transition: width 0.5s; }
+  /* Desk */
+  .desk { position: absolute; display: flex; flex-direction: column; align-items: center; }
+  .desk-surface { background: #1e1e30; border-radius: 6px; position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .desk-monitor { background: #0d0d1a; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
+  .desk-monitor-screen { border-radius: 2px; opacity: 0.5; }
+  .desk-keyboard { position: absolute; bottom: 2px; background: #2a2a40;
+    border-radius: 2px; }
+  .desk-person { position: absolute; bottom: -22px; display: flex; flex-direction: column; align-items: center; }
+  .person-head { border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid; }
+  .person-body { border-radius: 8px 8px 0 0; border: 2px solid; border-bottom: none; margin-top: -3px; }
+  .desk-label { font-size: 7px; font-weight: 800; color: rgba(255,255,255,0.6);
+    letter-spacing: 1px; margin-top: 4px; text-align: center; }
+  .desk-status { display: flex; gap: 2px; margin-top: 2px; }
+  .desk-status-dot { width: 4px; height: 4px; border-radius: 50%; }
+
+  /* Walking agent */
+  .walking-agent { position: absolute; display: flex; flex-direction: column; align-items: center;
+    z-index: 50; pointer-events: none; transition: none; }
+  .walk-person-head { width: 24px; height: 24px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-size: 12px; border: 2px solid; }
+  .walk-person-body { width: 28px; height: 10px; border-radius: 8px 8px 0 0;
+    border: 2px solid; border-bottom: none; margin-top: -2px; }
+
+  /* Speech bubble */
+  .speech-bubble { position: absolute; padding: 5px 9px; border-radius: 10px;
+    font-size: 8px; font-weight: 700; max-width: 110px; text-align: center;
+    color: white; z-index: 60; white-space: nowrap;
+    animation: bubble-up 3s ease-out forwards; }
+  .speech-bubble::after { content: ''; position: absolute; bottom: -5px;
+    left: 50%; transform: translateX(-50%);
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-top: 6px solid currentColor; }
+  @keyframes bubble-up { 0%{opacity:0;transform:translateX(-50%) translateY(6px)} 12%{opacity:1;transform:translateX(-50%) translateY(0)} 75%{opacity:1} 100%{opacity:0;transform:translateX(-50%) translateY(-4px)} }
+
+  /* Dept info panel on desk */
+  .desk-info { position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.7); border-radius: 5px; padding: 2px 6px;
+    white-space: nowrap; font-size: 7px; font-weight: 700; color: rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.1); pointer-events: none; }
+
+  /* Sub-agent indicators on desk */
+  .desk-subs { position: absolute; bottom: -38px; display: flex; gap: 2px; }
 
   /* ── RIGHT SIDEBAR ── */
   .sidebar { width: 300px; flex-shrink: 0; background: var(--surface);
     border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
   .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-  .sidebar-tab { flex: 1; padding: 10px 8px; font-size: 9px; font-weight: 700; color: var(--muted);
-    text-align: center; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;
-    letter-spacing: 0.5px; }
+  .sidebar-tab { flex: 1; padding: 9px 8px; font-size: 9px; font-weight: 700; color: var(--muted);
+    text-align: center; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
   .sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
   .chat-feed { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
   .chat-feed::-webkit-scrollbar { width: 3px; }
-  .chat-feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+  .chat-feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
   .chat-msg { padding: 7px 9px; border-radius: 10px;
     background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
     animation: msg-in 0.3s ease; }
@@ -150,7 +161,7 @@
     align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: white; flex-shrink: 0; }
   .chat-agent-name { font-size: 8px; font-weight: 800; }
   .chat-agent-dept { font-size: 7px; color: var(--muted); margin-left: auto; }
-  .chat-text { font-size: 9px; color: rgba(255,255,255,0.7); line-height: 1.5; }
+  .chat-text { font-size: 9px; color: rgba(255,255,255,0.7); line-height: 1.4; }
   .chat-time { font-size: 7px; color: rgba(255,255,255,0.2); margin-top: 2px; }
   .chat-indicators { display: flex; align-items: center; justify-content: center; gap: 4px;
     padding: 7px; border-top: 1px solid var(--border); flex-shrink: 0; }
@@ -160,7 +171,7 @@
   .chat-ind-dot:nth-child(3){background:var(--accent);animation:bounce 1s infinite 0.3s}
   @keyframes bounce { 0%,100%{transform:translateY(0);opacity:0.4} 50%{transform:translateY(-4px);opacity:1} }
 
-  /* ── ADMIN PANEL ── */
+  /* ── ADMIN MODAL ── */
   .modal-overlay { position: fixed; inset: 0; z-index: 1000;
     background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
     display: flex; align-items: center; justify-content: center;
@@ -178,6 +189,10 @@
     border: none; color: white; font-size: 14px; cursor: pointer;
     display: flex; align-items: center; justify-content: center; }
   .modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+  .modal-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+  .modal-tab { padding: 6px 14px; border-radius: 8px; font-size: 10px; font-weight: 700;
+    cursor: pointer; border: 1px solid var(--border); color: var(--muted); background: transparent; transition: all 0.2s; }
+  .modal-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
   .api-section { background: rgba(255,255,255,0.03); border: 1px solid var(--border);
     border-radius: 12px; padding: 14px; }
   .api-section-title { font-size: 11px; font-weight: 800; color: var(--accent); letter-spacing: 1px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
@@ -199,88 +214,19 @@
     padding: 10px 20px; font-size: 11px; font-weight: 800; letter-spacing: 1px;
     cursor: pointer; transition: opacity 0.2s; align-self: flex-end; }
   .save-btn:hover { opacity: 0.85; }
-  .modal-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
-  .modal-tab { padding: 6px 14px; border-radius: 8px; font-size: 10px; font-weight: 700;
-    cursor: pointer; border: 1px solid var(--border); color: var(--muted); background: transparent;
-    transition: all 0.2s; }
-  .modal-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
-  .ad-account-field { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
-  .ad-account-row { display: flex; align-items: center; gap: 8px; }
-  .ad-account-name { font-size: 11px; font-weight: 700; color: white; flex: 1; }
-  .ad-account-id { font-size: 9px; color: var(--muted); font-family: monospace; }
-  .remove-btn { font-size: 8px; color: #EF4444; cursor: pointer; background: none; border: none; padding: 2px 6px; border-radius: 4px; }
-  .remove-btn:hover { background: rgba(239,68,68,0.1); }
-  .add-account-btn { background: rgba(255,255,255,0.06); border: 1px dashed rgba(255,255,255,0.2);
-    border-radius: 8px; padding: 8px; text-align: center; font-size: 10px; color: var(--muted);
-    cursor: pointer; transition: all 0.2s; }
-  .add-account-btn:hover { background: rgba(255,255,255,0.1); color: white; }
 
-  /* ── MODAL ── */
-  .modal2-overlay { position: fixed; inset: 0; z-index: 1001;
-    background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none; transition: opacity 0.25s; }
-  .modal2-overlay.open { opacity: 1; pointer-events: all; }
-  .modal2 { background: var(--surface2); border: 2px solid var(--modal-color, #555);
-    border-radius: 20px; width: 560px; max-height: 80vh; overflow: hidden;
-    transform: scale(0.95); transition: transform 0.25s; box-shadow: 0 0 60px rgba(0,0,0,0.5); }
-  .modal2-overlay.open .modal2 { transform: scale(1); }
-  .modal2-header { display: flex; align-items: center; gap: 12px;
-    padding: 14px 18px; background: var(--modal-color, #555); }
-  .modal2-avatar { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.2);
-    display: flex; align-items: center; justify-content: center; font-size: 22px; }
-  .modal2-info { flex: 1; }
-  .modal2-dept { font-size: 13px; font-weight: 900; color: white; letter-spacing: 2px; }
-  .modal2-status { font-size: 9px; color: rgba(255,255,255,0.7); margin-top: 2px; }
-  .modal2-close { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.2);
-    border: none; color: white; font-size: 13px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; }
-  .modal2-body { padding: 14px 18px; overflow-y: auto; max-height: calc(80vh - 80px);
-    display: flex; flex-direction: column; gap: 10px; }
-  .modal2-agent-row { display: flex; align-items: center; gap: 12px;
-    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 12px; padding: 10px 12px; }
-  .modal2-agent-avatar { width: 40px; height: 40px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; font-size: 20px;
-    border: 2px solid rgba(255,255,255,0.3); }
-  .modal2-agent-info { flex: 1; }
-  .modal2-agent-name { font-size: 12px; font-weight: 800; color: white; }
-  .modal2-agent-role { font-size: 8px; color: var(--muted); }
-  .modal2-agent-status { font-size: 8px; color: #86EFAC; font-weight: 700; margin-top: 2px; }
-  .modal2-sub { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 10px; padding: 10px 12px; }
-  .modal2-sub-header { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
-  .modal2-sub-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .modal2-sub-name { font-size: 11px; font-weight: 700; color: var(--text); flex: 1; }
-  .modal2-sub-badge { font-size: 7px; font-weight: 700; padding: 1px 6px; border-radius: 5px;
-    background: rgba(255,255,255,0.1); color: var(--muted); }
-  .modal2-sub-task { font-size: 9px; color: var(--muted); margin-bottom: 7px; }
-  .modal2-sub-row { display: flex; align-items: center; gap: 8px; }
-  .modal2-sub-bar { flex: 1; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
-  .modal2-sub-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
-  .modal2-sub-pct { font-size: 9px; font-weight: 700; min-width: 30px; text-align: right; }
-  .modal2-sub-time { font-size: 8px; color: rgba(255,255,255,0.2); margin-top: 5px; }
-
-  /* ── FOOTER ── */
+  /* Footer */
   .footer { flex-shrink: 0; text-align: center; padding: 5px; font-size: 8px;
-    color: rgba(255,255,255,0.1); letter-spacing: 2px;
-    border-top: 1px solid var(--border); background: var(--surface); }
+    color: rgba(255,255,255,0.1); letter-spacing: 2px; border-top: 1px solid var(--border); background: var(--surface); }
 </style>
 </head>
 <body>
-<div class="grid-bg"></div>
 <div class="app">
 
   <!-- HEADER -->
   <div class="header">
-    <div class="logo">
-      <div class="logo-icon">🔱</div>
-      <span>APEX AI OFFICE</span>
-    </div>
-    <div class="header-center">
-      <div class="live-badge"><div class="live-dot"></div>LIVE</div>
-    </div>
+    <div class="logo"><div class="logo-icon">🔱</div><span>APEX AI OFFICE</span></div>
+    <div class="header-center"><div class="live-badge"><div class="live-dot"></div>LIVE</div></div>
     <div class="header-right">
       <span class="clock" id="clock">--:--</span>
       <div class="presence-badge">● IN OFFICE</div>
@@ -292,29 +238,40 @@
   <div class="metrics-bar" id="metrics-bar"></div>
 
   <!-- MAIN -->
-  <div class="main">
-    <div class="office-area">
-      <!-- CHIEF -->
-      <div class="chief-section">
-        <div class="chief-card" id="chief-card">
-          <div class="chief-avatar-wrap">
-            <div class="chief-avatar">🦁</div>
-            <div class="chief-live-ring"></div>
+  <div class="office-main">
+    <!-- OFFICE FLOOR -->
+    <div class="office-floor" id="office-floor">
+      <!-- Wall -->
+      <div class="office-wall">
+        <div class="wall-window"></div>
+        <div class="wall-window"></div>
+        <span class="wall-label">APEX HQ — FLOOR 1</span>
+        <div class="wall-window"></div>
+        <div class="wall-window"></div>
+      </div>
+
+      <!-- Boss -->
+      <div class="boss-area" id="boss-area">
+        <div class="boss-name-label">HUGO — CHIEF</div>
+        <div class="boss-desk">
+          <div class="boss-monitor">
+            <div class="boss-monitor-screen"></div>
           </div>
-          <div class="chief-info">
-            <div class="chief-crown">👑</div>
-            <div class="chief-name">HUGO</div>
-            <div class="chief-title">CHIEF OF AI ORCHESTRATION</div>
-          </div>
-          <div class="chief-desks">
-            <div><div class="chief-desk-monitor"></div><div class="chief-desk-surface"></div></div>
-            <div><div class="chief-desk-monitor"></div><div class="chief-desk-surface"></div></div>
-            <div><div class="chief-desk-monitor"></div><div class="chief-desk-surface"></div></div>
+          <div class="boss-person">
+            <div class="boss-crown">👑</div>
+            <div class="boss-head">🦁</div>
+            <div class="boss-body"></div>
           </div>
         </div>
+        <div class="boss-label">CHIEF OF AI ORCHESTRATION</div>
       </div>
-      <!-- DEPT GRID -->
-      <div class="dept-grid" id="dept-grid"></div>
+
+      <!-- Desks will be rendered here -->
+      <div id="desks-container"></div>
+      <!-- Walking agents -->
+      <div id="walking-layer"></div>
+      <!-- Speech bubbles -->
+      <div id="bubbles-layer"></div>
     </div>
 
     <!-- SIDEBAR -->
@@ -349,239 +306,100 @@
         <div class="modal-tab" id="mtab-meta" onclick="switchAdminTab('meta')">📘 META ADS</div>
         <div class="modal-tab" id="mtab-design" onclick="switchAdminTab('design')">🎨 DESIGN API</div>
       </div>
-
-      <!-- AI PROVIDERS TAB -->
       <div id="admin-ai">
         <div class="api-section">
           <div class="api-section-title">⚡ Groq — FREE (30 req/min, Llama/Mixtral)</div>
           <div class="api-field">
             <label>API Key</label>
             <input type="password" id="groq-key" placeholder="gsk_xxxxxxxxxxxx" />
-            <div class="api-status" id="groq-status">
-              <div class="api-status-dot disconnected"></div>
-              <span class="api-status-text">Not connected</span>
-            </div>
+            <div class="api-status" id="groq-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div>
           </div>
-          <p class="api-note">Get free key at: console.groq.com — No credit card needed. Models: llama-3.1-8b, mixtral-8x7b, gemma2-9b</p>
+          <p class="api-note">Get free key at: console.groq.com — No credit card. Models: llama-3.1-8b, mixtral-8x7b</p>
         </div>
         <div class="api-section">
           <div class="api-section-title">🧠 Hugging Face — FREE Text + Image Gen</div>
           <div class="api-grid">
-            <div class="api-field">
-              <label>HF Token (text)</label>
-              <input type="password" id="hf-key" placeholder="hf_xxxxxxxxxxxx" />
-              <div class="api-status" id="hf-status">
-                <div class="api-status-dot disconnected"></div>
-                <span class="api-status-text">Not connected</span>
-              </div>
-            </div>
-            <div class="api-field">
-              <label>HF Token (image)</label>
-              <input type="password" id="hf-img-key" placeholder="hf_xxxxxxxxxxxx" />
-              <p class="api-note">Same token works. Used for Stable Diffusion image generation.</p>
-            </div>
+            <div class="api-field"><label>HF Token</label><input type="password" id="hf-key" placeholder="hf_xxxxxxxxxxxx" /><div class="api-status" id="hf-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+            <div class="api-field"><label>HF Image Token</label><input type="password" id="hf-img-key" placeholder="hf_xxxxxxxxxxxx" /><p class="api-note">Same token works for Stable Diffusion</p></div>
           </div>
-          <p class="api-note">Get free token at: huggingface.co/settings/tokens — Inference API included free tier.</p>
+          <p class="api-note">Get free token at: huggingface.co/settings/tokens</p>
         </div>
         <div class="api-section">
           <div class="api-section-title">🔵 Cohere — FREE (Command R+, 1000 tokens/min)</div>
-          <div class="api-field">
-            <label>API Key</label>
-            <input type="password" id="cohere-key" placeholder="xxxxx-xxxxx" />
-            <div class="api-status" id="cohere-status">
-              <div class="api-status-dot disconnected"></div>
-              <span class="api-status-text">Not connected</span>
-            </div>
-          </div>
-          <p class="api-note">Get free key at: dashboard.cohere.com/api-keys — Command R+ is excellent for agentic tasks.</p>
+          <div class="api-field"><label>API Key</label><input type="password" id="cohere-key" placeholder="xxxxx-xxxxx" /><div class="api-status" id="cohere-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+          <p class="api-note">Get free key at: dashboard.cohere.com/api-keys — Command R+ excellent for agentic tasks</p>
         </div>
         <div class="api-section">
-          <div class="api-section-title">🖼️ Ideogram — FREE Image Generation (100 images/month)</div>
-          <div class="api-field">
-            <label>API Key</label>
-            <input type="password" id="ideogram-key" placeholder="ig_xxxxxxxxxxxx" />
-            <div class="api-status" id="ideogram-status">
-              <div class="api-status-dot disconnected"></div>
-              <span class="api-status-text">Not connected</span>
-            </div>
-          </div>
-          <p class="api-note">Get free key at: ideogram.ai/api — Best quality AI image gen for Instagram posts. 100 free/month.</p>
-        </div>
-        <div class="api-section">
-          <div class="api-section-title">🎬 Pixverse — FREE Video Generation</div>
-          <div class="api-field">
-            <label>API Key</label>
-            <input type="password" id="pixverse-key" placeholder="pix_xxxxxxxxxxxx" />
-            <div class="api-status" id="pixverse-status">
-              <div class="api-status-dot disconnected"></div>
-              <span class="api-status-text">Not connected</span>
-            </div>
-          </div>
-          <p class="api-note">Get free key at: pixverse.ai/api — Create AI videos from images for Instagram reels.</p>
+          <div class="api-section-title">🖼️ Ideogram — FREE (100 images/month)</div>
+          <div class="api-field"><label>API Key</label><input type="password" id="ideogram-key" placeholder="ig_xxxxxxxxxxxx" /><div class="api-status" id="ideogram-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+          <p class="api-note">Get free key at: ideogram.ai/api — Best quality for Instagram posts</p>
         </div>
       </div>
-
-      <!-- META ADS TAB -->
       <div id="admin-meta" style="display:none">
         <div class="api-section">
           <div class="api-section-title">📘 Meta Business API — Instagram + Facebook Ads</div>
-          <div class="api-field" style="margin-bottom:10px">
-            <label>Meta Access Token</label>
-            <input type="password" id="meta-token" placeholder="EAAxxxxxxxxxxxxx" />
-            <div class="api-status" id="meta-status">
-              <div class="api-status-dot disconnected"></div>
-              <span class="api-status-text">Not connected</span>
-            </div>
-          </div>
+          <div class="api-field" style="margin-bottom:10px"><label>Meta Access Token</label><input type="password" id="meta-token" placeholder="EAAxxxxxxxxxxxxx" /><div class="api-status" id="meta-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
           <div class="api-grid">
-            <div class="api-field">
-              <label>Facebook Ad Account ID</label>
-              <input type="text" id="fb-ad-account" placeholder="act_123456789" />
-            </div>
-            <div class="api-field">
-              <label>Instagram Account ID</label>
-              <input type="text" id="ig-account" placeholder="178414xxxxxxx" />
-            </div>
+            <div class="api-field"><label>Facebook Ad Account</label><input type="text" id="fb-ad-account" placeholder="act_123456789" /></div>
+            <div class="api-field"><label>Instagram Account ID</label><input type="text" id="ig-account" placeholder="178414xxxxxxx" /></div>
           </div>
-          <p class="api-note">Get token: developers.facebook.com → Meta Business API → Tools. Enable Instagram Graph API + Ads API permissions.</p>
-        </div>
-        <div class="api-section">
-          <div class="api-section-title">📊 Connected Ad Accounts</div>
-          <div id="ad-accounts-list">
-            <div class="ad-account-field" id="ad-acc-1">
-              <div class="ad-account-row">
-                <span class="ad-account-name">Meta Ads — Primary</span>
-                <span class="ad-account-id">act_xxxxxxxx</span>
-                <button class="remove-btn" onclick="removeAdAccount('1')">Remove</button>
-              </div>
-              <div style="font-size:8px;color:#94A3B8">Budget: $500/mo · Campaign: Active · Last sync: 2m ago</div>
-            </div>
-          </div>
-          <div class="add-account-btn" onclick="addAdAccount()">+ Add Another Ad Account</div>
-        </div>
-        <div class="api-section">
-          <div class="api-section-title">🎯 Ad Campaign Templates</div>
-          <div class="api-grid">
-            <div class="api-field">
-              <label>Default Daily Budget ($)</label>
-              <input type="number" id="default-budget" placeholder="20" value="20" />
-            </div>
-            <div class="api-field">
-              <label>Auto-posting</label>
-              <select style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
-                <option value="auto">Auto — Best performing</option>
-                <option value="scheduled">Scheduled times</option>
-                <option value="manual">Manual approval</option>
-              </select>
-            </div>
-          </div>
+          <p class="api-note">Get token: developers.facebook.com → Meta Business API → Tools</p>
         </div>
       </div>
-
-      <!-- DESIGN API TAB -->
       <div id="admin-design" style="display:none">
         <div class="api-section">
-          <div class="api-section-title">🎨 Image Generation — Ideogram (Instagram Posts)</div>
+          <div class="api-section-title">🎨 Ideogram — AI Image Generation (Instagram Posts)</div>
           <div class="api-grid">
-            <div class="api-field">
-              <label>Ideogram API Key</label>
-              <input type="password" id="design-img-key" placeholder="ig_xxxxxxxxxxxx" />
-            </div>
-            <div class="api-field">
-              <label>Default Style</label>
+            <div class="api-field"><label>Ideogram API Key</label><input type="password" id="design-img-key" placeholder="ig_xxxxxxxxxxxx" /></div>
+            <div class="api-field"><label>Default Style</label>
               <select style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
-                <option>Realistic Photo</option>
-                <option>Illustration</option>
-                <option>3D Render</option>
-                <option>Minimalist</option>
-                <option>Vibrant</option>
+                <option>Realistic Photo</option><option>Illustration</option><option>3D Render</option><option>Minimalist</option><option>Vibrant</option>
               </select>
             </div>
           </div>
-          <div class="api-field" style="margin-top:8px">
-            <label>Default Aspect Ratio</label>
-            <div style="display:flex;gap:6px;margin-top:4px">
-              <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);cursor:pointer">
-                <input type="radio" name="aspect" value="1:1" checked> 1:1 (Square)
-              </label>
-              <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);cursor:pointer">
-                <input type="radio" name="aspect" value="4:5"> 4:5 (Portrait)
-              </label>
-              <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);cursor:pointer">
-                <input type="radio" name="aspect" value="16:9"> 16:9 (Landscape)
-              </label>
-            </div>
-          </div>
         </div>
         <div class="api-section">
-          <div class="api-section-title">🎬 Video Generation — Pixverse (Instagram Reels)</div>
-          <div class="api-field">
-            <label>Pixverse API Key</label>
-            <input type="password" id="design-vid-key" placeholder="pix_xxxxxxxxxxxx" />
-          </div>
-          <p class="api-note" style="margin-top:6px">Pixverse converts images to AI videos — perfect for turning Ideogram images into Instagram Reels.</p>
-        </div>
-        <div class="api-section">
-          <div class="api-section-title">🤖 Design Agent — AI Artist Persona</div>
-          <div class="api-field">
-            <label>Agent Name</label>
-            <input type="text" id="design-agent-name" value="Pixel — AI Creative Director" />
-          </div>
-          <div class="api-field">
-            <label>System Prompt</label>
-            <textarea id="design-agent-prompt" rows="3" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px;color:white;font-size:10px;resize:vertical;outline:none;font-family:inherit;line-height:1.5" placeholder="You are Pixel, APEX's AI Creative Director. You create scroll-stopping Instagram content..."></textarea>
+          <div class="api-section-title">🤖 Pixel — AI Creative Director</div>
+          <div class="api-field"><label>Agent Name</label><input type="text" id="design-agent-name" value="Pixel — AI Creative Director" /></div>
+          <div class="api-field"><label>System Prompt</label>
+            <textarea id="design-agent-prompt" rows="3" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px;color:white;font-size:10px;resize:vertical;outline:none;font-family:inherit;line-height:1.5" placeholder="You are Pixel, APEX's AI Creative Director..."></textarea>
           </div>
         </div>
       </div>
-
       <button class="save-btn" onclick="saveAdmin()">💾 SAVE CONFIGURATION</button>
     </div>
-  </div>
-</div>
-
-<!-- DEPT DETAIL MODAL -->
-<div class="modal2-overlay" id="modal2-overlay">
-  <div class="modal2" id="modal2">
-    <div class="modal2-header" id="modal2-header">
-      <div class="modal2-avatar" id="modal2-avatar">🦊</div>
-      <div class="modal2-info">
-        <div class="modal2-dept" id="modal2-dept">SALES</div>
-        <div class="modal2-status" id="modal2-status">3 of 4 agents active</div>
-      </div>
-      <button class="modal2-close" onclick="closeModal2()">✕</button>
-    </div>
-    <div class="modal2-body" id="modal2-body"></div>
   </div>
 </div>
 
 <script>
 // ── DATA ─────────────────────────────────────────────────────────────────────
 const DEPTS = [
-  { id:'sales',      name:'SALES',         color:'#10B981', emoji:'🦊', agents:[{n:'Felix',e:'🦊',role:'Sales Lead'}, {n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Intent Signals',c:'#10B981'},{n:'ICP Matching',c:'#10B981'},{n:'Stage Forecast',c:'#10B981'},{n:'Objection Map',c:'#10B981'}] },
-  { id:'marketing',  name:'MARKETING',     color:'#7C3AED', emoji:'🦚', agents:[{n:'Phoenix',e:'🦚',role:'Marketing Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Topic Research',c:'#7C3AED'},{n:'Brief Gen',c:'#7C3AED'},{n:'A/B Orch',c:'#7C3AED'},{n:'Attribution',c:'#7C3AED'}] },
-  { id:'ops',        name:'OPERATIONS',     color:'#2563EB', emoji:'🦡', agents:[{n:'Axel',e:'🦡',role:'Ops Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Flow Builder',c:'#2563EB'},{n:'API Connector',c:'#2563EB'},{n:'Lead Builder',c:'#2563EB'},{n:'Health Check',c:'#2563EB'}] },
-  { id:'finance',    name:'FINANCE',        color:'#059669', emoji:'🐻', agents:[{n:'Bruno',e:'🐻',role:'Finance Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Invoice Proc',c:'#059669'},{n:'Payment Sched',c:'#059669'},{n:'Budget Builder',c:'#059669'},{n:'Audit Logger',c:'#059669'}] },
-  { id:'aiops',      name:'AI OPS',         color:'#DB2777', emoji:'🧬', agents:[{n:'Dr. V',e:'🧬',role:'AI Ops Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Model Router',c:'#DB2777'},{n:'Fine Tuner',c:'#DB2777'},{n:'Prompt Opt',c:'#DB2777'},{n:'Guardrail Eng',c:'#DB2777'}] },
-  { id:'hr',         name:'PEOPLE / HR',   color:'#DC2626', emoji:'👩', agents:[{n:'Jessica',e:'👩',role:'HR Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Resume Screen',c:'#DC2626'},{n:'Welcome Bot',c:'#DC2626'},{n:'Culture Scan',c:'#DC2626'},{n:'Onboard Flow',c:'#DC2626'}] },
-  { id:'product',    name:'PRODUCT',        color:'#4F46E5', emoji:'🧑', agents:[{n:'Tom',e:'🧑',role:'Product Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Market Scan',c:'#4F46E5'},{n:'Roadmap Mgr',c:'#4F46E5'},{n:'Feature Rank',c:'#4F46E5'},{n:'Release Log',c:'#4F46E5'}] },
-  { id:'instagram',  name:'INSTAGRAM',      color:'#EC4899', emoji:'📸', agents:[{n:'Blaze',e:'📸',role:'Social Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Content Creator',c:'#EC4899'},{n:'Pixel (Design)',c:'#EC4899'},{n:'Ad Manager',c:'#EC4899'},{n:'Analytics',c:'#EC4899'}] },
-  { id:'support',   name:'SUPPORT',        color:'#EA580C', emoji:'📷', agents:[{n:'Blaze',e:'📷',role:'Support Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Intent Classify',c:'#EA580C'},{n:'KB Searcher',c:'#EA580C'},{n:'Ticket Router',c:'#EA580C'},{n:'CSAT Tracker',c:'#EA580C'}] },
-  { id:'data',       name:'DATA',           color:'#0891B2', emoji:'🤖', agents:[{n:'Atlas',e:'🤖',role:'Data Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Stream Conn',c:'#0891B2'},{n:'Schema Map',c:'#0891B2'},{n:'Report Gen',c:'#0891B2'},{n:'Anomaly Det',c:'#0891B2'}] },
-  { id:'strategy',   name:'STRATEGY',      color:'#D97706', emoji:'👩‍💼', agents:[{n:'Sophia',e:'👩‍💼',role:'Strategy Lead'},{n:'Chief AI',e:'🤖',role:'AI Agent'}], subs:[{n:'Trend Radar',c:'#D97706'},{n:'OKR Manager',c:'#D97706'},{n:'Competitor Watch',c:'#D97706'},{n:'Risk Scorer',c:'#D97706'}] },
+  { id:'sales',     name:'SALES',       color:'#10B981', emoji:'🦊', lead:'Felix',    role:'Sales Lead',     subs:['Intent Signals','ICP Matching','Stage Forecast','Objection Map'] },
+  { id:'marketing', name:'MARKETING',   color:'#7C3AED', emoji:'🦚', lead:'Phoenix',  role:'Marketing Lead',  subs:['Topic Research','Brief Gen','A/B Orch','Attribution'] },
+  { id:'ops',       name:'OPERATIONS',  color:'#2563EB', emoji:'🦡', lead:'Axel',    role:'Ops Lead',        subs:['Flow Builder','API Connector','Lead Builder','Health Check'] },
+  { id:'finance',   name:'FINANCE',     color:'#059669', emoji:'🐻', lead:'Bruno',   role:'Finance Lead',    subs:['Invoice Proc','Payment Sched','Budget Builder','Audit Logger'] },
+  { id:'aiops',     name:'AI OPS',       color:'#DB2777', emoji:'🧬', lead:'Dr. V',   role:'AI Ops Lead',    subs:['Model Router','Fine Tuner','Prompt Opt','Guardrail Eng'] },
+  { id:'hr',        name:'PEOPLE/HR',   color:'#DC2626', emoji:'👩', lead:'Jessica', role:'HR Lead',         subs:['Resume Screen','Welcome Bot','Culture Scan','Onboard Flow'] },
+  { id:'product',   name:'PRODUCT',      color:'#4F46E5', emoji:'🧑', lead:'Tom',     role:'Product Lead',   subs:['Market Scan','Roadmap Mgr','Feature Rank','Release Log'] },
+  { id:'instagram', name:'INSTAGRAM',   color:'#EC4899', emoji:'📸', lead:'Blaze',   role:'Social Lead',    subs:['Content Creator','Pixel Design','Ad Manager','Analytics'] },
+  { id:'support',   name:'SUPPORT',      color:'#EA580C', emoji:'📷', lead:'Blaze',   role:'Support Lead',   subs:['Intent Classify','KB Searcher','Ticket Router','CSAT Tracker'] },
+  { id:'data',      name:'DATA',         color:'#0891B2', emoji:'🤖', lead:'Atlas',   role:'Data Lead',       subs:['Stream Conn','Schema Map','Report Gen','Anomaly Det'] },
+  { id:'strategy',  name:'STRATEGY',     color:'#D97706', emoji:'👩‍💼', lead:'Sophia', role:'Strategy Lead',  subs:['Trend Radar','OKR Manager','Competitor Watch','Risk Scorer'] },
 ]
 
 const CHAT_MESSAGES = [
-  { agent:'Felix',   dept:'Sales',      emoji:'🦊', color:'#10B981', text:'New intent signal — fintech company, $42K deal. Qualifying now.' },
-  { agent:'Phoenix', dept:'Marketing',   emoji:'🦚', color:'#7C3AED', text:'A/B test variant C hitting 4.2% CTR. Scaling to full budget.' },
+  { agent:'Felix',   dept:'Sales',      emoji:'🦊', color:'#10B981', text:'New intent signal — $42K deal. Qualifying now.' },
+  { agent:'Phoenix', dept:'Marketing',   emoji:'🦚', color:'#7C3AED', text:'A/B variant C hitting 4.2% CTR. Scaling campaign.' },
   { agent:'Axel',    dept:'Operations', emoji:'🦡', color:'#2563EB', text:'Workflow #47 deployed. Lead delivery time cut 34%.' },
   { agent:'Bruno',   dept:'Finance',    emoji:'🐻', color:'#059669', text:'Burn rate 94%. Runway 4.2 months. Invoices on track.' },
   { agent:'Dr. V',  dept:'AI Ops',     emoji:'🧬', color:'#DB2777', text:'Model router updated — GPT-4 latency down 18ms.' },
   { agent:'Jessica',dept:'People/HR',  emoji:'👩', color:'#DC2626', text:'23 candidates screened. Top 5 advancing to phone screen.' },
   { agent:'Tom',    dept:'Product',    emoji:'🧑', color:'#4F46E5', text:'Sprint 12 on track. Onboarding drop-off fix identified.' },
-  { agent:'Blaze',  dept:'Instagram',  emoji:'📸', color:'#EC4899', text:'Reel hit 12K views. 4 new posts scheduled. Ad campaign live.' },
-  { agent:'Blaze',  dept:'Support',    emoji:'📷', color:'#EA580C', text:'Ticket #847 resolved. CSAT holding at 4.7/5. KB updated.' },
-  { agent:'Atlas',  dept:'Data',       emoji:'🤖', color:'#0891B2', text:'Schema sync complete. 3 anomalies flagged, auto-escalated.' },
-  { agent:'Sophia', dept:'Strategy',   emoji:'👩‍💼', color:'#D97706', text:'Competitor watch: market shift in 2 segments. OKR 78%.' },
+  { agent:'Blaze',  dept:'Instagram',  emoji:'📸', color:'#EC4899', text:'Reel hit 12K views. 4 new posts scheduled.' },
+  { agent:'Blaze',  dept:'Support',    emoji:'📷', color:'#EA580C', text:'Ticket #847 resolved. CSAT 4.7/5. KB updated.' },
+  { agent:'Atlas',  dept:'Data',       emoji:'🤖', color:'#0891B2', text:'Schema sync complete. 3 anomalies auto-escalated.' },
+  { agent:'Sophia', dept:'Strategy',   emoji:'👩‍💼', color:'#D97706', text:'Market shift detected in 2 segments. OKR 78%.' },
+  { agent:'Pixel',  dept:'Design',     emoji:'🎨', color:'#EC4899', text:'New carousel ready for product launch. Review?' },
 ]
 
 const AGENTS_PANEL = [
@@ -593,7 +411,7 @@ const AGENTS_PANEL = [
   { name:'Jessica',dept:'People/HR',  emoji:'👩', color:'#DC2626', status:'active', task:'Screening resumes' },
   { name:'Tom',    dept:'Product',    emoji:'🧑', color:'#4F46E5', status:'working', task:'Sprint 12 planning' },
   { name:'Blaze',  dept:'Instagram',  emoji:'📸', color:'#EC4899', status:'active', task:'Scheduling posts + ads' },
-  { name:'Blaze',  dept:'Support',    emoji:'📷', color:'#EA580C', status:'active', task:'Ticket routing + KB search' },
+  { name:'Blaze',  dept:'Support',    emoji:'📷', color:'#EA580C', status:'active', task:'Ticket routing' },
   { name:'Pixel',  dept:'Design',     emoji:'🎨', color:'#EC4899', status:'working', task:'Creating IG carousel' },
   { name:'Atlas',  dept:'Data',       emoji:'🤖', color:'#0891B2', status:'active', task:'Anomaly detection' },
   { name:'Sophia', dept:'Strategy',   emoji:'👩‍💼', color:'#D97706', status:'working', task:'Q3 OKR review' },
@@ -606,22 +424,19 @@ const METRICS = [
   { label:'AGENTS ACTIVE', icon:'🤖', color:'#FF6B35', value:20,   target:22,    prefix:''  },
 ]
 
-const CHIEF_DIRECTIVES = [
-  'Q3 EXECUTE. Revenue +25%.', 'ALL TEAMS — SCALE NOW.', 'EFFICIENCY > 95%.',
-  'AI-FIRST OPERATIONS.', 'NO BLOCKERS. MOVE FAST.', 'GROWTH MODE.',
-]
-
 // ── STATE ─────────────────────────────────────────────────────────────────────
-let chatIndex = 0, chiefDirIdx = 0
+let chatIndex = 0
 let subStates = {}
+let walkingAgents = [] // { id, emoji, color, x, y, targetX, targetY, progress, phase, message }
+let bubbles = [] // { id, text, color, x, y, createdAt }
+let officeW = 0, officeH = 0
+let floorRect = null
 
 function initSubs() {
   DEPTS.forEach(d => d.subs.forEach((s, i) => {
     subStates[`${d.id}-${i}`] = {
       status: ['working','active','working','active'][i],
       progress: 40 + Math.random()*55 | 0,
-      task: ['Processing...','Syncing...','Generating...','Monitoring...'][i],
-      lastAction: Date.now() - Math.random()*300000,
     }
   }))
 }
@@ -644,10 +459,7 @@ function renderMetrics() {
       <div class="metric-icon" style="background:${m.color}22">${m.icon}</div>
       <div class="metric-info">
         <div class="metric-label">${m.label}</div>
-        <div class="metric-row">
-          <span class="metric-val">${m.prefix}${typeof m.value==='number'?m.value.toLocaleString():m.value}</span>
-          <span class="metric-target">/ ${m.prefix}${m.target.toLocaleString()}</span>
-        </div>
+        <div class="metric-row"><span class="metric-val">${m.prefix}${typeof m.value==='number'?m.value.toLocaleString():m.value}</span><span class="metric-target">/ ${m.prefix}${m.target.toLocaleString()}</span></div>
         <div class="metric-bar"><div class="metric-fill" style="width:${pct}%;background:${ok?m.color:'#EF4444'}"></div></div>
       </div>
     </div>`
@@ -655,67 +467,214 @@ function renderMetrics() {
 }
 renderMetrics()
 
-// ── DEPT CARDS ────────────────────────────────────────────────────────────────
-function renderDepts() {
-  const grid = document.getElementById('dept-grid')
-  grid.innerHTML = DEPTS.map(d => {
+// ── OFFICE FLOOR SIZING ───────────────────────────────────────────────────────
+function getDeskPositions() {
+  if (!floorRect) return []
+  const wallH = 52
+  const bossH = 110
+  const row1Y = wallH + 30
+  const row2Y = wallH + bossH + 50
+  const availableW = floorRect.width - 80
+  const deskW = 100
+  const gap = (availableW - 6 * deskW) / 5
+  const startX = 40
+
+  return DEPTS.map((d, i) => {
+    const row = i < 6 ? 0 : 1
+    const col = i < 6 ? i : i - 6
+    const x = startX + col * (deskW + gap)
+    const y = row === 0 ? row1Y : row2Y
+    return { ...d, x, y, deskW, deskH: 56 }
+  })
+}
+
+// ── RENDER DESKS ─────────────────────────────────────────────────────────────
+function renderDesks() {
+  const container = document.getElementById('desks-container')
+  const positions = getDeskPositions()
+  container.innerHTML = positions.map(p => {
     const statusMap = { working:'WORKING', active:'ACTIVE', idle:'IDLE' }
-    const statuses = [0,1,2,3].map(i => subStates[`${d.id}-${i}`]?.status||'idle')
-    const primary = statuses.includes('active')?'active':statuses.includes('working')?'working':'idle'
-    const activeCount = statuses.filter(s=>s!=='idle').length
-    return `<div class="dept-card" id="dept-${d.id}" style="--dept-color:${d.color};--dept-glow:${d.color}40" onclick="openModal2('${d.id}')">
-      <div class="dept-header">
-        <span class="dept-name">${d.name}</span>
-        <span class="dept-status">${statusMap[primary]}</span>
+    const statuses = p.subs.map((_, i) => subStates[`${p.id}-${i}`]?.status || 'idle')
+    const primary = statuses.includes('active') ? 'active' : statuses.includes('working') ? 'working' : 'idle'
+    const subDots = p.subs.map((s, i) => {
+      const st = subStates[`${p.id}-${i}`] || { status: 'idle' }
+      return `<div class="desk-status-dot" style="background:${st.status==='active'?'#86EFAC':st.status==='working'?'#FDE047':'#94A3B8'}"></div>`
+    }).join('')
+    return `<div class="desk" id="desk-${p.id}" style="left:${p.x}px;top:${p.y}px;width:${p.deskW}px">
+      <div class="desk-surface" style="width:${p.deskW}px;height:${p.deskH}px;border:2px solid ${p.color}40;border-radius:8px">
+        <div class="desk-info" style="color:${p.color};border-color:${p.color}40">${p.name}</div>
+        <div class="desk-monitor" style="width:38px;height:26px;border:2px solid ${p.color}60">
+          <div class="desk-monitor-screen" style="width:30px;height:18px;background:${p.color}40"></div>
+        </div>
+        <div class="desk-keyboard" style="width:30px;height:5px"></div>
+        <div class="desk-person">
+          <div class="person-head" style="width:28px;height:28px;background:#FDE68A;border-color:${p.color};font-size:14px">${p.emoji}</div>
+          <div class="person-body" style="width:36px;height:12px;background:${p.color};border-color:${p.color}"></div>
+        </div>
       </div>
-      <div class="dept-agents">
-        ${d.agents.map((a,i) => `<div class="agent-avatar">
-          <div class="agent-circle ${i===0?'main-agent':''}" style="background:${d.color};position:relative">
-            ${a.e}
-            <div style="position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:#22c55e;border:2px solid var(--surface2);${a.e==='🤖'?'box-shadow:0 0 4px #3b82f6':''}"></div>
-          </div>
-          <div class="agent-name">${a.n}</div>
-          <div class="agent-role">${a.role}</div>
-        </div>`).join('')}
-      </div>
-      <div class="sub-grid">
-        ${d.subs.map((s,i) => {
-          const st = subStates[`${d.id}-${i}`] || {status:'idle',progress:0}
-          return `<div class="sub-agent">
-            <div class="sub-agent-top">
-              <div class="sub-dot" style="background:${s.c};opacity:${st.status==='idle'?0.3:1}"></div>
-              <div class="sub-name">${s.n}</div>
-            </div>
-            <div class="sub-bar"><div class="sub-fill" style="width:${st.progress}%;background:${s.c}"></div></div>
-          </div>`
-        }).join('')}
-      </div>
+      <div class="desk-label" style="color:${p.color}">${p.lead}</div>
+      <div class="desk-subs">${subDots}</div>
     </div>`
   }).join('')
 }
-renderDepts()
 
-// ── LIVE SIMULATION ───────────────────────────────────────────────────────────
-function simulate() {
-  const keys = Object.keys(subStates)
-  for (let i = 0; i < 3; i++) {
-    const k = keys[Math.floor(Math.random()*keys.length)]
-    const st = subStates[k]
-    st.progress = Math.min(100, st.progress + (Math.random()*8|0))
-    if (st.progress > 97) {
-      st.progress = 30 + Math.random()*20|0
-      st.task = ['Processing...','Syncing...','Generating...','Monitoring...','Updating...'][Math.random()*5|0]
-      st.lastAction = Date.now()
+// ── ANIMATION LOOP ────────────────────────────────────────────────────────────
+let lastTime = 0
+function animate(time) {
+  const dt = time - lastTime
+  lastTime = time
+
+  // Move walking agents
+  walkingAgents.forEach(w => {
+    if (w.phase === 'walking') {
+      w.progress += dt / 1200 // 1.2s walk
+      if (w.progress >= 1) {
+        w.progress = 1
+        w.phase = 'arrived'
+        // Show bubble
+        addBubble(w.message, w.color, w.targetX, w.targetY - 30)
+        setTimeout(() => {
+          // Start walking back
+          w.phase = 'returning'
+          w.progress = 0
+          const deskPos = getDeskPositions().find(d => d.id === w.id)
+          if (deskPos) {
+            w.startX = w.targetX; w.startY = w.targetY
+            w.targetX = deskPos.x + deskPos.deskW/2
+            w.targetY = deskPos.y + deskPos.deskH + 30
+          }
+        }, 2500)
+      }
+    } else if (w.phase === 'returning') {
+      w.progress += dt / 1200
+      if (w.progress >= 1) {
+        w.phase = 'done'
+        removeWalkingAgent(w.id)
+      }
     }
-    st.status = Math.random() > 0.3 ? 'active' : 'working'
+
+    // Interpolate position
+    const cx = w.startX + (w.targetX - w.startX) * easeInOut(w.progress)
+    const cy = w.startY + (w.targetY - w.startY) * w.progress
+    const bounce = w.phase === 'walking' || w.phase === 'returning'
+      ? Math.sin(w.progress * Math.PI * 4) * 3 : 0
+
+    const el = document.getElementById(`walk-${w.id}`)
+    if (el) {
+      el.style.left = `${cx - 12}px`
+      el.style.top = `${cy - 24 + bounce}px`
+    }
+  })
+
+  // Remove old bubbles
+  const now = Date.now()
+  bubbles = bubbles.filter(b => now - b.createdAt < 3000)
+  renderBubbles()
+
+  requestAnimationFrame(animate)
+}
+
+function easeInOut(t) {
+  return t < 0.5 ? 2*t*t : -1+(4-2*t)*t
+}
+
+// ── WALKING AGENTS ───────────────────────────────────────────────────────────
+function spawnWalkingAgent(dept) {
+  if (walkingAgents.find(w => w.id === dept.id)) return
+  const positions = getDeskPositions()
+  const desk = positions.find(d => d.id === dept.id)
+  if (!desk) return
+
+  const bossArea = document.getElementById('boss-area')
+  const bar = floorRect ? bossArea.getBoundingClientRect() : { left: officeW/2 - 50, top: 65 }
+  const bossX = (floorRect ? bar.left + bar.width/2 : officeW/2)
+  const bossY = (floorRect ? bar.top + bar.height : 110)
+
+  const startX = desk.x + desk.deskW/2
+  const startY = desk.y + desk.deskH + 30
+
+  const w = {
+    id: dept.id, emoji: dept.emoji, color: dept.color,
+    startX, startY,
+    targetX: bossX, targetY: bossY,
+    progress: 0, phase: 'walking',
+    message: dept.subs[0] + '...',
   }
+  walkingAgents.push(w)
+  renderWalkingAgent(w)
+}
+
+function renderWalkingAgent(w) {
+  const layer = document.getElementById('walking-layer')
+  const div = document.createElement('div')
+  div.id = `walk-${w.id}`
+  div.className = 'walking-agent'
+  div.innerHTML = `<div class="walk-person-head" style="background:#FDE68A;border-color:${w.color}">${w.emoji}</div>
+    <div class="walk-person-body" style="background:${w.color};border-color:${w.color}"></div>`
+  div.style.left = `${w.startX - 12}px`
+  div.style.top = `${w.startY - 24}px`
+  layer.appendChild(div)
+}
+
+function removeWalkingAgent(id) {
+  const el = document.getElementById(`walk-${id}`)
+  if (el) el.remove()
+  walkingAgents = walkingAgents.filter(w => w.id !== id)
+}
+
+// ── SPEECH BUBBLES ────────────────────────────────────────────────────────────
+function addBubble(text, color, x, y) {
+  bubbles.push({ id: Date.now(), text, color, x, y, createdAt: Date.now() })
+  renderBubbles()
+}
+
+function renderBubbles() {
+  const layer = document.getElementById('bubbles-layer')
+  const now = Date.now()
+  layer.innerHTML = bubbles
+    .filter(b => now - b.createdAt < 3000)
+    .map(b => {
+      const age = now - b.createdAt
+      const opacity = age < 300 ? age/300 : age > 2500 ? (3000-age)/500 : 1
+      const translateY = age < 300 ? (1 - age/300)*6 : age > 2500 ? (age-2500)/500*4 : 0
+      return `<div class="speech-bubble" style="left:${b.x}px;top:${b.y}px;background:${b.color};color:${b.color};opacity:${opacity};transform:translateX(-50%) translateY(${translateY}px)">${b.text}</div>`
+    }).join('')
+}
+
+// ── SIMULATION ───────────────────────────────────────────────────────────────
+function simulate() {
+  // Update sub-agent states
+  DEPTS.forEach(d => d.subs.forEach((s, i) => {
+    const st = subStates[`${d.id}-${i}`] || {}
+    st.progress = Math.min(100, (st.progress || 0) + (Math.random()*8|0))
+    if (st.progress > 97) st.progress = 30 + Math.random()*20|0
+    st.status = Math.random() > 0.3 ? 'active' : 'working'
+    subStates[`${d.id}-${i}`] = st
+  }))
+
+  // Occasionally spawn a walking agent
+  if (Math.random() < 0.08) {
+    const dept = DEPTS[Math.floor(Math.random() * DEPTS.length)]
+    spawnWalkingAgent(dept)
+  }
+
+  // Update metrics
   METRICS[0].value = 12000 + Math.random()*2000|0
   METRICS[1].value = 20 + Math.random()*12|0
   METRICS[2].value = 300 + Math.random()*40|0
   METRICS[3].value = 17 + Math.random()*5|0
-  renderMetrics(); renderDepts()
+
+  renderMetrics()
+  renderDesks()
 }
+
 setInterval(simulate, 3000)
+setInterval(() => {
+  if (Math.random() < 0.1) {
+    const dept = DEPTS[Math.floor(Math.random() * DEPTS.length)]
+    spawnWalkingAgent(dept)
+  }
+}, 4000)
 
 // ── CHAT ──────────────────────────────────────────────────────────────────────
 function renderChat() {
@@ -741,7 +700,7 @@ function renderAgentsPanel() {
   const panel = document.getElementById('agents-panel')
   panel.innerHTML = AGENTS_PANEL.map(a => `
     <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:10px">
-      <div style="width:28px;height:28px;border-radius:50%;background:${a.color};display:flex;align-items:center;justify-content:center;font-size:13px;border:2px solid rgba(255,255,255,0.2)">${a.emoji}</div>
+      <div style="width:26px;height:26px;border-radius:50%;background:${a.color};display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid rgba(255,255,255,0.2)">${a.emoji}</div>
       <div style="flex:1">
         <div style="font-size:9px;font-weight:800;color:${a.color}">${a.name}</div>
         <div style="font-size:8px;color:var(--muted)">${a.dept} · ${a.task}</div>
@@ -759,72 +718,9 @@ function switchTab(tab) {
   document.getElementById('agents-panel').style.display = tab==='agents'?'flex':'none'
 }
 
-// ── CHIEF DIRECTIVES ─────────────────────────────────────────────────────────
-function cycleDirective() {
-  chiefDirIdx = (chiefDirIdx+1) % CHIEF_DIRECTIVES.length
-  const card = document.getElementById('chief-card')
-  card.querySelectorAll('.speech-bubble').forEach(el => el.remove())
-  const left = document.createElement('div')
-  left.className = 'speech-bubble speech-left'
-  left.textContent = CHIEF_DIRECTIVES[chiefDirIdx]
-  const right = document.createElement('div')
-  right.className = 'speech-bubble speech-right'
-  right.textContent = CHIEF_DIRECTIVES[(chiefDirIdx+2)%CHIEF_DIRECTIVES.length]
-  card.appendChild(left); card.appendChild(right)
-  setTimeout(() => { left.remove(); right.remove() }, 2800)
-}
-setInterval(cycleDirective, 6000)
-setTimeout(cycleDirective, 2000)
-
-// ── MODAL2 ───────────────────────────────────────────────────────────────────
-function openModal2(deptId) {
-  const d = DEPTS.find(x => x.id === deptId)
-  if (!d) return
-  document.querySelectorAll('.dept-card').forEach(c => c.classList.remove('active'))
-  document.getElementById(`dept-${deptId}`).classList.add('active')
-  document.documentElement.style.setProperty('--modal-color', d.color)
-  document.getElementById('modal2-dept').textContent = d.name
-  document.getElementById('modal2-avatar').textContent = d.emoji
-  const activeSubs = d.subs.map((_,i) => subStates[`${d.id}-${i}`]?.status||'idle').filter(s=>s!=='idle').length
-  document.getElementById('modal2-status').textContent = `${activeSubs} of ${d.subs.length} sub-agents active`
-  const body = document.getElementById('modal2-body')
-  body.innerHTML = d.agents.map(a => `
-    <div class="modal2-agent-row">
-      <div class="modal2-agent-avatar" style="background:${d.color}">${a.e}</div>
-      <div class="modal2-agent-info">
-        <div class="modal2-agent-name">${a.n}</div>
-        <div class="modal2-agent-role">${a.role}</div>
-        <div class="modal2-agent-status">● Online — ${['Executing Q3 targets','Orchestrating sub-agents','Monitoring workflows','Running campaigns'][DEPTS.indexOf(d)%4]}</div>
-      </div>
-    </div>`).join('') + d.subs.map((s,i) => {
-    const st = subStates[`${d.id}-${i}`] || {status:'idle',progress:0,task:'Awaiting...',lastAction:Date.now()}
-    const ago = Math.floor((Date.now()-st.lastAction)/1000)
-    return `<div class="modal2-sub">
-      <div class="modal2-sub-header">
-        <div class="modal2-sub-dot" style="background:${s.c}"></div>
-        <div class="modal2-sub-name">${s.n}</div>
-        <div class="modal2-sub-badge" style="background:${s.c}22;color:${s.c}">${st.status.toUpperCase()}</div>
-      </div>
-      <div class="modal2-sub-task">${st.task}</div>
-      <div class="modal2-sub-row">
-        <div class="modal2-sub-bar"><div class="modal2-sub-fill" style="width:${st.progress}%;background:${s.c}"></div></div>
-        <div class="modal2-sub-pct">${st.progress}%</div>
-      </div>
-      <div class="modal2-sub-time">Last action: ${ago<60?ago+'s':Math.floor(ago/60)+'m'} ago</div>
-    </div>`
-  }).join('')
-  document.getElementById('modal2-overlay').classList.add('open')
-}
-function closeModal2() {
-  document.getElementById('modal2-overlay').classList.remove('open')
-  document.querySelectorAll('.dept-card').forEach(c => c.classList.remove('active'))
-}
-document.getElementById('modal2-overlay').addEventListener('click', function(e) { if (e.target===this) closeModal2() })
-
-// ── ADMIN PANEL ──────────────────────────────────────────────────────────────
+// ── ADMIN ─────────────────────────────────────────────────────────────────────
 function openAdmin() { document.getElementById('admin-modal').classList.add('open') }
 function closeAdmin() { document.getElementById('admin-modal').classList.remove('open') }
-
 function switchAdminTab(tab) {
   document.getElementById('mtab-ai').classList.toggle('active', tab==='ai')
   document.getElementById('mtab-meta').classList.toggle('active', tab==='meta')
@@ -833,89 +729,55 @@ function switchAdminTab(tab) {
   document.getElementById('admin-meta').style.display = tab==='meta'?'block':'none'
   document.getElementById('admin-design').style.display = tab==='design'?'block':'none'
 }
-
-function addAdAccount() {
-  const id = Date.now()
-  const list = document.getElementById('ad-accounts-list')
-  const div = document.createElement('div')
-  div.className = 'ad-account-field'
-  div.id = `ad-acc-${id}`
-  div.innerHTML = `<div class="ad-account-row">
-    <span class="ad-account-name">New Account</span>
-    <span class="ad-account-id">act_xxxxxxxx</span>
-    <button class="remove-btn" onclick="removeAdAccount('${id}')">Remove</button>
-  </div>`
-  list.appendChild(div)
-}
-function removeAdAccount(id) {
-  const el = document.getElementById(`ad-acc-${id}`)
-  if (el && id !== '1') el.remove()
-}
-
 function saveAdmin() {
   const config = {
-    groq:       document.getElementById('groq-key')?.value,
-    hf:         document.getElementById('hf-key')?.value,
-    cohere:     document.getElementById('cohere-key')?.value,
-    ideogram:   document.getElementById('ideogram-key')?.value,
-    pixverse:   document.getElementById('pixverse-key')?.value,
-    metaToken:  document.getElementById('meta-token')?.value,
-    fbAdAcct:   document.getElementById('fb-ad-account')?.value,
-    igAcct:     document.getElementById('ig-account')?.value,
+    groq:document.getElementById('groq-key')?.value,
+    hf:document.getElementById('hf-key')?.value,
+    cohere:document.getElementById('cohere-key')?.value,
+    ideogram:document.getElementById('ideogram-key')?.value,
+    metaToken:document.getElementById('meta-token')?.value,
+    fbAdAcct:document.getElementById('fb-ad-account')?.value,
+    igAcct:document.getElementById('ig-account')?.value,
   }
   localStorage.setItem('apex_api_config', JSON.stringify(config))
-  // Validate connections
-  if (config.groq)     validateAPI('groq',     `https://api.groq.com/openai/v1/models`, config.groq)
-  if (config.hf)        validateAPI('hf',        `https://api-inference.huggingface.co/status`, config.hf)
-  if (config.cohere)    validateAPI('cohere',    `https://api.cohere.com/v1/models`, config.cohere)
-  if (config.ideogram)  validateAPI('ideogram',  `https://api.ideogram.ai/api/v1/describe`, config.ideogram)
-  if (config.metaToken) validateAPI('meta',     `https://graph.facebook.com/v19.0/me`, config.metaToken)
-  alert('✅ APEX configuration saved! Agents will use free AI providers automatically.')
+  alert('✅ APEX configuration saved!')
   closeAdmin()
 }
 
-async function validateAPI(provider, url, key) {
-  try {
-    const headers = {}
-    if (provider === 'groq')    headers['Authorization'] = `Bearer ${key}`
-    if (provider === 'hf')      headers['Authorization'] = `Bearer ${key}`
-    if (provider === 'cohere')  headers['Authorization'] = `Bearer ${key}`
-    if (provider === 'ideogram')headers['Api-Key'] = key
-    if (provider === 'meta')    headers['Authorization'] = `Bearer ${key}`
+// ── INIT ──────────────────────────────────────────────────────────────────────
+function init() {
+  const floor = document.getElementById('office-floor')
+  floorRect = floor.getBoundingClientRect()
+  officeW = floorRect.width
+  officeH = floorRect.height
+  renderDesks()
+  renderChat()
+  renderAgentsPanel()
+  requestAnimationFrame(animate)
 
-    const res = await fetch(url, { headers, method: 'GET' })
-    const statusEl = document.getElementById(`${provider}-status`)
-    const dot = statusEl?.querySelector('.api-status-dot')
-    const txt = statusEl?.querySelector('.api-status-text')
-    if (res.ok || res.status === 401) {
-      dot?.classList.add('connected'); dot?.classList.remove('disconnected')
-      if (txt) txt.textContent = 'Connected ✓'
-    } else {
-      throw new Error()
-    }
-  } catch {
-    const el = document.getElementById(`${provider}-status`)
-    const dot = el?.querySelector('.api-status-dot')
-    const txt = el?.querySelector('.api-status-text')
-    dot?.classList.add('disconnected'); dot?.classList.remove('connected')
-    if (txt) txt.textContent = 'Invalid key'
-  }
+  // Spawn initial walking agents
+  setTimeout(() => {
+    DEPTS.slice(0,3).forEach((d, i) => setTimeout(() => spawnWalkingAgent(d), i * 2000))
+  }, 1000)
 }
 
-// Load saved config on startup
+window.addEventListener('resize', () => {
+  const floor = document.getElementById('office-floor')
+  floorRect = floor.getBoundingClientRect()
+  officeW = floorRect.width
+  officeH = floorRect.height
+  renderDesks()
+})
+
+// Load saved config
 try {
   const saved = JSON.parse(localStorage.getItem('apex_api_config') || '{}')
-  if (saved.groq)    document.getElementById('groq-key').value    = saved.groq
-  if (saved.hf)      document.getElementById('hf-key').value      = saved.hf
-  if (saved.cohere)  document.getElementById('cohere-key').value  = saved.cohere
-  if (saved.ideogram)document.getElementById('ideogram-key').value= saved.ideogram
-  if (saved.pixverse)document.getElementById('pixverse-key').value= saved.pixverse
-  if (saved.metaToken)document.getElementById('meta-token').value= saved.metaToken
-  if (saved.fbAdAcct)document.getElementById('fb-ad-account').value=saved.fbAdAcct
-  if (saved.igAcct) document.getElementById('ig-account').value  = saved.igAcct
-  // Auto-validate saved keys
-  Object.entries({groq:saved.groq,hf:saved.hf,cohere:saved.cohere,ideogram:saved.ideogram,meta:saved.metaToken}).forEach(([k,v]) => { if(v) validateAPI(k, null, v) })
+  Object.entries({groq:'groq-key',hf:'hf-key',cohere:'cohere-key',ideogram:'ideogram-key',metaToken:'meta-token'}).forEach(([k,v]) => {
+    if (saved[k]) { const el = document.getElementById(v); if (el) el.value = saved[k] }
+  })
 } catch(e) {}
+
+init()
 </script>
 </body>
 </html>
