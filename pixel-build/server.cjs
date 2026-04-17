@@ -43,7 +43,8 @@ const server = http.createServer((req, res) => {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + OPENCLAW_TOKEN,
             'Content-Length': Buffer.byteLength(postData),
-          }
+          },
+          timeout: 30000,
         }, (proxyRes) => {
           let data = '';
           proxyRes.on('data', chunk => { data += chunk; });
@@ -54,6 +55,11 @@ const server = http.createServer((req, res) => {
             });
             res.end(data);
           });
+        });
+        proxyReq.on('timeout', () => {
+          proxyReq.destroy();
+          res.writeHead(504, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Gateway timeout' }));
         });
         proxyReq.on('error', (e) => {
           res.writeHead(502, { 'Content-Type': 'application/json' });
