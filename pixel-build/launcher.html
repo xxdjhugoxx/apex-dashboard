@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>APEX HQ Launcher</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0a0e1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #e0e8ff;
+  overflow: hidden;
+}
+.bg {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(59,130,246,.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(168,85,247,.12) 0%, transparent 50%),
+    #0a0e1a;
+}
+.cards {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; gap: 16px;
+  width: 340px;
+}
+.card {
+  background: rgba(15,22,42,.9);
+  border: 1px solid rgba(59,130,246,.3);
+  border-radius: 16px;
+  padding: 24px;
+  backdrop-filter: blur(20px);
+  transition: all .2s;
+}
+.card:hover {
+  border-color: rgba(59,130,246,.6);
+  box-shadow: 0 0 30px rgba(59,130,246,.15);
+  transform: translateY(-2px);
+}
+.logo {
+  font-size: 48px; text-align: center; margin-bottom: 8px;
+  filter: drop-shadow(0 0 20px rgba(251,191,36,.5));
+}
+h1 {
+  font-size: 22px; font-weight: 700; text-align: center;
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+.sub {
+  text-align: center; font-size: 12px; color: #4a6a9f;
+  margin-bottom: 20px;
+}
+h2 { font-size: 14px; color: #60a5fa; margin-bottom: 12px; font-weight: 600; }
+.field { margin-bottom: 10px; }
+.field label { display: block; font-size: 11px; color: #3a5a7f; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+.field input {
+  width: 100%; background: rgba(0,0,0,.4); border: 1px solid #1a3058;
+  color: #c8e0ff; font-size: 13px; padding: 8px 12px; border-radius: 8px; outline: none;
+  transition: border-color .2s;
+}
+.field input:focus { border-color: #60a5fa; }
+.field input::placeholder { color: #2a4060; }
+.save-btn {
+  width: 100%; padding: 12px; border-radius: 10px; border: none;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #000; font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: all .2s; margin-top: 4px;
+}
+.save-btn:hover { background: linear-gradient(135deg, #16a34a, #15803d); transform: scale(1.02); }
+.open-btn {
+  display: block; width: 100%; padding: 16px; border-radius: 12px; border: none;
+  background: linear-gradient(135deg, #ffd700, #f59e0b);
+  color: #000; font-size: 15px; font-weight: 800; cursor: pointer;
+  text-align: center; text-decoration: none;
+  transition: all .2s;
+}
+.open-btn:hover {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  transform: scale(1.03);
+  box-shadow: 0 0 30px rgba(251,191,36,.4);
+}
+.open-btn span { font-size: 11px; display: block; font-weight: 400; margin-top: 2px; }
+.status { font-size: 11px; text-align: center; margin-top: 12px; color: #3a5a7f; }
+.status.ok { color: #22c55e; }
+.status.err { color: #f87171; }
+.divider { border: none; border-top: 1px solid rgba(59,130,246,.15); margin: 16px 0; }
+.features {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
+}
+.feat {
+  font-size: 10px; padding: 3px 8px; border-radius: 20px;
+  background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.25);
+  color: #60a5fa;
+}
+.note { font-size: 10px; color: #2a4060; text-align: center; margin-top: 16px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="cards">
+  <div class="card">
+    <div class="logo">🐾</div>
+    <h1>APEX HQ</h1>
+    <p class="sub">AI Animal Headquarters — Pixel Office</p>
+
+    <hr class="divider">
+    <h2>⚙ Quick Setup</h2>
+    <div class="field">
+      <label>OpenClaw Gateway URL</label>
+      <input type="text" id="gwUrl" placeholder="http://127.0.0.1:18789" value="">
+    </div>
+    <div class="field">
+      <label>API Token</label>
+      <input type="password" id="gwToken" placeholder="your-gateway-token">
+    </div>
+    <div class="field">
+      <label>MiniMax API Key (for TTS)</label>
+      <input type="password" id="minimaxKey" placeholder="optional">
+    </div>
+    <button class="save-btn" onclick="save()">💾 Save Settings</button>
+    <p class="status" id="status"></p>
+  </div>
+
+  <a class="open-btn" id="openBtn" href="http://192.168.0.207:3000" target="_self">
+    🚀 OPEN APEX HQ
+    <span id="savedUrl">http://192.168.0.207:3000</span>
+  </a>
+
+  <div class="card">
+    <h2>🐾 Features</h2>
+    <div class="features">
+      <span class="feat">🐾 23 Agents</span>
+      <span class="feat">🎮 Pokémon Sprites</span>
+      <span class="feat">🎙 Voice Chat</span>
+      <span class="feat">🏢 Team Meetings</span>
+      <span class="feat">📸 Social Accounts</span>
+      <span class="feat">📢 Ads APIs</span>
+      <span class="feat">🤖 AI Personalities</span>
+      <span class="feat">🗣 TTS Voice</span>
+    </div>
+  </div>
+
+  <p class="note">
+    💡 Save settings first, then tap OPEN.<br>
+    On mobile: use Chrome/Safari — tap ⋮ then "Add to Home Screen" for an app-like experience.
+  </p>
+</div>
+
+<script>
+const LAN_URL = 'http://192.168.0.207:3000';
+const GITHUB_URL = 'https://xxdjhugoxx.github.io/apex-dashboard';
+
+const $ = id => document.getElementById(id);
+const gwUrlEl = $('gwUrl');
+const gwTokenEl = $('gwToken');
+const minimaxKeyEl = $('minimaxKey');
+const statusEl = $('status');
+const openBtnEl = $('openBtn');
+const savedUrlEl = $('savedUrl');
+
+function ld(k) { return localStorage.getItem('apex_cfg_' + k) || ''; }
+function sv(k, v) { localStorage.setItem('apex_cfg_' + k, v); }
+
+// Load saved settings
+const savedUrl = ld('officeUrl') || LAN_URL;
+gwUrlEl.value = ld('gwUrl') || 'http://127.0.0.1:18789';
+gwTokenEl.value = ld('gwToken') || '';
+minimaxKeyEl.value = ld('minimaxKey') || '';
+savedUrlEl.textContent = savedUrl;
+openBtnEl.href = savedUrl;
+
+function save() {
+  sv('gwUrl', gwUrlEl.value.trim());
+  sv('gwToken', gwTokenEl.value.trim());
+  sv('minimaxKey', minimaxKeyEl.value.trim());
+  sv('officeUrl', LAN_URL); // always use LAN for now
+  statusEl.textContent = '✅ Settings saved!';
+  statusEl.className = 'status ok';
+  setTimeout(() => {
+    statusEl.textContent = '🚀 Ready — tap OPEN APEX HQ!';
+  }, 1500);
+}
+</script>
+</body>
+</html>
