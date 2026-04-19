@@ -326,10 +326,10 @@ const METRICS = [
 // CONFIG
 // ═══════════════════════════════════════════════════════════════
 let CFG = {
-  minimaxKey: '',
-  ollamaUrl: 'http://localhost:11434',
+  minimaxKey: '',  // kept for backwards compat but ignored
+  ollamaUrl: 'http://localhost:11434',  // kept but unused
   ollamaModel: 'llama3.2',
-  provider: 'minimax',
+  provider: 'openclaw',  // always use gateway
   telegramToken: '8630499476:AAHUJu5--MgIF4RcFo59UBS7GlrHRQwLRH4',
   telegramChatId: '8432475368',
   presenceUrl: '',
@@ -377,16 +377,13 @@ const ADMIN_TABS = {
       </p>
     </div>
     <div class="api-sec">
-      <div class="api-sec-title">🔶 MINIMAX — DIRECT (no server needed)</div>
-      <div class="api-field">
-        <label>API KEY</label>
-        <input type="password" id="f-minimax" placeholder="sk-cp-xxxxxxxx" value="${CFG.minimaxKey}" oninput="CFG.minimaxKey=this.value" />
-      </div>
+      <div class="api-sec-title">🔶 MINIMAX via OpenClaw Gateway</div>
+      <p class="api-note" style="font-size:9px;line-height:1.5">All AI calls route through OpenClaw → MiniMax M2.7. No API key needed — gateway handles auth.</p>
       <div class="api-status">
-        <div class="api-dot ${CFG.minimaxKey?'connected':'disconnected'}" id="s-minimax"></div>
-        <span class="status-txt" id="t-minimax">${CFG.minimaxKey?'✅ Key saved — will use MiniMax direct':'❌ No key — uses server proxy AI'}</span>
+        <div class="api-dot connected" id="s-minimax"></div>
+        <span class="status-txt" id="t-minimax">🔥 OpenClaw gateway active</span>
       </div>
-      <button class="test-btn" onclick="testMinimax()">🧪 TEST</button>
+      <button class="test-btn" onclick="testMinimax()">🧪 TEST GATEWAY</button>
     </div>
     <div class="api-sec">
       <div class="api-sec-title">🖥️ OLLAMA — LOCAL SERVER MODELS</div>
@@ -460,25 +457,23 @@ function switchMTab(tab) {
 }
 
 async function testMinimax() {
-  const key = document.getElementById('f-minimax')?.value
   const dot = document.getElementById('s-minimax')
   const txt = document.getElementById('t-minimax')
-  if (!key) { if (txt) txt.textContent = '❌ Add your API key first'; return }
-  if (txt) txt.textContent = '⏳ Testing...'
+  if (txt) txt.textContent = '⏳ Testing OpenClaw gateway...'
   try {
-    const res = await fetch('https://api.minimax.io/v1/chat/completions', {
+    const res = await fetch('/api/chat', {
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-      body:JSON.stringify({model:'MiniMax-M2.7',messages:[{role:'user',content:'Reply: OK'}],max_tokens:5})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'openclaw/main',messages:[{role:'user',content:'Reply: OK'}],max_tokens:5})
     })
     const data = await res.json()
     if (data.choices?.[0]?.message?.content) {
       dot?.classList.add('connected'); dot?.classList.remove('disconnected')
-      if (txt) txt.textContent = '✅ Connected!'
+      if (txt) txt.textContent = '✅ OpenClaw gateway working!'
     } else { throw new Error(data.error?.message || 'Failed') }
   } catch(e) {
     dot?.classList.add('disconnected'); dot?.classList.remove('connected')
-    if (txt) txt.textContent = '❌ ' + (e.message||'').substring(0,60)
+    if (txt) txt.textContent = '❌ Gateway error: ' + (e.message||'').substring(0,50)
   }
 }
 
@@ -726,10 +721,8 @@ function renderWalkers() {
 // ═══════════════════════════════════════════════════════════════
 
 async function fetchAI(prompt, agentId) {
-  const { minimaxKey, provider } = CFG
-
-  // Priority 1: Try server proxy (OpenClaw gateway — all your models: MiniMax, Gemma, Gemini, etc.)
-  // Server must be running: node server.js
+  // Use OpenClaw gateway ONLY — routes to MiniMax M2.7 by default
+  // This is your main AI path — all models are accessible through OpenClaw
   try {
     const res = await fetch('/api/chat', {
       method: 'POST',
@@ -742,34 +735,9 @@ async function fetchAI(prompt, agentId) {
     })
     const data = await res.json()
     if (data.choices?.[0]?.message?.content) return data.choices[0].message.content.trim()
-  } catch(e) {}
-
-  // Priority 2: MiniMax direct (if key provided)
-  if (minimaxKey && (provider === 'minimax' || provider === 'both')) {
-    try {
-      const res = await fetch('https://api.minimax.io/v1/chat/completions', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+minimaxKey},
-        body:JSON.stringify({model:'MiniMax-M2.7',messages:[{role:'user',content:prompt}],max_tokens:80})
-      })
-      const data = await res.json()
-      if (data.choices?.[0]?.message?.content) return data.choices[0].message.content.trim()
-    } catch(e) {}
+  } catch(e) {
+    console.error('OpenClaw gateway error:', e)
   }
-
-  // Priority 3: Ollama local (if selected)
-  if (provider === 'ollama' || provider === 'both') {
-    try {
-      const res = await fetch('http://localhost:11434/v1/chat/completions', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer ollama'},
-        body:JSON.stringify({model:CFG.ollamaModel||'llama3',messages:[{role:'user',content:prompt}]})
-      })
-      const data = await res.json()
-      if (data.choices?.[0]?.message?.content) return data.choices[0].message.content.trim()
-    } catch(e) {}
-  }
-
   return null
 }
 
