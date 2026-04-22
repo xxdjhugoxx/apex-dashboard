@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IAM — Faith In Every Thread</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {margin:0;padding:0;box-sizing:border-box}
+    
+    :root {
+      --red: #C41E3A;
+      --red-dark: #8B0000;
+      --red-light: #DC143C;
+      --cream: #FDF5E6;
+      --black: #0A0A0A;
+      --white: #FFFFFF;
+      --gray: #1A1A1A;
+    }
+    
+    html { scroll-behavior: smooth; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--black);
+      color: var(--white);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+      background: rgba(10,10,10,0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(196,30,58,0.2);
+    }
+    
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 8px;
+      color: var(--white);
+    }
+    
+    .logo span { color: var(--red); }
+    
+    .nav-links {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+    
+    .nav-links a {
+      color: var(--white);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    
+    .nav-links a:hover { color: var(--red); }
+    
+    .btn {
+      padding: 14px 32px;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    
+    .btn-primary {
+      background: var(--red);
+      color: var(--white);
+      box-shadow: 0 4px 24px rgba(196,30,58,0.4);
+    }
+    
+    .btn-primary:hover {
+      background: var(--red-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(196,30,58,0.5);
+    }
+    
+    .btn-outline {
+      background: transparent;
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .btn-outline:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+    
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding: 120px 40px 80px;
+    }
+    
+    .hero-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, var(--black) 0%, var(--gray) 50%, var(--red-dark) 100%);
+      opacity: 0.9;
+    }
+    
+    .hero-pattern {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(196,30,58,0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(196,30,58,0.1) 0%, transparent 40%);
+    }
+    
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+    }
+    
+    .hero-tag {
+      display: inline-block;
+      padding: 8px 20px;
+      background: rgba(196,30,58,0.2);
+      border: 1px solid var(--red);
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 32px;
+    }
+    
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(48px, 10vw, 96px);
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 24px;
+      letter-spacing: -2px;
+    }
+    
+    .hero h1 .cross {
+      color: var(--red);
+      font-size: 0.6em;
+      display: block;
+      margin-bottom: 8px;
+    }
+    
+    .hero p {
+      font-size: 18px;
+      color: rgba(255,255,255,0.7);
+      max-width: 500px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+    }
+    
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    
+    /* CROSS DIVIDER */
+    .cross-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 60px 0;
+      background: var(--red);
+    }
+    
+    .cross-divider .line {
+      width: 100px;
+      height: 1px;
+      background: rgba(255,255,255,0.5);
+    }
+    
+    .cross-divider .cross-icon {
+      font-size: 32px;
+      color: var(--white);
+    }
+    
+    /* BELIEFS */
+    .beliefs {
+      padding: 100px 40px;
+      background: var(--black);
+    }
+    
+    .section-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      margin-bottom: 16px;
+    }
+    
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 6vw, 56px);
+      font-weight: 800;
+      margin-bottom: 60px;
+      max-width: 600px;
+    }
+    
+    .beliefs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .belief-card {
+      padding: 40px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 8px;
+      transition: all 0.4s;
+    }
+    
+    .belief-card:hover {
+      border-color: var(--red);
+      transform: translateY(-8px);
+    }
+    
+    .belief-icon {
+      font-size: 40px;
+      margin-bottom: 24px;
+    }
+    
+    .belief-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    
+    .belief-card p {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.7;
+    }
+    
+    /* PRODUCTS */
+    .products {
+      padding: 100px 40px;
+      background: var(--gray);
+    }
+    
+    .products-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    
+    .products-header .section-title {
+      margin: 0 auto 16px;
+    }
+    
+    .products-header p {
+      color: rgba(255,255,255,0.6);
+      font-size: 16px;
+    }
+    
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .product-card {
+      background: var(--black);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.4s;
+    }
+    
+    .product-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(196,30,58,0.2);
+    }
+    
+    .product-image {
+      height: 350px;
+      background: linear-gradient(135deg, var(--gray) 0%, var(--red-dark) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      opacity: 0.8;
+    }
+    
+    .product-info {
+      padding: 28px;
+    }
+    
+    .product-tag {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--red);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    
+    .product-info h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .product-info p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 16px;
+    }
+    
+    .product-price {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .price {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--red);
+    }
+    
+    .price-old {
+      font-size: 14px;
+      color: rgba(255,255,255,0.4);
+      text-decoration: line-through;
+      margin-left: 8px;
+    }
+    
+    /* BANNER */
+    .banner {
+      padding: 100px 40px;
+      background: linear-gradient(135deg, var(--red-dark) 0%, var(--red) 100%);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .banner::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+      animation: pulse 4s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    
+    .banner-content {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .banner h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 6vw, 56px);
+      font-weight: 900;
+      margin-bottom: 16px;
+    }
+    
+    .banner p {
+      font-size: 18px;
+      opacity: 0.9;
+      margin-bottom: 32px;
+    }
+    
+    .banner .btn {
+      background: var(--white);
+      color: var(--red);
+      font-size: 14px;
+      padding: 16px 40px;
+    }
+    
+    .banner .btn:hover {
+      background: var(--black);
+      color: var(--white);
+    }
+    
+    /* TESTIMONIALS */
+    .testimonials {
+      padding: 100px 40px;
+      background: var(--black);
+    }
+    
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 32px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .testimonial {
+      padding: 40px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 8px;
+    }
+    
+    .testimonial-quote {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-style: italic;
+      line-height: 1.8;
+      margin-bottom: 24px;
+      color: rgba(255,255,255,0.9);
+    }
+    
+    .testimonial-quote::before { content: '"'; }
+    .testimonial-quote::after { content: '"'; }
+    
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .author-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+    }
+    
+    .author-name {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .author-title {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+    }
+    
+    /* NEWSLETTER */
+    .newsletter {
+      padding: 80px 40px;
+      background: var(--gray);
+      text-align: center;
+    }
+    
+    .newsletter h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    
+    .newsletter p {
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 32px;
+    }
+    
+    .newsletter-form {
+      display: flex;
+      gap: 12px;
+      max-width: 500px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .newsletter-form input {
+      flex: 1;
+      min-width: 250px;
+      padding: 16px 20px;
+      background: var(--black);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px;
+      color: var(--white);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    
+    .newsletter-form input:focus {
+      border-color: var(--red);
+    }
+    
+    .newsletter-form input::placeholder {
+      color: rgba(255,255,255,0.4);
+    }
+    
+    /* FOOTER */
+    footer {
+      padding: 60px 40px 30px;
+      background: var(--black);
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .footer-top {
+      display: grid;
+      grid-template-columns: 2fr repeat(3, 1fr);
+      gap: 60px;
+      margin-bottom: 60px;
+    }
+    
+    .footer-brand .logo {
+      margin-bottom: 16px;
+    }
+    
+    .footer-brand p {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+      max-width: 300px;
+      line-height: 1.7;
+    }
+    
+    .footer-col h4 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      color: var(--red);
+    }
+    
+    .footer-col ul {
+      list-style: none;
+    }
+    
+    .footer-col li {
+      margin-bottom: 12px;
+    }
+    
+    .footer-col a {
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.3s;
+    }
+    
+    .footer-col a:hover { color: var(--red); }
+    
+    .footer-bottom {
+      padding-top: 30px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .footer-bottom p {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+    }
+    
+    .social-links {
+      display: flex;
+      gap: 20px;
+    }
+    
+    .social-links a {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+    
+    .social-links a:hover {
+      background: var(--red);
+      transform: translateY(-3px);
+    }
+    
+    /* MOBILE */
+    @media (max-width: 768px) {
+      nav {
+        padding: 16px 20px;
+      }
+      
+      .nav-links { display: none; }
+      
+      .hero { padding: 100px 20px 60px; }
+      .hero-buttons { flex-direction: column; }
+      .hero-buttons .btn { width: 100%; text-align: center; }
+      
+      .beliefs, .products, .testimonials, .newsletter {
+        padding: 60px 20px;
+      }
+      
+      .footer-top {
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+      }
+      
+      .footer-brand {
+        grid-column: span 2;
+      }
+      
+      .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">I<span>•</span>AM</div>
+    <ul class="nav-links">
+      <li><a href="#beliefs">Our Faith</a></li>
+      <li><a href="#products">Collection</a></li>
+      <li><a href="#testimonials">Stories</a></li>
+    </ul>
+    <a href="#products" class="btn btn-primary">Shop Now</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-pattern"></div>
+    <div class="hero-content">
+      <div class="hero-tag">Christian Streetwear</div>
+      <h1>
+        <span class="cross">✝</span>
+        I AM
+      </h1>
+      <p>Faith in every thread. Bold statements of belief for those who refuse to hide their light. Wear your faith. Live your faith. Be the I AM.</p>
+      <div class="hero-buttons">
+        <a href="#products" class="btn btn-primary">Shop Collection</a>
+        <a href="#beliefs" class="btn btn-outline">Our Story</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CROSS DIVIDER -->
+  <div class="cross-divider">
+    <div class="line"></div>
+    <div class="cross-icon">✝</div>
+    <div class="line"></div>
+  </div>
+
+  <!-- BELIEFS -->
+  <section class="beliefs" id="beliefs">
+    <span class="section-label">What We Stand For</span>
+    <h2 class="section-title">Faith Is Not Hidden.<br>It's Worn.</h2>
+    
+    <div class="beliefs-grid">
+      <div class="belief-card">
+        <div class="belief-icon">🔥</div>
+        <h3>Unapologetically Bold</h3>
+        <p>We don't do subtle. Every design carries a message. We create for those who wear their faith like armor — unapologetic, unashamed, unstoppable.</p>
+      </div>
+      
+      <div class="belief-card">
+        <div class="belief-icon">✝️</div>
+        <h3>Rooted In Christ</h3>
+        <p>Every stitch carries purpose. We're not just a brand — we're a movement. Born from faith, built for the faithful, dedicated to spreading His light.</p>
+      </div>
+      
+      <div class="belief-card">
+        <div class="belief-icon">👑</div>
+        <h3>Kingdom First</h3>
+        <p>We believe in the power of faith to transform lives. Every shirt sold supports Christian organizations making real change in communities worldwide.</p>
+      </div>
+      
+      <div class="belief-card">
+        <div class="belief-icon">🤝</div>
+        <h3>Built For Community</h3>
+        <p>You're not just buying a shirt — you're joining a family. A community of believers who stand together, uplift each other, and spread the Gospel through every thread.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section class="products" id="products">
+    <div class="products-header">
+      <span class="section-label">The Collection</span>
+      <h2 class="section-title">Wear His Word</h2>
+      <p>Limited drops. Once they're gone, they're gone.</p>
+    </div>
+    
+    <div class="products-grid">
+      <div class="product-card">
+        <div class="product-image">👕</div>
+        <div class="product-info">
+          <div class="product-tag">New Drop</div>
+          <h3>"I AM" Essential Tee</h3>
+          <p>Premium cotton. Bold chest logo. Statement piece.</p>
+          <div class="product-price">
+            <span class="price">$45</span>
+            <a href="#" class="btn btn-primary">Add to Cart</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="product-card">
+        <div class="product-image">🧥</div>
+        <div class="product-info">
+          <div class="product-tag">Hoodie</div>
+          <h3>"Faith Over Fear" Hoodie</h3>
+          <p>Ultra-soft fleece. Deep pocket. Bold back print.</p>
+          <div class="product-price">
+            <span class="price">$75</span>
+            <a href="#" class="btn btn-primary">Add to Cart</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="product-card">
+        <div class="product-image">👑</div>
+        <div class="product-info">
+          <div class="product-tag">Limited</div>
+          <h3>"Kingdom Mindset" Cap</h3>
+          <p>Adjustable fit. Embroidered logo. Premium build.</p>
+          <div class="product-price">
+            <span class="price">$35</span>
+            <a href="#" class="btn btn-primary">Add to Cart</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BANNER -->
+  <section class="banner">
+    <div class="banner-content">
+      <h2>Join The Movement</h2>
+      <p>First access to drops. Exclusive content. Community of believers.</p>
+      <a href="#newsletter" class="btn">Get Early Access</a>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="testimonials" id="testimonials">
+    <span class="section-label">The Community</span>
+    <h2 class="section-title" style="text-align:center;margin:0 auto 50px;">Stories From The I AM Family</h2>
+    
+    <div class="testimonials-grid">
+      <div class="testimonial">
+        <p class="testimonial-quote">Finally, a brand that represents my faith without compromise. I get compliments every time I wear my I AM hoodie. People ask about it and it opens doors to share my faith.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">MJ</div>
+          <div>
+            <div class="author-name">Marcus J.</div>
+            <div class="author-title">Houston, TX</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="testimonial">
+        <p class="testimonial-quote">I've bought multiple pieces and every single one is premium quality. The message is bold, the fit is perfect, and knowing part of my purchase goes to ministry work makes it even better.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">ST</div>
+          <div>
+            <div class="author-name">Sarah T.</div>
+            <div class="author-title">Atlanta, GA</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section class="newsletter" id="newsletter">
+    <h3>Stay In The Loop</h3>
+    <p>First access to new drops. No spam. Just faith and fashion.</p>
+    <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Welcome to the I AM family! 🙏');">
+      <input type="email" placeholder="Enter your email" required>
+      <button type="submit" class="btn btn-primary">Join Now</button>
+    </form>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="logo">I<span>•</span>AM</div>
+        <p>Faith in every thread. Christian streetwear for those who refuse to hide their light. Born to stand out. Called to spread His word.</p>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="#">All Products</a></li>
+          <li><a href="#">New Arrivals</a></li>
+          <li><a href="#">Hoodies</a></li>
+          <li><a href="#">T-Shirts</a></li>
+          <li><a href="#">Accessories</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">Our Story</a></li>
+          <li><a href="#">Mission & Faith</a></li>
+          <li><a href="#">Give Back</a></li>
+          <li><a href="#">Contact Us</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">Shipping</a></li>
+          <li><a href="#">Returns</a></li>
+          <li><a href="#">Size Guide</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <p>© 2026 I AM Clothing. All rights reserved. Created for His glory.</p>
+      <div class="social-links">
+        <a href="#">IG</a>
+        <a href="#">TT</a>
+        <a href="#">TW</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
