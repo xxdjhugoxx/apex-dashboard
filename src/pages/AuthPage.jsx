@@ -23,7 +23,7 @@ export function AuthPage({ onSuccess, onEmailConfirmationRequired }) {
         
         if (result.user && !result.user.confirmed_at) {
           localStorage.setItem('apex_email_pending', 'true')
-          onEmailConfirmationRequired?.()
+          onEmailConfirmationRequired?.(email)
         } else {
           onSuccess?.()
         }

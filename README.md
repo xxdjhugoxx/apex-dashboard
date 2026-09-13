@@ -58,7 +58,13 @@ export const SUPABASE_ANON_KEY = 'your-anon-key-here'
 6. Enable Email Auth:
    - Go to **Authentication → Providers**
    - Enable **Email** provider
-   - Configure email templates (optional)
+   - **Configure email templates** (REQUIRED for OTP signup):
+     - Go to **Authentication → Email Templates**
+     - Select **Confirm signup** template
+     - Update the email body to include `{{ .Token }}` prominently
+     - Example: "Your verification code is: **{{ .Token }}**"
+     - The 6-digit OTP code will be emailed to users during signup
+     - You can still include the confirmation link as a fallback option
 
 7. Create Storage Bucket:
    - Go to **Storage**
@@ -210,6 +216,9 @@ These can be added post-MVP when budget/infrastructure is ready.
 
 1. **Auth Flow**
    - [ ] Sign up with email/password
+   - [ ] Enter 6-digit OTP code from email
+   - [ ] Verify OTP and proceed to onboarding
+   - [ ] Test resend code functionality
    - [ ] Sign in with existing account
    - [ ] Sign out
 
