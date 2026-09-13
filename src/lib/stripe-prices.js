@@ -15,27 +15,27 @@ export const STRIPE_PRICE_IDS = {
   starter: {
     product_id: 'prod_UTaOPRTPGamshL',
     monthly: 'price_1TUdDLDGWTAZtT1dCJZytHz2', // $149/mo
-    annual: 'price_1TUdEHDGWTAZtT1dakZye0Mj'   // $1520/yr
+    annual: 'price_1UFKJSDGWTAZtT1dnV6yy3p4'   // $1430.40/yr
   },
   focus: {
     product_id: 'prod_UTaQxIrEaBpS7s',
     monthly: 'price_1TUdFHDGWTAZtT1dv3Uv3jWQ', // $297/mo
-    annual: 'price_1TUdFHDGWTAZtT1d5VEQcWve'   // $3030/yr
+    annual: 'price_1UFKJTDGWTAZtT1dS8QkN0ac'   // $2851.20/yr
   },
   growth: {
     product_id: 'prod_UTaQM9JxuvNF1K',
     monthly: 'price_1TUdFwDGWTAZtT1d50weXHKG', // $697/mo
-    annual: 'price_1TUdFwDGWTAZtT1dim8fS0bP'   // $7110/yr
+    annual: 'price_1UFKJUDGWTAZtT1dZqqQrvmq'   // $6691.20/yr
   },
   pro: {
     product_id: 'prod_UTaRyf1QZ7H8lj',
     monthly: 'price_1TUdGvDGWTAZtT1dEoPsEi2R', // $1497/mo
-    annual: 'price_1TUdGvDGWTAZtT1dYQ5vVNEu'   // $15200/yr
+    annual: 'price_1UFKJVDGWTAZtT1dmsUeLGOD'   // $14371.20/yr
   },
   agency: {
     product_id: 'prod_UTaSjMZrM8SRA5',
     monthly: 'price_1TUdHeDGWTAZtT1dR6yC38Yc', // $2997/mo
-    annual: 'price_1TUdHeDGWTAZtT1djjrd8fov'   // $25000/yr
+    annual: 'price_1UFKJVDGWTAZtT1dP47HbtRD'   // $28771.20/yr
   }
 }
 
