@@ -195,9 +195,44 @@ function ClientRouter() {
   const [view, setView] = useState('auth')
   const [emailConfirmationPending, setEmailConfirmationPending] = useState(false)
   const [pendingEmail, setPendingEmail] = useState('')
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
+  const [checkingSubscription, setCheckingSubscription] = useState(true)
 
   useEffect(() => {
     if (loading) return
+
+    async function checkSubscription() {
+      if (!user) {
+        setCheckingSubscription(false)
+        return
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('user_tiers')
+          .select('status, tier_id')
+          .eq('user_id', user.id)
+          .in('status', ['active', 'trialing'])
+          .single()
+
+        if (!error && data) {
+          setHasActiveSubscription(true)
+        } else {
+          setHasActiveSubscription(false)
+        }
+      } catch (err) {
+        console.error('Error checking subscription:', err)
+        setHasActiveSubscription(false)
+      } finally {
+        setCheckingSubscription(false)
+      }
+    }
+
+    checkSubscription()
+  }, [user, loading])
+
+  useEffect(() => {
+    if (loading || checkingSubscription) return
 
     if (!user) {
       const pendingConfirm = localStorage.getItem('apex_email_pending')
@@ -211,7 +246,16 @@ function ClientRouter() {
       } else {
         setView('plans')
       }
-    } else if (!profile?.company_name) {
+    } else if (hasActiveSubscription && profile?.company_name) {
+      localStorage.removeItem('apex_email_pending')
+      localStorage.removeItem('apex_pending_plan_selection')
+      localStorage.removeItem('apex_selected_tier')
+      setView('dashboard')
+    } else if (hasActiveSubscription && !profile?.company_name) {
+      localStorage.removeItem('apex_email_pending')
+      localStorage.removeItem('apex_pending_plan_selection')
+      setView('onboarding')
+    } else if (!profile?.company_name && !hasActiveSubscription) {
       localStorage.removeItem('apex_email_pending')
       localStorage.removeItem('apex_pending_plan_selection')
       if (!selectedTier) {
@@ -225,9 +269,9 @@ function ClientRouter() {
       localStorage.removeItem('apex_selected_tier')
       setView('dashboard')
     }
-  }, [user, profile, loading, selectedTier])
+  }, [user, profile, loading, selectedTier, hasActiveSubscription, checkingSubscription])
 
-  if (loading) {
+  if (loading || checkingSubscription) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <div className="text-white text-center">

@@ -1,0 +1,28 @@
+# Supabase Configuration for APEX HQ
+# https://supabase.com/docs/guides/cli/config
+
+[api]
+enabled = true
+port = 54321
+max_rows = 1000
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["http://localhost:5173"]
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+
+[functions]
+# Edge Functions configuration
+enabled = true

@@ -1,10 +1,54 @@
 import React, { useState } from 'react'
-import { PRICING_TIERS, getAnnualPrice } from '../lib/pricing'
+import { PRICING_TIERS, getAnnualPrice, getTierId } from '../lib/pricing'
 import { useAuth } from '../lib/auth'
+import { supabase } from '../lib/supabase'
+import { getBillingInterval } from '../lib/stripe-prices'
 
 export function PlansPage({ onSelectPlan }) {
   const [billingCycle, setBillingCycle] = useState('monthly')
+  const [loading, setLoading] = useState(null)
+  const [error, setError] = useState('')
   const { user } = useAuth()
+
+  async function handleSelectPlan(tier) {
+    if (!user) {
+      onSelectPlan?.(tier)
+      return
+    }
+
+    setLoading(tier.name)
+    setError('')
+
+    try {
+      const tierId = getTierId(tier.name)
+      const isAnnual = billingCycle === 'annual' && !tier.oneTime
+      const billingInterval = getBillingInterval(tierId, isAnnual)
+
+      const { data, error: functionError } = await supabase.functions.invoke(
+        'create-checkout-session',
+        {
+          body: {
+            tier_id: tierId,
+            billing_interval: billingInterval,
+            success_url: `${window.location.origin}/onboarding`,
+            cancel_url: `${window.location.origin}/plans`,
+          },
+        }
+      )
+
+      if (functionError) throw functionError
+
+      if (data?.url) {
+        window.location.href = data.url
+      } else {
+        throw new Error('No checkout URL returned')
+      }
+    } catch (err) {
+      console.error('Checkout error:', err)
+      setError(err.message || 'Failed to start checkout. Please try again.')
+      setLoading(null)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#111118] to-[#0a0a0f] text-white">
@@ -14,6 +58,12 @@ export function PlansPage({ onSelectPlan }) {
             Choose Your APEX Plan
           </h1>
           <p className="text-xl text-white/60">AI-powered marketing automation for every stage</p>
+          
+          {error && (
+            <div className="mt-4 max-w-md mx-auto bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-center gap-4 mb-12">
@@ -82,14 +132,19 @@ export function PlansPage({ onSelectPlan }) {
                 </ul>
 
                 <button
-                  onClick={() => onSelectPlan(tier)}
-                  className={`w-full py-3 rounded-xl font-bold transition-all ${
+                  onClick={() => handleSelectPlan(tier)}
+                  disabled={loading === tier.name}
+                  className={`w-full py-3 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                     tier.popular
                       ? 'bg-[#FF6B35] hover:bg-[#FF8855] text-white'
                       : 'bg-white/10 hover:bg-white/20 text-white'
                   }`}
                 >
-                  {user ? tier.cta : 'Sign Up to Get Started'}
+                  {loading === tier.name
+                    ? 'Loading...'
+                    : user
+                    ? tier.cta
+                    : 'Sign Up to Get Started'}
                 </button>
               </div>
             )
