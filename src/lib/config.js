@@ -1,4 +1,9 @@
 // ─── APEX Realistic Config ─────────────────────────────────────────────────
+// ⚠️ IMPORTANT: Update these with YOUR Supabase project credentials
+// Get them from: https://supabase.com/dashboard/project/_/settings/api
+//
+// These are EXAMPLE values - they will NOT work for production.
+// See SETUP_GUIDE.md for step-by-step instructions.
 
 export const SUPABASE_URL = 'https://jbumilopcidspfujphiq.supabase.co'
 export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpidW1pb3BwY2lkc3BmdWpwYWhpcSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNjQxNzYyMDI4LCJleHAiOjE5NTczMzgwMjh9.ZopNUt9bD7_P6qCyBdN7pHCDc9y0qTyegH1p2n8kHNs'

@@ -139,7 +139,6 @@ export function mapJobTypeToTier(jobType) {
     'growth': 'growth',
     'pro': 'pro',
     'agency': 'agency',
-    // Add legacy mappings here if needed in the future
   }
   return mapping[jobType.toLowerCase()] || 'starter'
 }
