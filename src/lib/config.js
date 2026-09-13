@@ -1,12 +1,13 @@
-// ─── APEX Realistic Config ─────────────────────────────────────────────────
-// ⚠️ IMPORTANT: Update these with YOUR Supabase project credentials
-// Get them from: https://supabase.com/dashboard/project/_/settings/api
+// ─── APEX Production Config ─────────────────────────────────────────────────
+// Hugo's Live Supabase Project
+// Dashboard: https://supabase.com/dashboard/project/cfwbqzktltxgllqdhaug
 //
-// These are EXAMPLE values - they will NOT work for production.
-// See SETUP_GUIDE.md for step-by-step instructions.
+// 🔓 NOTE: Anon keys are PUBLIC by design for client-side SPAs.
+// They only grant row-level security (RLS) protected access.
+// NEVER commit service_role keys (which bypass RLS).
 
-export const SUPABASE_URL = 'https://jbumilopcidspfujphiq.supabase.co'
-export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpidW1pb3BwY2lkc3BmdWpwYWhpcSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNjQxNzYyMDI4LCJleHAiOjE5NTczMzgwMjh9.ZopNUt9bD7_P6qCyBdN7pHCDc9y0qTyegH1p2n8kHNs'
+export const SUPABASE_URL = 'https://cfwbqzktltxgllqdhaug.supabase.co'
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmd2Jxemt0bHR4Z2xscWRoYXVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyOTk0ODgsImV4cCI6MjEwNDg3NTQ4OH0.4U_sws6d12jGuCy1sNK8JpmlSejFAtIe-DhJ_z3P7mM'
 
 export const AGENTS = [
   { id: 'ceo',       name: 'Hugo',    emoji: '🦁', color: '#EF4444' },
