@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX AI Office</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0f; --surface: #111118; --surface2: #1a1a24;
+    --border: rgba(255,255,255,0.07); --text: #f0f0f5; --muted: rgba(255,255,255,0.4);
+    --accent: #FF6B35;
+  }
+  html, body { height: 100%; background: var(--bg); color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif; overflow: hidden; }
+
+  .app { display: flex; flex-direction: column; height: 100vh; }
+
+  /* ── HEADER ── */
+  .header { display: flex; align-items: center; gap: 16px; padding: 10px 20px;
+    background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .logo { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 900;
+    letter-spacing: 2px; color: var(--accent); }
+  .logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; }
+  .header-center { flex: 1; display: flex; align-items: center; justify-content: center; }
+  .live-badge { display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px;
+    background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3);
+    font-size: 10px; font-weight: 700; color: #4ade80; letter-spacing: 1px; }
+  .live-dot { width: 6px; height: 6px; background: #4ade80; border-radius: 50%;
+    animation: pulse-green 1.5s infinite; }
+  @keyframes pulse-green { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.5)} 50%{box-shadow:0 0 0 5px rgba(74,222,128,0)} }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .clock { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .presence-badge { padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 10px;
+    background: rgba(34,197,94,0.2); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+  .admin-btn { padding: 5px 12px; border-radius: 8px; font-weight: 700; font-size: 10px;
+    background: rgba(255,255,255,0.08); color: var(--muted); border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 5px; }
+  .admin-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+
+  /* ── METRICS BAR ── */
+  .metrics-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .metric { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border); }
+  .metric-icon { width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center;
+    justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .metric-info { flex: 1; min-width: 0; }
+  .metric-label { font-size: 8px; color: var(--muted); font-weight: 600; letter-spacing: 0.5px; margin-bottom: 3px; }
+  .metric-row { display: flex; align-items: baseline; gap: 4px; }
+  .metric-val { font-size: 14px; font-weight: 800; }
+  .metric-target { font-size: 9px; color: var(--muted); }
+  .metric-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+  .metric-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+
+  /* ── MAIN OFFICE ── */
+  .office-main { flex: 1; display: flex; min-height: 0; overflow: hidden; }
+
+  /* ── OFFICE FLOOR ── */
+  .office-floor { flex: 1; position: relative; overflow: hidden;
+    background-color: #131320;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* Wall at top */
+  .office-wall { position: absolute; top: 0; left: 0; right: 0; height: 52px;
+    background: linear-gradient(180deg, #1a1a2e 0%, #16162a 100%);
+    border-bottom: 3px solid #222240;
+    display: flex; align-items: center; padding: 0 20px; gap: 16px; z-index: 5; }
+  .wall-window { width: 50px; height: 30px; border-radius: 4px;
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+    box-shadow: 0 0 12px rgba(59,130,246,0.4), inset 0 0 8px rgba(96,165,250,0.2);
+    border: 1px solid rgba(96,165,250,0.3); }
+  .wall-label { font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.3);
+    letter-spacing: 3px; margin-left: auto; margin-right: auto; }
+
+  /* Boss area */
+  .boss-area { position: absolute; top: 52px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; z-index: 10; }
+  .boss-name-label { font-size: 9px; font-weight: 900; color: #EF4444; letter-spacing: 3px; margin-bottom: 4px; }
+  .boss-desk { width: 100px; height: 60px; background: #1e1e30; border: 3px solid #EF4444;
+    border-radius: 8px; position: relative; display: flex; align-items: center; justify-content: center; }
+  .boss-monitor { width: 40px; height: 28px; background: #0d0d1a; border: 2px solid #EF4444;
+    border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+  .boss-monitor-screen { width: 32px; height: 20px; background: rgba(239,68,68,0.2);
+    border-radius: 2px; }
+  .boss-person { position: absolute; bottom: -24px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; }
+  .boss-head { width: 36px; height: 36px; border-radius: 50%; background: #FDE68A;
+    border: 2px solid #EF4444; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; position: relative; z-index: 2; }
+  .boss-crown { font-size: 14px; margin-bottom: -6px; position: relative; z-index: 3; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+  .boss-body { width: 46px; height: 14px; background: #7f1d1d; border: 2px solid #EF4444;
+    border-top: none; border-radius: 0 0 10px 10px; margin-top: -4px; }
+  .boss-label { font-size: 8px; font-weight: 900; color: #EF4444; letter-spacing: 2px; margin-top: 6px; }
+
+  /* Desk */
+  .desk { position: absolute; display: flex; flex-direction: column; align-items: center; }
+  .desk-surface { background: #1e1e30; border-radius: 6px; position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .desk-monitor { background: #0d0d1a; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
+  .desk-monitor-screen { border-radius: 2px; opacity: 0.5; }
+  .desk-keyboard { position: absolute; bottom: 2px; background: #2a2a40;
+    border-radius: 2px; }
+  .desk-person { position: absolute; bottom: -22px; display: flex; flex-direction: column; align-items: center; }
+  .person-head { border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid; }
+  .person-body { border-radius: 8px 8px 0 0; border: 2px solid; border-bottom: none; margin-top: -3px; }
+  .desk-label { font-size: 7px; font-weight: 800; color: rgba(255,255,255,0.6);
+    letter-spacing: 1px; margin-top: 4px; text-align: center; }
+  .desk-status { display: flex; gap: 2px; margin-top: 2px; }
+  .desk-status-dot { width: 4px; height: 4px; border-radius: 50%; }
+
+  /* Walking agent */
+  .walking-agent { position: absolute; display: flex; flex-direction: column; align-items: center;
+    z-index: 50; pointer-events: none; transition: none; }
+  .walk-person-head { width: 24px; height: 24px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-size: 12px; border: 2px solid; }
+  .walk-person-body { width: 28px; height: 10px; border-radius: 8px 8px 0 0;
+    border: 2px solid; border-bottom: none; margin-top: -2px; }
+
+  /* Speech bubble */
+  .speech-bubble { position: absolute; padding: 5px 9px; border-radius: 10px;
+    font-size: 8px; font-weight: 700; max-width: 110px; text-align: center;
+    color: white; z-index: 60; white-space: nowrap;
+    animation: bubble-up 3s ease-out forwards; }
+  .speech-bubble::after { content: ''; position: absolute; bottom: -5px;
+    left: 50%; transform: translateX(-50%);
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-top: 6px solid currentColor; }
+  @keyframes bubble-up { 0%{opacity:0;transform:translateX(-50%) translateY(6px)} 12%{opacity:1;transform:translateX(-50%) translateY(0)} 75%{opacity:1} 100%{opacity:0;transform:translateX(-50%) translateY(-4px)} }
+
+  /* Dept info panel on desk */
+  .desk-info { position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.7); border-radius: 5px; padding: 2px 6px;
+    white-space: nowrap; font-size: 7px; font-weight: 700; color: rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.1); pointer-events: none; }
+
+  /* Sub-agent indicators on desk */
+  .desk-subs { position: absolute; bottom: -38px; display: flex; gap: 2px; }
+
+  /* ── RIGHT SIDEBAR ── */
+  .sidebar { width: 300px; flex-shrink: 0; background: var(--surface);
+    border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+  .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .sidebar-tab { flex: 1; padding: 9px 8px; font-size: 9px; font-weight: 700; color: var(--muted);
+    text-align: center; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .chat-feed { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .chat-feed::-webkit-scrollbar { width: 3px; }
+  .chat-feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+  .chat-msg { padding: 7px 9px; border-radius: 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+    animation: msg-in 0.3s ease; }
+  @keyframes msg-in { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+  .chat-msg-header { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
+  .chat-avatar-dot { width: 18px; height: 18px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: white; flex-shrink: 0; }
+  .chat-agent-name { font-size: 8px; font-weight: 800; }
+  .chat-agent-dept { font-size: 7px; color: var(--muted); margin-left: auto; }
+  .chat-text { font-size: 9px; color: rgba(255,255,255,0.7); line-height: 1.4; }
+  .chat-time { font-size: 7px; color: rgba(255,255,255,0.2); margin-top: 2px; }
+  .chat-indicators { display: flex; align-items: center; justify-content: center; gap: 4px;
+    padding: 7px; border-top: 1px solid var(--border); flex-shrink: 0; }
+  .chat-ind-dot { width: 4px; height: 4px; border-radius: 50%; }
+  .chat-ind-dot:nth-child(1){background:var(--accent);animation:bounce 1s infinite 0s}
+  .chat-ind-dot:nth-child(2){background:var(--accent);animation:bounce 1s infinite 0.15s}
+  .chat-ind-dot:nth-child(3){background:var(--accent);animation:bounce 1s infinite 0.3s}
+  @keyframes bounce { 0%,100%{transform:translateY(0);opacity:0.4} 50%{transform:translateY(-4px);opacity:1} }
+
+  /* ── ADMIN MODAL ── */
+  .modal-overlay { position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: var(--surface2); border: 2px solid #333;
+    border-radius: 20px; width: 600px; max-height: 85vh; overflow: hidden;
+    transform: scale(0.95); transition: transform 0.25s;
+    box-shadow: 0 0 60px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
+  .modal-overlay.open .modal { transform: scale(1); }
+  .modal-header { display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .modal-header h2 { font-size: 13px; font-weight: 900; letter-spacing: 2px; flex: 1; }
+  .modal-close { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.1);
+    border: none; color: white; font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; }
+  .modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+  .modal-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+  .modal-tab { padding: 6px 14px; border-radius: 8px; font-size: 10px; font-weight: 700;
+    cursor: pointer; border: 1px solid var(--border); color: var(--muted); background: transparent; transition: all 0.2s; }
+  .modal-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .api-section { background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px; }
+  .api-section-title { font-size: 11px; font-weight: 800; color: var(--accent); letter-spacing: 1px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .api-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .api-field { display: flex; flex-direction: column; gap: 4px; }
+  .api-field label { font-size: 9px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
+  .api-field input { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; padding: 7px 10px; color: white; font-size: 11px; outline: none;
+    font-family: 'Courier New', monospace; transition: border-color 0.2s; }
+  .api-field input:focus { border-color: var(--accent); }
+  .api-field input::placeholder { color: rgba(255,255,255,0.2); font-size: 10px; }
+  .api-note { font-size: 8px; color: rgba(255,255,255,0.25); margin-top: 2px; line-height: 1.4; }
+  .api-status { display: flex; align-items: center; gap: 5px; margin-top: 6px; }
+  .api-status-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .api-status-dot.connected { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+  .api-status-dot.disconnected { background: #94A3B8; }
+  .api-status-text { font-size: 8px; color: var(--muted); }
+  .save-btn { background: var(--accent); color: white; border: none; border-radius: 10px;
+    padding: 10px 20px; font-size: 11px; font-weight: 800; letter-spacing: 1px;
+    cursor: pointer; transition: opacity 0.2s; align-self: flex-end; }
+  .save-btn:hover { opacity: 0.85; }
+
+  /* Footer */
+  .footer { flex-shrink: 0; text-align: center; padding: 5px; font-size: 8px;
+    color: rgba(255,255,255,0.1); letter-spacing: 2px; border-top: 1px solid var(--border); background: var(--surface); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo"><div class="logo-icon">🔱</div><span>APEX AI OFFICE</span></div>
+    <div class="header-center"><div class="live-badge"><div class="live-dot"></div>LIVE</div></div>
+    <div class="header-right">
+      <span class="clock" id="clock">--:--</span>
+      <div class="presence-badge">● IN OFFICE</div>
+      <button class="admin-btn" onclick="openAdmin()">⚙️ ADMIN</button>
+    </div>
+  </div>
+
+  <!-- METRICS BAR -->
+  <div class="metrics-bar" id="metrics-bar"></div>
+
+  <!-- MAIN -->
+  <div class="office-main">
+    <!-- OFFICE FLOOR -->
+    <div class="office-floor" id="office-floor">
+      <!-- Wall -->
+      <div class="office-wall">
+        <div class="wall-window"></div>
+        <div class="wall-window"></div>
+        <span class="wall-label">APEX HQ — FLOOR 1</span>
+        <div class="wall-window"></div>
+        <div class="wall-window"></div>
+      </div>
+
+      <!-- Boss -->
+      <div class="boss-area" id="boss-area">
+        <div class="boss-name-label">HUGO — CHIEF</div>
+        <div class="boss-desk">
+          <div class="boss-monitor">
+            <div class="boss-monitor-screen"></div>
+          </div>
+          <div class="boss-person">
+            <div class="boss-crown">👑</div>
+            <div class="boss-head">🦁</div>
+            <div class="boss-body"></div>
+          </div>
+        </div>
+        <div class="boss-label">CHIEF OF AI ORCHESTRATION</div>
+      </div>
+
+      <!-- Desks will be rendered here -->
+      <div id="desks-container"></div>
+      <!-- Walking agents -->
+      <div id="walking-layer"></div>
+      <!-- Speech bubbles -->
+      <div id="bubbles-layer"></div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-tabs">
+        <div class="sidebar-tab active" id="tab-activity" onclick="switchTab('activity')">LIVE ACTIVITY</div>
+        <div class="sidebar-tab" id="tab-agents" onclick="switchTab('agents')">AGENTS</div>
+      </div>
+      <div class="chat-feed" id="chat-feed"></div>
+      <div id="agents-panel" style="display:none;flex-direction:column;gap:6px;padding:8px;flex:1;overflow-y:auto"></div>
+      <div class="chat-indicators">
+        <div class="chat-ind-dot"></div>
+        <div class="chat-ind-dot"></div>
+        <div class="chat-ind-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">APEX AI OFFICE — AUTONOMOUS OPERATIONS</div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div class="modal-overlay" id="admin-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>⚙️ ADMIN PANEL — API CONFIGURATION</h2>
+      <button class="modal-close" onclick="closeAdmin()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tabs">
+        <div class="modal-tab active" id="mtab-ai" onclick="switchAdminTab('ai')">🤖 AI PROVIDERS</div>
+        <div class="modal-tab" id="mtab-meta" onclick="switchAdminTab('meta')">📘 ADS APIs</div>
+        <div class="modal-tab" id="mtab-design" onclick="switchAdminTab('design')">🎨 DESIGN</div>
+        <div class="modal-tab" id="mtab-creds" onclick="switchAdminTab('creds')">🔐 CREDENTIALS</div>
+      </div>
+
+      <!-- AI PROVIDERS TAB -->
+      <div id="admin-ai">
+        <p style="font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5">Choose your AI provider. Browser calls it directly — no gateway or CORS issues.</p>
+
+        <div class="api-section">
+          <div class="api-section-title">🤖 Active AI Provider</div>
+          <div class="api-field">
+            <label>Provider</label>
+            <select id="active-ai-provider" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;color:white;font-size:11px">
+              <option value="minimax">MiniMax (your token plan)</option>
+              <option value="ollama">Ollama (local, FREE)</option>
+              <option value="both">Both — MiniMax primary, Ollama fallback</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">🔶 MiniMax — 💰 YOUR TOKEN PLAN (DIRECT)</div>
+          <div class="api-field">
+            <label>MiniMax API Key</label>
+            <input type="password" id="minimax-key" placeholder="sk-cp-xxxxxxxxxxxxxxxx" style="width:100%" />
+            <div class="api-status" id="minimax-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not tested</span></div>
+          </div>
+          <button onclick="testMinimax()" style="margin-top:6px;background:rgba(255,107,53,0.2);border:1px solid #FF6B35;border-radius:8px;padding:5px 12px;color:#FF6B35;font-size:10px;font-weight:700;cursor:pointer">🧪 Test</button>
+          <p class="api-note">Browser calls MiniMax directly. No gateway needed. Works from anywhere.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">🖥️ Ollama — FREE · Local · No internet needed</div>
+          <div class="api-grid">
+            <div class="api-field"><label>Ollama URL</label><input type="text" id="ollama-url" placeholder="http://localhost:11434" value="http://localhost:11434" /></div>
+            <div class="api-field">
+              <label>Model</label>
+              <select id="ollama-model" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
+                <option value="llama3.2">Llama 3.2 (recommended)</option>
+                <option value="llama3">Llama 3</option>
+                <option value="mistral">Mistral 7B</option>
+                <option value="qwen2.5-coder">Qwen 2.5 Coder</option>
+                <option value="phi3">Phi-3</option>
+                <option value="llava">LLaVA (vision)</option>
+                <option value="gemma2">Gemma 2</option>
+              </select>
+            </div>
+          </div>
+          <p class="api-note">Run <b>ollama run llama3.2</b> in terminal first. Browser calls localhost directly.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">⚡ Groq — ✅ FREE · No credit card · 30 req/min</div>
+          <div class="api-field">
+            <label>API Key</label>
+            <input type="password" id="groq-key" placeholder="gsk_xxxxxxxxxxxx" />
+            <div class="api-status" id="groq-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div>
+          </div>
+          <div class="api-grid" style="margin-top:6px">
+            <div class="api-field"><label>Default Model</label>
+              <select id="groq-model" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
+                <option value="llama-3.1-8b-instant">Llama 3.1 8B (fastest)</option>
+                <option value="mixtral-8x7b-32768">Mixtral 8x7B (most capable)</option>
+                <option value="gemma2-9b-it">Gemma 2 9B</option>
+              </select>
+            </div>
+          </div>
+          <p class="api-note">console.groq.com → Sign up → API Keys. Rate limit: 30 requests/min on free tier.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">🧠 Hugging Face — ✅ FREE · Text + Image Gen</div>
+          <div class="api-grid">
+            <div class="api-field"><label>HF Token (text models)</label><input type="password" id="hf-key" placeholder="hf_xxxxxxxxxxxx" /><div class="api-status" id="hf-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+            <div class="api-field"><label>HF Token (image models)</label><input type="password" id="hf-img-key" placeholder="hf_xxxxxxxxxxxx" /><div class="api-status" id="hf-img-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+          </div>
+          <p class="api-note">huggingface.co/settings/tokens → Create token (both inference and write permissions). Free tier has rate limits.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">🔵 Cohere — ✅ FREE credits · Command R+</div>
+          <div class="api-grid">
+            <div class="api-field"><label>API Key</label><input type="password" id="cohere-key" placeholder="xxxxx-xxxxx" /><div class="api-status" id="cohere-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+            <div class="api-field"><label>Default Model</label>
+              <select id="cohere-model" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
+                <option value="command-r-plus">Command R+ (most capable)</option>
+                <option value="command-r">Command R</option>
+              </select>
+            </div>
+          </div>
+          <p class="api-note">dashboard.cohere.com/api-keys → Free tier includes monthly credits. Excellent for RAG and agentic tasks.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">✨ Google Gemini — ✅ FREE · Gemini 1.5 Flash</div>
+          <div class="api-field">
+            <label>API Key</label>
+            <input type="password" id="gemini-key" placeholder="AIzaxxxxxxxxxxxx" />
+            <div class="api-status" id="gemini-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div>
+          </div>
+          <div class="api-grid" style="margin-top:6px">
+            <div class="api-field"><label>Default Model</label>
+              <select id="gemini-model" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
+                <option value="gemini-1.5-flash">Gemini 1.5 Flash (fast + free)</option>
+                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+              </select>
+            </div>
+          </div>
+          <p class="api-note">aistudio.google.com → Get API Key. 1.5 Flash is completely free with good rate limits. Vision support included.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">🔶 MiniMax — 💰 YOUR TOKEN PLAN</div>
+          <div class="api-field">
+            <label>MiniMax API Key</label>
+            <input type="password" id="minimax-key" placeholder="sk-cp-xxxxxxxxxxxxxxxx" style="width:100%" />
+            <div class="api-status" id="minimax-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div>
+          </div>
+          <p class="api-note">Your MiniMax token plan key from <b>console.minimax.io</b> → API Keys. Stored only in your browser.</p>
+        </div>
+      </div>
+
+      <!-- ADS APIs TAB -->
+      <div id="admin-meta" style="display:none">
+        <p style="font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5">Connect your ad platforms. Agents will create, launch and manage ad campaigns autonomously.</p>
+
+        <div class="api-section">
+          <div class="api-section-title">📘 Meta Business API — Facebook + Instagram Ads</div>
+          <div class="api-field" style="margin-bottom:8px"><label>Meta Access Token</label><input type="password" id="meta-token" placeholder="EAAxxxxxxxxxxxxx" /><div class="api-status" id="meta-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+          <div class="api-grid">
+            <div class="api-field"><label>Facebook Ad Account ID</label><input type="text" id="fb-ad-account" placeholder="act_123456789" /></div>
+            <div class="api-field"><label>Instagram Account ID</label><input type="text" id="ig-account" placeholder="178414xxxxxxx" /></div>
+          </div>
+          <div class="api-grid" style="margin-top:8px">
+            <div class="api-field"><label>Page ID</label><input type="text" id="fb-page-id" placeholder="123456789" /></div>
+            <div class="api-field"><label>Business Manager ID</label><input type="text" id="bm-id" placeholder="987654321" /></div>
+          </div>
+          <p class="api-note">developers.facebook.com → Create app → Add Meta Business API + Instagram Graph API products. Get token from Graph API Explorer.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">📊 Google Ads API</div>
+          <div class="api-grid">
+            <div class="api-field"><label>Developer Token</label><input type="password" id="gads-token" placeholder="xxxxxxxxxx" /></div>
+            <div class="api-field"><label>Customer ID</label><input type="text" id="gads-customer" placeholder="123-456-7890" /></div>
+          </div>
+          <p class="api-note">ads.google.com → Sign up for Google Ads API → Get developer token. Requires MCC account.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">🎵 TikTok Ads API</div>
+          <div class="api-grid">
+            <div class="api-field"><label>App ID</label><input type="text" id="tiktok-app-id" placeholder="123456789" /></div>
+            <div class="api-field"><label>App Secret</label><input type="password" id="tiktok-secret" placeholder="xxxxxxxxxx" /></div>
+          </div>
+          <p class="api-note">business-api.tiktok.com → Create app → Get App ID and App Secret.</p>
+        </div>
+      </div>
+
+      <!-- DESIGN TAB -->
+      <div id="admin-design" style="display:none">
+        <p style="font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5">Configure AI image and video generation for Instagram content creation.</p>
+
+        <div class="api-section">
+          <div class="api-section-title">🖼️ Ideogram — ✅ FREE · 100 images/month</div>
+          <div class="api-field"><label>Ideogram API Key</label><input type="password" id="ideogram-key" placeholder="ig_xxxxxxxxxxxx" /><div class="api-status" id="ideogram-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+          <div class="api-grid" style="margin-top:8px">
+            <div class="api-field"><label>Default Style</label>
+              <select id="ideogram-style" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
+                <option value="REALISTIC">Realistic Photo</option>
+                <option value="ILLUSTRATION">Illustration</option>
+                <option value="3D_RENDER">3D Render</option>
+                <option value="MINIMALIST">Minimalist</option>
+                <option value="VIBRANT">Vibrant</option>
+              </select>
+            </div>
+            <div class="api-field"><label>Default Aspect Ratio</label>
+              <select id="ideogram-ratio" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
+                <option value="1:1">1:1 (Square — Instagram feed)</option>
+                <option value="4:5">4:5 (Portrait — Instagram feed)</option>
+                <option value="9:16">9:16 (Story/Reel)</option>
+              </select>
+            </div>
+          </div>
+          <p class="api-note">ideogram.ai/api → 100 free images per month. Best quality AI images for social media.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">🎬 Leonardo AI — Image Generation</div>
+          <div class="api-field"><label>API Key</label><input type="password" id="leonardo-key" placeholder="xxxxxxxxxxxxxxxx" /><div class="api-status" id="leonardo-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+          <div class="api-field"><label>Default Style</label>
+            <select id="leonardo-style" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:white;font-size:11px">
+              <option value="dreamworks">DreamWorks</option>
+              <option value="photo-real">Photo Realistic</option>
+              <option value="cinematic">Cinematic</option>
+            </select>
+          </div>
+          <p class="api-note">leonardo.ai → Platform → API → 150 tokens/day free on free tier.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">🎥 PixelVault / Pixverse — AI Video (Reels)</div>
+          <div class="api-field"><label>API Key</label><input type="password" id="pixverse-key" placeholder="pix_xxxxxxxxxxxx" /><div class="api-status" id="pixverse-status"><div class="api-status-dot disconnected"></div><span class="api-status-text">Not connected</span></div></div>
+          <p class="api-note">pixverse.ai → API → Convert AI images into animated videos for Instagram Reels.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">🤖 Pixel — AI Creative Director System Prompt</div>
+          <div class="api-field"><label>Agent Name</label><input type="text" id="design-agent-name" value="Pixel — AI Creative Director" /></div>
+          <div class="api-field"><label>Personality & Behavior</label>
+            <textarea id="design-agent-prompt" rows="3" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px;color:white;font-size:10px;resize:vertical;outline:none;font-family:inherit;line-height:1.5">You are Pixel, APEX's AI Creative Director. You specialize in scroll-stopping Instagram content — vibrant, bold, brand-aligned visuals. When assigned a content brief, you create image prompts optimized for Ideogram/Stable Diffusion, generate the image, then animate it with Pixverse for Reels. Always consider: composition, lighting, brand colors, and engagement potential.</textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- CREDENTIALS TAB -->
+      <div id="admin-creds" style="display:none">
+        <p style="font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5">Connect your data and backend services.</p>
+
+        <div class="api-section">
+          <div class="api-section-title">🗄️ Supabase — Database</div>
+          <div class="api-grid">
+            <div class="api-field"><label>Supabase URL</label><input type="text" id="supabase-url" placeholder="https://xxxx.supabase.co" /></div>
+            <div class="api-field"><label>Anon Key (public)</label><input type="password" id="supabase-key" placeholder="eyJhbGc..." /></div>
+          </div>
+          <p class="api-note">supabase.com → Project Settings → API. Stores agent status, activity logs, leads, and content calendar.</p>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">📧 Email — SMTP / Resend</div>
+          <div class="api-grid">
+            <div class="api-field"><label>SMTP Host</label><input type="text" id="smtp-host" placeholder="smtp.gmail.com" /></div>
+            <div class="api-field"><label>SMTP Port</label><input type="text" id="smtp-port" placeholder="587" /></div>
+          </div>
+          <div class="api-grid" style="margin-top:8px">
+            <div class="api-field"><label>Email</label><input type="text" id="smtp-email" placeholder="noreply@apex.ai" /></div>
+            <div class="api-field"><label>Password / App Key</label><input type="password" id="smtp-pass" placeholder="xxxx xxxx xxxx xxxx" /></div>
+          </div>
+        </div>
+
+        <div class="api-section">
+          <div class="api-section-title">📊 Analytics — Google Analytics 4</div>
+          <div class="api-field"><label>Measurement ID</label><input type="text" id="ga4-id" placeholder="G-XXXXXXXXXX" /></div>
+          <div class="api-field"><label>API Secret</label><input type="password" id="ga4-secret" placeholder="xxxxxxxx" /></div>
+          <p class="api-note">analytics.google.com → GA4 Admin → Data Streams → Measurement Protocol API.</p>
+        </div>
+      </div>
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0">
+      <button class="save-btn" onclick="saveAdmin()">💾 SAVE ALL CONFIGURATION</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────────────
+const DEPTS = [
+  { id:'sales',     name:'SALES',       color:'#10B981', emoji:'🦊', lead:'Felix',    role:'Sales Lead',     subs:['Intent Signals','ICP Matching','Stage Forecast','Objection Map'] },
+  { id:'marketing', name:'MARKETING',   color:'#7C3AED', emoji:'🦚', lead:'Phoenix',  role:'Marketing Lead',  subs:['Topic Research','Brief Gen','A/B Orch','Attribution'] },
+  { id:'ops',       name:'OPERATIONS',  color:'#2563EB', emoji:'🦡', lead:'Axel',    role:'Ops Lead',        subs:['Flow Builder','API Connector','Lead Builder','Health Check'] },
+  { id:'finance',   name:'FINANCE',     color:'#059669', emoji:'🐻', lead:'Bruno',   role:'Finance Lead',    subs:['Invoice Proc','Payment Sched','Budget Builder','Audit Logger'] },
+  { id:'aiops',     name:'AI OPS',       color:'#DB2777', emoji:'🧬', lead:'Dr. V',   role:'AI Ops Lead',    subs:['Model Router','Fine Tuner','Prompt Opt','Guardrail Eng'] },
+  { id:'hr',        name:'PEOPLE/HR',   color:'#DC2626', emoji:'👩', lead:'Jessica', role:'HR Lead',         subs:['Resume Screen','Welcome Bot','Culture Scan','Onboard Flow'] },
+  { id:'product',   name:'PRODUCT',      color:'#4F46E5', emoji:'🧑', lead:'Tom',     role:'Product Lead',   subs:['Market Scan','Roadmap Mgr','Feature Rank','Release Log'] },
+  { id:'instagram', name:'INSTAGRAM',   color:'#EC4899', emoji:'📸', lead:'Blaze',   role:'Social Lead',    subs:['Content Creator','Pixel Design','Ad Manager','Analytics'] },
+  { id:'support',   name:'SUPPORT',      color:'#EA580C', emoji:'📷', lead:'Blaze',   role:'Support Lead',   subs:['Intent Classify','KB Searcher','Ticket Router','CSAT Tracker'] },
+  { id:'data',      name:'DATA',         color:'#0891B2', emoji:'🤖', lead:'Atlas',   role:'Data Lead',       subs:['Stream Conn','Schema Map','Report Gen','Anomaly Det'] },
+  { id:'strategy',  name:'STRATEGY',     color:'#D97706', emoji:'👩‍💼', lead:'Sophia', role:'Strategy Lead',  subs:['Trend Radar','OKR Manager','Competitor Watch','Risk Scorer'] },
+]
+
+const AGENTS_PANEL = [
+  { name:'Felix',   dept:'Sales',      emoji:'🦊', color:'#10B981', status:'active', task:'Qualifying $42K deal' },
+  { name:'Phoenix', dept:'Marketing',   emoji:'🦚', color:'#7C3AED', status:'active', task:'A/B test running' },
+  { name:'Axel',    dept:'Operations', emoji:'🦡', color:'#2563EB', status:'active', task:'47 workflows active' },
+  { name:'Bruno',   dept:'Finance',    emoji:'🐻', color:'#059669', status:'active', task:'Invoice processing' },
+  { name:'Dr. V',  dept:'AI Ops',     emoji:'🧬', color:'#DB2777', status:'active', task:'Model routing optimized' },
+  { name:'Jessica',dept:'People/HR',  emoji:'👩', color:'#DC2626', status:'active', task:'Screening resumes' },
+  { name:'Tom',    dept:'Product',    emoji:'🧑', color:'#4F46E5', status:'working', task:'Sprint 12 planning' },
+  { name:'Blaze',  dept:'Instagram',  emoji:'📸', color:'#EC4899', status:'active', task:'Scheduling posts + ads' },
+  { name:'Blaze',  dept:'Support',    emoji:'📷', color:'#EA580C', status:'active', task:'Ticket routing' },
+  { name:'Pixel',  dept:'Design',     emoji:'🎨', color:'#EC4899', status:'working', task:'Creating IG carousel' },
+  { name:'Atlas',  dept:'Data',       emoji:'🤖', color:'#0891B2', status:'active', task:'Anomaly detection' },
+  { name:'Sophia', dept:'Strategy',   emoji:'👩‍💼', color:'#D97706', status:'working', task:'Q3 OKR review' },
+]
+
+const METRICS = [
+  { label:'REVENUE',       icon:'💰', color:'#10B981', value:12840, target:15000, prefix:'$' },
+  { label:'LEADS',         icon:'🎯', color:'#7C3AED', value:24,    target:30,    prefix:''  },
+  { label:'TASKS DONE',    icon:'✅', color:'#2563EB', value:312,   target:400,   prefix:''  },
+  { label:'AGENTS ACTIVE', icon:'🤖', color:'#FF6B35', value:20,   target:22,    prefix:''  },
+]
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let subStates = {}
+let walkingAgents = [] // { id, emoji, color, x, y, targetX, targetY, progress, phase, message }
+let bubbles = [] // { id, text, color, x, y, createdAt }
+let officeW = 0, officeH = 0
+let floorRect = null
+
+function initSubs() {
+  DEPTS.forEach(d => d.subs.forEach((s, i) => {
+    subStates[`${d.id}-${i}`] = {
+      status: ['working','active','working','active'][i],
+      progress: 40 + Math.random()*55 | 0,
+    }
+  }))
+}
+initSubs()
+
+// ── CLOCK ─────────────────────────────────────────────────────────────────────
+function updateClock() {
+  const el = document.getElementById('clock')
+  if (el) el.textContent = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false})
+}
+setInterval(updateClock, 1000); updateClock()
+
+// ── METRICS ──────────────────────────────────────────────────────────────────
+function renderMetrics() {
+  const bar = document.getElementById('metrics-bar')
+  bar.innerHTML = METRICS.map(m => {
+    const pct = Math.round((m.value/m.target)*100)
+    const ok = pct >= 75
+    return `<div class="metric">
+      <div class="metric-icon" style="background:${m.color}22">${m.icon}</div>
+      <div class="metric-info">
+        <div class="metric-label">${m.label}</div>
+        <div class="metric-row"><span class="metric-val">${m.prefix}${typeof m.value==='number'?m.value.toLocaleString():m.value}</span><span class="metric-target">/ ${m.prefix}${m.target.toLocaleString()}</span></div>
+        <div class="metric-bar"><div class="metric-fill" style="width:${pct}%;background:${ok?m.color:'#EF4444'}"></div></div>
+      </div>
+    </div>`
+  }).join('')
+}
+renderMetrics()
+
+// ── OFFICE FLOOR SIZING ───────────────────────────────────────────────────────
+function getDeskPositions() {
+  if (!floorRect) return []
+  const wallH = 52
+  const bossH = 100
+  const bossBottom = wallH + bossH + 8  // 160px — bottom of boss desk area
+  const row1Y = bossBottom + 15        // row 1 starts 15px below boss
+  const row2Y = row1Y + 80 + 20        // row 2 starts after row1 desk + gap
+  const availableW = floorRect.width - 80
+  const deskW = 130
+  const gap = Math.floor((availableW - 6 * deskW) / 7)
+  const startX = Math.floor(gap / 2)
+
+  return DEPTS.map((d, i) => {
+    const row = i < 6 ? 0 : 1
+    const col = i < 6 ? i : i - 6
+    const x = startX + col * (deskW + gap)
+    const y = row === 0 ? row1Y : row2Y
+    return { ...d, x, y, deskW, deskH: 60 }
+  })
+}
+
+// ── RENDER DESKS — 2 agents per desk ───────────────────────────────────────
+function renderDesks() {
+  const container = document.getElementById('desks-container')
+  const positions = getDeskPositions()
+  container.innerHTML = positions.map(p => {
+    // Status dots for subs
+    const subDots = p.subs.slice(0,2).map((s, i) => {
+      const st = subStates[`${p.id}-${i}`] || { status: 'idle' }
+      const color = st.status==='active'?'#86EFAC':st.status==='working'?'#FDE047':'#94A3B8'
+      const label = st.status === 'idle' ? s : `${s}: ${st.status.toUpperCase()}`
+      return `<div style="font-size:7px;color:${color};margin-top:2px">${label}</div>`
+    }).join('')
+
+    return `<div class="desk" id="desk-${p.id}" style="left:${p.x}px;top:${p.y}px;width:${p.deskW}px">
+      <div class="desk-surface" style="width:${p.deskW}px;height:${p.deskH}px;border:2px solid ${p.color}40;border-radius:8px">
+        <div class="desk-info" style="color:${p.color};border-color:${p.color}40">${p.name}</div>
+
+        <div style="display:flex;gap:4px;align-items:center;margin-top:2px">
+          ${/* LEAD AGENT */''}
+          <div style="display:flex;flex-direction:column;align-items:center;flex:1">
+            <div style="font-size:7px;color:${p.color};margin-bottom:1px">${p.lead}</div>
+            <div class="desk-monitor" style="width:32px;height:20px;border:1.5px solid ${p.color}60">
+              <div class="desk-monitor-screen" style="width:26px;height:14px;background:${p.color}40"></div>
+            </div>
+            <div class="desk-keyboard" style="width:26px;height:3px;background:${p.color}40;margin-top:1px"></div>
+            <div class="desk-person">
+              <div class="person-head" style="width:22px;height:22px;background:#FDE68A;border-color:${p.color};font-size:11px;border-width:1.5px">${p.emoji}</div>
+              <div class="person-body" style="width:28px;height:9px;background:${p.color};border-color:${p.color};border-width:1.5px"></div>
+            </div>
+          </div>
+
+          <div style="width:1px;height:30px;background:${p.color}30"></div>
+
+          ${/* SUB AGENT */''}
+          <div style="display:flex;flex-direction:column;align-items:center;flex:1">
+            <div style="font-size:7px;color:${p.color}80;margin-bottom:1px">${p.subs[0] || 'AI'}</div>
+            <div class="desk-monitor" style="width:32px;height:20px;border:1.5px solid ${p.color}30">
+              <div class="desk-monitor-screen" style="width:26px;height:14px;background:${p.color}20"></div>
+            </div>
+            <div class="desk-keyboard" style="width:26px;height:3px;background:${p.color}20;margin-top:1px"></div>
+            <div class="desk-person">
+              <div class="person-head" style="width:22px;height:22px;background:${p.color}60;border-color:${p.color};font-size:9px;border-width:1.5px;color:white;text-align:center;line-height:22px;font-weight:700">AI</div>
+              <div class="person-body" style="width:28px;height:9px;background:${p.color}60;border-color:${p.color};border-width:1.5px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:7px;color:${p.color};text-align:center;margin-top:3px">${p.role}</div>
+    </div>`
+  }).join('')
+}
+
+// ── ANIMATION LOOP ────────────────────────────────────────────────────────────
+let lastTime = 0
+function animate(time) {
+  const dt = time - lastTime
+  lastTime = time
+
+  // Move walking agents
+  walkingAgents.forEach(w => {
+    if (w.phase === 'walking') {
+      w.progress += dt / 1200 // 1.2s walk
+      if (w.progress >= 1) {
+        w.progress = 1
+        w.phase = 'arrived'
+        // Show bubble
+        addBubble(w.message, w.color, w.targetX, w.targetY - 30)
+        setTimeout(() => {
+          // Start walking back
+          w.phase = 'returning'
+          w.progress = 0
+          const deskPos = getDeskPositions().find(d => d.id === w.id)
+          if (deskPos) {
+            w.startX = w.targetX; w.startY = w.targetY
+            w.targetX = deskPos.x + deskPos.deskW/2
+            w.targetY = deskPos.y + deskPos.deskH + 30
+          }
+        }, 2500)
+      }
+    } else if (w.phase === 'returning') {
+      w.progress += dt / 1200
+      if (w.progress >= 1) {
+        w.phase = 'done'
+        removeWalkingAgent(w.id)
+      }
+    }
+
+    // Interpolate position
+    const cx = w.startX + (w.targetX - w.startX) * easeInOut(w.progress)
+    const cy = w.startY + (w.targetY - w.startY) * w.progress
+    const bounce = w.phase === 'walking' || w.phase === 'returning'
+      ? Math.sin(w.progress * Math.PI * 4) * 3 : 0
+
+    const el = document.getElementById(`walk-${w.id}`)
+    if (el) {
+      el.style.left = `${cx - 12}px`
+      el.style.top = `${cy - 24 + bounce}px`
+    }
+  })
+
+  // Remove old bubbles
+  const now = Date.now()
+  bubbles = bubbles.filter(b => now - b.createdAt < 3000)
+  renderBubbles()
+
+  requestAnimationFrame(animate)
+}
+
+function easeInOut(t) {
+  return t < 0.5 ? 2*t*t : -1+(4-2*t)*t
+}
+
+// ── WALKING AGENTS ───────────────────────────────────────────────────────────
+function spawnWalkingAgent(dept) {
+  if (walkingAgents.find(w => w.id === dept.id)) return
+  const positions = getDeskPositions()
+  const desk = positions.find(d => d.id === dept.id)
+  if (!desk) return
+
+  const bossArea = document.getElementById('boss-area')
+  const bar = floorRect ? bossArea.getBoundingClientRect() : { left: officeW/2 - 50, top: 65 }
+  const bossX = (floorRect ? bar.left + bar.width/2 : officeW/2)
+  const bossY = (floorRect ? bar.top + bar.height : 110)
+
+  const startX = desk.x + desk.deskW/2
+  const startY = desk.y + desk.deskH + 30
+
+  const w = {
+    id: dept.id, emoji: dept.emoji, color: dept.color,
+    startX, startY,
+    targetX: bossX, targetY: bossY,
+    progress: 0, phase: 'walking',
+    message: dept.subs[0] + '...',
+  }
+  walkingAgents.push(w)
+  renderWalkingAgent(w)
+}
+
+function renderWalkingAgent(w) {
+  const layer = document.getElementById('walking-layer')
+  const div = document.createElement('div')
+  div.id = `walk-${w.id}`
+  div.className = 'walking-agent'
+  div.innerHTML = `<div class="walk-person-head" style="background:#FDE68A;border-color:${w.color}">${w.emoji}</div>
+    <div class="walk-person-body" style="background:${w.color};border-color:${w.color}"></div>`
+  div.style.left = `${w.startX - 12}px`
+  div.style.top = `${w.startY - 24}px`
+  layer.appendChild(div)
+}
+
+function removeWalkingAgent(id) {
+  const el = document.getElementById(`walk-${id}`)
+  if (el) el.remove()
+  walkingAgents = walkingAgents.filter(w => w.id !== id)
+}
+
+// ── SPEECH BUBBLES ────────────────────────────────────────────────────────────
+function addBubble(text, color, x, y) {
+  bubbles.push({ id: Date.now(), text, color, x, y, createdAt: Date.now() })
+  renderBubbles()
+}
+
+function renderBubbles() {
+  const layer = document.getElementById('bubbles-layer')
+  const now = Date.now()
+  layer.innerHTML = bubbles
+    .filter(b => now - b.createdAt < 3000)
+    .map(b => {
+      const age = now - b.createdAt
+      const opacity = age < 300 ? age/300 : age > 2500 ? (3000-age)/500 : 1
+      const translateY = age < 300 ? (1 - age/300)*6 : age > 2500 ? (age-2500)/500*4 : 0
+      return `<div class="speech-bubble" style="left:${b.x}px;top:${b.y}px;background:${b.color};color:${b.color};opacity:${opacity};transform:translateX(-50%) translateY(${translateY}px)">${b.text}</div>`
+    }).join('')
+}
+
+// ── SIMULATION ───────────────────────────────────────────────────────────────
+function simulate() {
+  // Update sub-agent states
+  DEPTS.forEach(d => d.subs.forEach((s, i) => {
+    const st = subStates[`${d.id}-${i}`] || {}
+    st.progress = Math.min(100, (st.progress || 0) + (Math.random()*8|0))
+    if (st.progress > 97) st.progress = 30 + Math.random()*20|0
+    st.status = Math.random() > 0.3 ? 'active' : 'working'
+    subStates[`${d.id}-${i}`] = st
+  }))
+
+  // Occasionally spawn a walking agent
+  if (Math.random() < 0.08) {
+    const dept = DEPTS[Math.floor(Math.random() * DEPTS.length)]
+    spawnWalkingAgent(dept)
+  }
+
+  // Update metrics
+  METRICS[0].value = 12000 + Math.random()*2000|0
+  METRICS[1].value = 20 + Math.random()*12|0
+  METRICS[2].value = 300 + Math.random()*40|0
+  METRICS[3].value = 17 + Math.random()*5|0
+
+  renderMetrics()
+  renderDesks()
+}
+
+setInterval(simulate, 3000)
+setInterval(() => {
+  if (Math.random() < 0.1) {
+    const dept = DEPTS[Math.floor(Math.random() * DEPTS.length)]
+    spawnWalkingAgent(dept)
+  }
+}, 4000)
+
+// ── CHAT — AI-Powered ─────────────────────────────────────────────────────────
+let chatMessages = []
+let chatIndex = 0
+let isThinking = false
+
+// ── AGENT ROSTER ───────────────────────────────────────────────────────────────
+const AGENTS = [
+  { agent:'Felix',   dept:'Sales',      emoji:'🦊', color:'#10B981', id:'sales' },
+  { agent:'Phoenix', dept:'Marketing',   emoji:'🦚', color:'#7C3AED', id:'marketing' },
+  { agent:'Axel',    dept:'Operations', emoji:'🦡', color:'#2563EB', id:'ops' },
+  { agent:'Bruno',   dept:'Finance',    emoji:'🐻', color:'#059669', id:'finance' },
+  { agent:'Dr. V',  dept:'AI Ops',    emoji:'🧬', color:'#DB2777', id:'aiops' },
+  { agent:'Blaze',  dept:'Instagram',  emoji:'📸', color:'#EC4899', id:'instagram' },
+  { agent:'Blaze',  dept:'Support',    emoji:'📷', color:'#EA580C', id:'support' },
+  { agent:'Atlas',  dept:'Data',      emoji:'🤖', color:'#0891B2', id:'data' },
+  { agent:'Sophia', dept:'Strategy',   emoji:'👩‍💼', color:'#D97706', id:'strategy' },
+  { agent:'Jessica',dept:'HR',        emoji:'👩', color:'#DC2626', id:'hr' },
+  { agent:'Tom',    dept:'Product',    emoji:'🧑', color:'#4F46E5', id:'product' },
+  { agent:'Hugo',   dept:'CEO',       emoji:'🦁', color:'#EF4444', id:'ceo' },
+]
+
+function getAgentPrompt(id) {
+  const p = {
+    ceo:'You are Hugo Ferrari, CEO of APEX AI Company. Give short, sharp, strategic responses. One or two sentences max.',
+    sales:'You are Felix, Sales Lead at APEX. Think in deals and revenue. Keep it brief and confident.',
+    marketing:'You are Phoenix, Marketing Lead at APEX. Bold, creative, social-media savvy. Keep it punchy.',
+    ops:'You are Axel, Ops Lead at APEX. Systems-minded, efficient. Short and precise.',
+    finance:'You are Bruno, Finance Lead at APEX. Data-driven, numbers-focused. Brief and accurate.',
+    instagram:'You are Blaze, Instagram Lead at APEX. Trend-aware, growth-focused. Keep it social and engaging.',
+    support:'You are Blaze, Support Lead at APEX. Helpful, efficient, empathetic. Resolve fast.',
+    aiops:'You are Dr. V, AI Ops Lead at APEX. Technical, infrastructure-focused. Crisp and precise.',
+    hr:'You are Jessica, HR Lead at APEX. People-focused, warm but professional.',
+    product:'You are Tom, Product Lead at APEX. User-value focused, strategic about features.',
+    data:'You are Atlas, Data Lead at APEX. Analytical, pipeline-expert. Brief and precise.',
+    strategy:'You are Sophia, Strategy Lead at APEX. Market-aware, competitive, analytical.',
+  }
+  return p[id] || p.ceo
+}
+
+async function fetchAgentMessage(agentId) {
+  const prompts = {
+    sales:'You are Felix, Sales Lead at APEX. Reply with ONE short sentence about what you are working on right now. Be specific and confident.',
+    marketing:'You are Phoenix, Marketing Lead at APEX. Reply with ONE short sentence about the most important marketing metric or campaign you are focused on right now. Bold and punchy.',
+    ops:'You are Axel, Ops Lead at APEX. Reply with ONE short sentence about a key operational improvement or metric you are working on. Technical and precise.',
+    finance:'You are Bruno, Finance Lead at APEX. Reply with ONE short sentence about the most critical financial metric or update right now. Data-driven.',
+    instagram:'You are Blaze, Instagram Lead at APEX. Reply with ONE short sentence about an Instagram or social media metric or update you are focused on. Engaging.',
+    support:'You are Blaze, Support Lead at APEX. Reply with ONE short sentence about the most critical support ticket or CSAT metric right now. Efficient.',
+    aiops:'You are Dr. V, AI Ops Lead at APEX. Reply with ONE short sentence about the most important AI infrastructure or model update you are working on. Technical.',
+    data:'You are Atlas, Data Lead at APEX. Reply with ONE short sentence about the most important data pipeline or analytics update right now. Precise.',
+    strategy:'You are Sophia, Strategy Lead at APEX. Reply with ONE short sentence about the most critical strategic or competitive insight right now. Sharp.',
+    hr:'You are Jessica, HR Lead at APEX. Reply with ONE short sentence about the most important people or culture update right now.',
+    product:'You are Tom, Product Lead at APEX. Reply with ONE short sentence about the most important product or feature update you are working on.',
+    ceo:'You are Hugo Ferrari, CEO of APEX. Reply with ONE sharp strategic observation or directive in one sentence. Bold and direct.',
+  }
+
+  const userPrompt = prompts[agentId] || prompts.ceo
+  const saved = JSON.parse(localStorage.getItem('apex_api_config') || '{}')
+
+  // Try local server proxy first (when hosted on same machine as OpenClaw — no CORS issues)
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'openclaw/main',
+        messages: [{ role: 'user', content: userPrompt }],
+        max_tokens: 80,
+      })
+    })
+    const data = await res.json()
+    if (data.choices?.[0]?.message?.content) return data.choices[0].message.content.trim()
+  } catch(e) { /* local proxy not available, try direct APIs */ }
+
+  // Fall back to direct MiniMax API
+  const minimaxKey = saved.minimax
+  if (minimaxKey) {
+    try {
+      const res = await fetch('https://api.minimax.io/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + minimaxKey },
+        body: JSON.stringify({ model: 'MiniMax-M2.7', messages: [{ role: 'user', content: userPrompt }], max_tokens: 80 })
+      })
+      const data = await res.json()
+      if (data.choices?.[0]?.message?.content) return data.choices[0].message.content.trim()
+    } catch(e) { /* try next */ }
+  }
+
+  // Fall back to Ollama local
+  const ollamaUrl = saved.ollamaUrl || 'http://localhost:11434'
+  const ollamaModel = saved.ollamaModel || 'llama3.2'
+  try {
+    const res = await fetch(ollamaUrl + '/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: ollamaModel, messages: [{ role: 'user', content: userPrompt }], stream: false })
+    })
+    const data = await res.json()
+    if (data.message?.content) return data.message.content.trim()
+  } catch(e) {}
+
+  return null
+}
+
+function addChatMsg(agent, dept, emoji, color, text, isAi) {
+  const feed = document.getElementById('chat-feed')
+  if (!feed) return
+  const div = document.createElement('div')
+  div.className = 'chat-msg'
+  div.innerHTML = `
+    <div class="chat-msg-header">
+      <div class="chat-avatar-dot" style="background:${color}">${emoji}</div>
+      <span class="chat-agent-name" style="color:${color}">${agent}${isAi ? ' 🤖' : ''}</span>
+      <span class="chat-agent-dept">${dept}</span>
+    </div>
+    <div class="chat-text">${text}</div>
+    <div class="chat-time">Just now</div>`
+  feed.appendChild(div)
+  feed.scrollTop = feed.scrollHeight
+  // Keep only last 20 messages
+  while (feed.children.length > 20) feed.removeChild(feed.firstChild)
+}
+
+async function cycleAgentMessage() {
+  if (isThinking) return
+  isThinking = true
+
+  // Pick random agent
+  const a = AGENTS[Math.floor(Math.random() * AGENTS.length)]
+
+  // Show thinking indicator
+  const feed = document.getElementById('chat-feed')
+  if (!feed) { isThinking = false; return }
+  const thinkDiv = document.createElement('div')
+  thinkDiv.className = 'chat-msg'
+  thinkDiv.id = 'thinking-msg'
+  thinkDiv.innerHTML = `
+    <div class="chat-msg-header">
+      <div class="chat-avatar-dot" style="background:${a.color}">${a.emoji}</div>
+      <span class="chat-agent-name" style="color:${a.color}">${a.agent}</span>
+      <span class="chat-agent-dept">${a.dept}</span>
+    </div>
+    <div class="chat-text" style="color:var(--muted);font-style:italic">Thinking...</div>
+    <div class="chat-time">Just now</div>`
+  feed.appendChild(thinkDiv)
+  feed.scrollTop = feed.scrollHeight
+
+  // Call AI
+  const aiText = await fetchAgentMessage(a.id)
+  const thinkEl = document.getElementById('thinking-msg')
+  if (aiText && thinkEl) {
+    thinkEl.querySelector('.chat-text').textContent = aiText
+    thinkEl.querySelector('.chat-text').style.fontStyle = 'normal'
+    thinkEl.querySelector('.chat-text').style.color = 'var(--text)'
+  } else if (thinkEl) {
+    thinkEl.remove()
+  }
+  isThinking = false
+}
+
+// Auto-cycle AI agent messages every 10 seconds
+setInterval(cycleAgentMessage, 10000)
+// First message after 3 seconds
+setTimeout(cycleAgentMessage, 3000)
+
+// ── AGENTS PANEL ─────────────────────────────────────────────────────────────
+function renderAgentsPanel() {
+  const panel = document.getElementById('agents-panel')
+  panel.innerHTML = AGENTS_PANEL.map(a => `
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:10px">
+      <div style="width:26px;height:26px;border-radius:50%;background:${a.color};display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid rgba(255,255,255,0.2)">${a.emoji}</div>
+      <div style="flex:1">
+        <div style="font-size:9px;font-weight:800;color:${a.color}">${a.name}</div>
+        <div style="font-size:8px;color:var(--muted)">${a.dept} · ${a.task}</div>
+      </div>
+      <div style="width:6px;height:6px;border-radius:50%;background:${a.status==='active'?'#86EFAC':a.status==='working'?'#FDE047':'#94A3B8'};${a.status==='active'?'animation:status-pulse 1.5s infinite':''}"></div>
+    </div>`).join('')
+}
+renderAgentsPanel()
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tab-activity').classList.toggle('active', tab==='activity')
+  document.getElementById('tab-agents').classList.toggle('active', tab==='agents')
+  document.getElementById('chat-feed').style.display = tab==='activity'?'flex':'none'
+  document.getElementById('agents-panel').style.display = tab==='agents'?'flex':'none'
+}
+
+// ── ADMIN ─────────────────────────────────────────────────────────────────────
+function openAdmin() { document.getElementById('admin-modal').classList.add('open') }
+function closeAdmin() { document.getElementById('admin-modal').classList.remove('open') }
+function switchAdminTab(tab) {
+  ;['ai','meta','design','creds'].forEach(t => {
+    document.getElementById(`mtab-${t}`).classList.toggle('active', t===tab)
+  })
+  document.getElementById('admin-ai').style.display    = tab==='ai'?'block':'none'
+  document.getElementById('admin-meta').style.display = tab==='meta'?'block':'none'
+  document.getElementById('admin-design').style.display = tab==='design'?'block':'none'
+  document.getElementById('admin-creds').style.display = tab==='creds'?'block':'none'
+}
+function saveAdmin() {
+  const config = {
+    // AI Providers
+    groq:         document.getElementById('groq-key')?.value,
+    groqModel:    document.getElementById('groq-model')?.value,
+    hf:           document.getElementById('hf-key')?.value,
+    hfImg:        document.getElementById('hf-img-key')?.value,
+    cohere:       document.getElementById('cohere-key')?.value,
+    cohereModel:  document.getElementById('cohere-model')?.value,
+    gemini:       document.getElementById('gemini-key')?.value,
+    geminiModel:  document.getElementById('gemini-model')?.value,
+    minimax:      document.getElementById('minimax-key')?.value,
+    ollamaUrl:    document.getElementById('ollama-url')?.value,
+    ollamaModel:  document.getElementById('ollama-model')?.value,
+    activeAiProvider: document.getElementById('active-ai-provider')?.value,
+    // Ads
+    metaToken:    document.getElementById('meta-token')?.value,
+    fbAdAcct:     document.getElementById('fb-ad-account')?.value,
+    igAccount:    document.getElementById('ig-account')?.value,
+    fbPageId:     document.getElementById('fb-page-id')?.value,
+    bmId:         document.getElementById('bm-id')?.value,
+    gadsToken:    document.getElementById('gads-token')?.value,
+    gadsCustomer: document.getElementById('gads-customer')?.value,
+    tiktokAppId:  document.getElementById('tiktok-app-id')?.value,
+    tiktokSecret: document.getElementById('tiktok-secret')?.value,
+    // Design
+    ideogram:     document.getElementById('ideogram-key')?.value,
+    ideogramStyle:document.getElementById('ideogram-style')?.value,
+    ideogramRatio:document.getElementById('ideogram-ratio')?.value,
+    leonardo:     document.getElementById('leonardo-key')?.value,
+    leonardoStyle:document.getElementById('leonardo-style')?.value,
+    pixverse:     document.getElementById('pixverse-key')?.value,
+    designAgent:  document.getElementById('design-agent-name')?.value,
+    designPrompt: document.getElementById('design-agent-prompt')?.value,
+    // Credentials
+    supabaseUrl:  document.getElementById('supabase-url')?.value,
+    supabaseKey:  document.getElementById('supabase-key')?.value,
+    smtpHost:     document.getElementById('smtp-host')?.value,
+    smtpPort:     document.getElementById('smtp-port')?.value,
+    smtpEmail:    document.getElementById('smtp-email')?.value,
+    smtpPass:     document.getElementById('smtp-pass')?.value,
+    ga4Id:        document.getElementById('ga4-id')?.value,
+    ga4Secret:    document.getElementById('ga4-secret')?.value,
+  }
+  localStorage.setItem('apex_api_config', JSON.stringify(config))
+  // Validate API keys
+  Object.entries({
+    groq:['groq','https://api.groq.com/openai/v1/models'],
+    hf:['hf','https://api-inference.huggingface.co/status'],
+    cohere:['cohere','https://api.cohere.com/v1/models'],
+    gemini:['gemini','https://generativelanguage.googleapis.com/v1beta/models?key='],
+    minimax:['minimax','https://api.minimax.chat/v1/models'],
+    ideogram:['ideogram','https://api.ideogram.ai/api/v1/describe'],
+    metaToken:['meta','https://graph.facebook.com/v19.0/me'],
+  }).forEach(([id,[key,url]]) => {
+    const val = config[key]
+    if (!val) return
+    const dot = document.querySelector(`#${id}-status .api-status-dot`)
+    const txt = document.querySelector(`#${id}-status .api-status-text`)
+    dot?.classList.add('connected'); dot?.classList.remove('disconnected')
+    if (txt) txt.textContent = 'Saved ✓'
+  })
+  alert('✅ APEX configuration saved!')
+  closeAdmin()
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+function init() {
+  const floor = document.getElementById('office-floor')
+  floorRect = floor.getBoundingClientRect()
+  officeW = floorRect.width
+  officeH = floorRect.height
+  renderDesks()
+  renderAgentsPanel()
+  requestAnimationFrame(animate)
+
+  // Spawn initial walking agents
+  setTimeout(() => {
+    DEPTS.slice(0,3).forEach((d, i) => setTimeout(() => spawnWalkingAgent(d), i * 2000))
+  }, 1000)
+}
+
+window.addEventListener('resize', () => {
+  const floor = document.getElementById('office-floor')
+  floorRect = floor.getBoundingClientRect()
+  officeW = floorRect.width
+  officeH = floorRect.height
+  renderDesks()
+})
+
+// ── AI PROVIDER — OpenClaw Gateway ───────────────────────────────────────────
+let gatewayConfig = { url: '', token: '' }
+
+async function testMinimax() {
+  const key = document.getElementById('minimax-key')?.value
+  const dot = document.querySelector('#minimax-status .api-status-dot')
+  const txt = document.querySelector('#minimax-status .api-status-text')
+  if (!key) { if (txt) txt.textContent = '❌ Add your API key first'; return }
+  if (txt) txt.textContent = '⏳ Testing...'
+  try {
+    const res = await fetch('https://api.minimax.io/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({ model: 'MiniMax-M2.7', messages: [{ role: 'user', content: 'Reply: OK' }], max_tokens: 5 })
+    })
+    const data = await res.json()
+    if (data.choices?.[0]?.message?.content) {
+      dot?.classList.add('connected'); dot?.classList.remove('disconnected')
+      if (txt) txt.textContent = '✅ Connected! MiniMax M2.7 working'
+    } else {
+      throw new Error(data.error?.message || JSON.stringify(data).substring(0,80))
+    }
+  } catch(e) {
+    dot?.classList.add('disconnected'); dot?.classList.remove('connected')
+    if (txt) txt.textContent = '❌ ' + (e.message || 'Failed').substring(0,60)
+  }
+}
+
+// ── AI Chat function — routes to OpenClaw Gateway ───────────────────────────
+const AGENT_PROMPTS = {
+  ceo:      'You are Hugo Ferrari, CEO of APEX AI Company. You give short, sharp strategic directives. You are direct, no fluff.',
+  sales:    'You are Felix, APEX Sales Lead. You think in deals, pipeline, and revenue. Short, confident responses.',
+  marketing: 'You are Phoenix, APEX Marketing Lead. You think in reach, campaigns, and brand. Bold and creative.',
+  ops:      'You are Axel, APEX Ops Lead. You think in systems, efficiency, and automation. Crisp and technical.',
+  finance:  'You are Bruno, APEX Finance Lead. You think in numbers, margins, and burn rate. Precise and data-driven.',
+  instagram: 'You are Blaze, APEX Instagram Lead. You think in content, reels, engagement, and growth. Trend-aware and social.',
+  aiops:    'You are Dr. V, APEX AI Ops Lead. You think in models, latency, guardrails, and AI infrastructure.',
+  hr:       'You are Jessica, APEX HR Lead. You think in people, culture, and hiring.',
+  product:  'You are Tom, APEX Product Lead. You think in features, roadmap, and user value.',
+  support:  'You are Blaze, APEX Support Lead. You handle tickets, CSAT, and knowledge bases. Efficient and helpful.',
+  data:     'You are Atlas, APEX Data Lead. You think in pipelines, schemas, and analytics.',
+  strategy: 'You are Sophia, APEX Strategy Lead. You think in markets, competitors, and OKRs. Sharp and analytical.',
+}
+
+async function aiChat(agentId, userMessage) {
+  const url = gatewayConfig.url || document.getElementById('gateway-url')?.value
+  const token = gatewayConfig.token || document.getElementById('gateway-token')?.value
+  if (!url || !token) return null
+  try {
+    const res = await fetch(url + '/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({
+        model: 'openclaw/main',
+        messages: [
+          { role: 'system', content: AGENT_PROMPTS[agentId] || AGENT_PROMPTS.ceo },
+          { role: 'user', content: userMessage }
+        ],
+        max_tokens: 120,
+      })
+    })
+    const data = await res.json()
+    if (data.choices?.[0]?.message?.content) return data.choices[0].message.content
+    return null
+  } catch(e) { return null }
+}
+
+// Load saved config
+try {
+  const saved = JSON.parse(localStorage.getItem('apex_api_config') || '{}')
+  const fieldMap = {
+    gatewayUrl:'gateway-url',gatewayToken:'gateway-token',
+    groq:'groq-key',groqModel:'groq-model',
+    hf:'hf-key',hfImg:'hf-img-key',
+    cohere:'cohere-key',cohereModel:'cohere-model',
+    gemini:'gemini-key',geminiModel:'gemini-model',
+    minimax:'minimax-key',
+    ollamaUrl:'ollama-url',ollamaModel:'ollama-model',
+    activeAiProvider:'active-ai-provider',
+    metaToken:'meta-token',fbAdAcct:'fb-ad-account',igAccount:'ig-account',
+    fbPageId:'fb-page-id',bmId:'bm-id',
+    gadsToken:'gads-token',gadsCustomer:'gads-customer',
+    tiktokAppId:'tiktok-app-id',tiktokSecret:'tiktok-secret',
+    ideogram:'ideogram-key',ideogramStyle:'ideogram-style',ideogramRatio:'ideogram-ratio',
+    leonardo:'leonardo-key',leonardoStyle:'leonardo-style',
+    pixverse:'pixverse-key',
+    designAgent:'design-agent-name',designPrompt:'design-agent-prompt',
+    supabaseUrl:'supabase-url',supabaseKey:'supabase-key',
+    smtpHost:'smtp-host',smtpPort:'smtp-port',smtpEmail:'smtp-email',smtpPass:'smtp-pass',
+    ga4Id:'ga4-id',ga4Secret:'ga4-secret',
+  }
+  Object.entries(fieldMap).forEach(([k,v]) => {
+    if (saved[k]) { const el = document.getElementById(v); if (el) el.value = saved[k] }
+  })
+  if (saved.gatewayUrl && saved.gatewayToken) {
+    gatewayConfig = { url: saved.gatewayUrl, token: saved.gatewayToken }
+  }
+} catch(e) {}
+
+init()
+</script>
+</body>
+</html>
