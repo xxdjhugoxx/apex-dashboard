@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useAuth } from '../lib/auth'
 
-export function AuthPage({ onSuccess }) {
+export function AuthPage({ onSuccess, onEmailConfirmationRequired }) {
   const [mode, setMode] = useState('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,10 +17,17 @@ export function AuthPage({ onSuccess }) {
     try {
       if (mode === 'signin') {
         await signIn(email, password)
+        onSuccess?.()
       } else {
-        await signUp(email, password)
+        const result = await signUp(email, password)
+        
+        if (result.user && !result.user.confirmed_at) {
+          localStorage.setItem('apex_email_pending', 'true')
+          onEmailConfirmationRequired?.()
+        } else {
+          onSuccess?.()
+        }
       }
-      onSuccess?.()
     } catch (err) {
       setError(err.message || 'Authentication failed')
     } finally {
