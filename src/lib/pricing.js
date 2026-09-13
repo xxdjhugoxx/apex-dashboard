@@ -1,122 +1,145 @@
-// ─── APEX HQ — Pricing Tiers ───────────────────────────────────────────────
+// ─── APEX Pricing Tiers ─────────────────────────────────────────────────────
+// Synced from apexhq.cloud pricing section (live site source of truth)
 
-export const TIERS = [
+export const PRICING_TIERS = [
   {
-    id: 'simple',
-    name: 'Simple',
-    price: '$29',
-    period: 'per month',
-    description: 'For solo creators getting started with AI agents',
-    features: [
-      '5 AI agent requests/day',
-      'Logo generation',
-      'Basic caption writing',
-      'Email support',
-      'Community access',
-    ],
-    cta: 'Start Simple',
-    color: '#10B981',
-    highlighted: false,
+    name: 'Builder',
+    price: 300,
+    oneTime: true,
+    note: 'One-time project · no subscription',
+    cta: 'Get Builder',
+    feats: [
+      'Logo + brand identity',
+      'Landing page (ZIP for hosting)',
+      'Instagram name & bio',
+      '3 starter posts',
+      'Brand voice document',
+      'One-time, no subscription'
+    ]
   },
   {
-    id: 'pro',
+    name: 'Starter',
+    price: 149,
+    note: 'Test the waters with a curated agent team',
+    cta: 'Start with Starter',
+    feats: [
+      '1 brand profile',
+      'Choose 1 specific agent',
+      '300 agent runs / month',
+      'Approval queue',
+      'Weekly report'
+    ]
+  },
+  {
+    name: 'Focus',
+    price: 297,
+    note: 'Pick one department and go all-in',
+    cta: 'Start with Focus',
+    feats: [
+      '1 brand profile',
+      'Choose 1 full department',
+      'All agents within that dept',
+      '900 agent runs / month',
+      'Brand voice training',
+      'Approval workflow'
+    ]
+  },
+  {
+    name: 'Growth',
+    price: 697,
+    popular: true,
+    note: 'Multi-channel marketing for scaling brands',
+    cta: 'Start with Growth',
+    feats: [
+      '2 brand profiles',
+      'Choose 3 departments',
+      'All agents in those depts',
+      '2,500 agent runs / month',
+      'Lead qualification + scoring',
+      'Competitor monitoring',
+      'Priority queue',
+      'Live chat support'
+    ]
+  },
+  {
     name: 'Pro',
-    price: '$99',
-    period: 'per month',
-    description: 'For power users scaling content & engagement',
-    features: [
-      'Unlimited AI agent requests',
-      'Logo + post image generation',
-      'Caption & DM reply writing',
-      'Priority support',
-      'Advanced analytics',
-      'API access',
-    ],
-    cta: 'Go Pro',
-    color: '#6366F1',
-    highlighted: true,
+    price: 1497,
+    note: 'Full marketing department + builder kit',
+    cta: 'Start with Pro',
+    feats: [
+      '3 brand profiles',
+      'All 12 departments unlocked',
+      'All 36 agents',
+      '6,000 agent runs / month',
+      'Builder brand kit included',
+      'Custom brand voice fine-tuning',
+      'Monthly strategy call',
+      'Slack support channel'
+    ]
   },
   {
-    id: 'ads_lite',
-    name: 'Ads Lite',
-    price: '$149',
-    period: 'per month',
-    description: 'Pro + AI-powered ad creative generation',
-    features: [
-      'Everything in Pro',
-      'AI ad creative generation',
-      'A/B test copy variations',
-      'Performance insights',
-      'Ad spend optimization tips',
-      '⚠️ Ad spend not included — bring your own budget',
-    ],
-    cta: 'Launch Ads',
-    color: '#EC4899',
-    highlighted: false,
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 'Custom',
-    period: 'contact sales',
-    description: 'For teams needing dedicated agents & custom workflows',
-    features: [
-      'Everything in Ads Lite',
-      'Dedicated AI agents',
-      'Custom integrations',
-      'White-label options',
-      'SLA & priority support',
-      'Volume pricing',
-    ],
-    cta: 'Contact Sales',
-    color: '#F59E0B',
-    highlighted: false,
-  },
+    name: 'Agency',
+    price: 2997,
+    note: 'Unlimited everything + builder brand kit',
+    cta: 'Start with Agency',
+    feats: [
+      'Unlimited brand profiles',
+      'All 36 agents · all departments',
+      'Unlimited agent runs',
+      'Builder brand kit included',
+      'White-label client dashboards',
+      'Per-brand isolated workspaces',
+      'Custom agent training',
+      'Dedicated account team',
+      'API access'
+    ]
+  }
 ]
 
-export const JOB_TYPES = {
-  logo: {
-    id: 'logo',
-    name: 'Logo Generation',
-    description: 'AI-generated brand logos',
-    minTier: 'simple',
-    icon: '🎨',
-  },
-  post_image: {
-    id: 'post_image',
-    name: 'Post Image',
-    description: 'Social media post images',
-    minTier: 'pro',
-    icon: '📸',
-  },
-  caption: {
-    id: 'caption',
-    name: 'Caption Writing',
-    description: 'AI-written captions & copy',
-    minTier: 'simple',
-    icon: '✍️',
-  },
-  dm_reply: {
-    id: 'dm_reply',
-    name: 'DM Reply',
-    description: 'Personalized DM responses',
-    minTier: 'pro',
-    icon: '💬',
-  },
-  ad_creative: {
-    id: 'ad_creative',
-    name: 'Ad Creative',
-    description: 'Performance-optimized ad creatives',
-    minTier: 'ads_lite',
-    icon: '🎯',
-  },
+// ─── Pricing Utilities ─────────────────────────────────────────────────────
+
+/**
+ * Calculate annual pricing (80% of monthly price, billed annually)
+ * @param {number} monthlyPrice - Monthly price in dollars
+ * @returns {number} Annual monthly equivalent
+ */
+export function getAnnualPrice(monthlyPrice) {
+  return Math.round(monthlyPrice * 0.8)
 }
 
-// Tier hierarchy (for feature gating)
-export const TIER_HIERARCHY = ['simple', 'pro', 'ads_lite', 'enterprise']
+/**
+ * Get tier by name (case-insensitive)
+ * @param {string} tierName - Name of the tier
+ * @returns {object|null} Tier object or null if not found
+ */
+export function getTierByName(tierName) {
+  const normalized = tierName.toLowerCase()
+  return PRICING_TIERS.find(tier => tier.name.toLowerCase() === normalized) || null
+}
 
-export function canAccessJobType(userTier, jobType) {
-  const userTierIndex = TIER_HIERARCHY.indexOf(userTier)
-  const requiredTierIndex = TIER_HIERARCHY.indexOf(JOB_TYPES[jobType]?.minTier || 'simple')
-  return userTierIndex >= requiredTierIndex
+/**
+ * Get tier ID from tier name (for database/API references)
+ * @param {string} tierName - Name of the tier
+ * @returns {string} Lowercase tier ID (e.g., 'builder', 'starter', 'growth')
+ */
+export function getTierId(tierName) {
+  return tierName.toLowerCase()
+}
+
+/**
+ * Map legacy job types to current tier IDs (if needed for backward compatibility)
+ * @param {string} jobType - Legacy job type identifier
+ * @returns {string} Current tier ID
+ */
+export function mapJobTypeToTier(jobType) {
+  const mapping = {
+    'builder': 'builder',
+    'starter': 'starter',
+    'focus': 'focus',
+    'growth': 'growth',
+    'pro': 'pro',
+    'agency': 'agency',
+    // Add legacy mappings here if needed in the future
+  }
+  return mapping[jobType.toLowerCase()] || 'starter'
 }

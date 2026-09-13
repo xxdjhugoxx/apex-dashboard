@@ -3,10 +3,11 @@
 -- ============================================================
 
 -- User Tiers (links users to subscription plans)
+-- Synced from apexhq.cloud pricing section (live site source of truth)
 create table if not exists public.user_tiers (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null, -- references auth.users(id) when auth is implemented
-  tier_id text not null check (tier_id in ('simple', 'pro', 'ads_lite', 'enterprise')),
+  tier_id text not null check (tier_id in ('builder', 'starter', 'focus', 'growth', 'pro', 'agency')),
   status text not null default 'active' check (status in ('active', 'cancelled', 'expired', 'trialing')),
   started_at timestamptz default now(),
   expires_at timestamptz,
