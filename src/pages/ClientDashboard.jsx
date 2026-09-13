@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../lib/auth'
 import { supabase } from '../lib/supabase'
 import { getTierByName } from '../lib/pricing'
+import { IntegrationsPage } from './IntegrationsPage'
 
 export function ClientDashboard() {
   const { user, profile, signOut } = useAuth()
   const [workRequests, setWorkRequests] = useState([])
   const [showNewRequest, setShowNewRequest] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('dashboard')
 
   useEffect(() => {
     if (user) {
@@ -35,25 +37,84 @@ export function ClientDashboard() {
   const tier = profile?.tier_id ? getTierByName(profile.tier_id) : null
   const allowedJobTypes = getJobTypesForTier(profile?.tier_id)
 
+  if (activeTab === 'integrations') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#111118] to-[#0a0a0f] text-white">
+        <header className="border-b border-white/10 bg-[#0f0f14]">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#FF8855] flex items-center justify-center">
+                  <span className="font-bold text-xs">AX</span>
+                </div>
+                <div>
+                  <h1 className="font-bold text-sm tracking-widest">APEX CLIENT DASHBOARD</h1>
+                  <p className="text-xs text-white/40">{profile?.company_name || 'Welcome'}</p>
+                </div>
+              </div>
+              <button
+                onClick={signOut}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold transition-all"
+              >
+                Sign Out
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold transition-all"
+              >
+                Dashboard
+              </button>
+              <button
+                onClick={() => setActiveTab('integrations')}
+                className="px-4 py-2 bg-[#FF6B35] rounded-lg text-sm font-bold"
+              >
+                Integrations
+              </button>
+            </div>
+          </div>
+        </header>
+        <IntegrationsPage />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#111118] to-[#0a0a0f] text-white">
       <header className="border-b border-white/10 bg-[#0f0f14]">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#FF8855] flex items-center justify-center">
-              <span className="font-bold text-xs">AX</span>
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#FF8855] flex items-center justify-center">
+                <span className="font-bold text-xs">AX</span>
+              </div>
+              <div>
+                <h1 className="font-bold text-sm tracking-widest">APEX CLIENT DASHBOARD</h1>
+                <p className="text-xs text-white/40">{profile?.company_name || 'Welcome'}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="font-bold text-sm tracking-widest">APEX CLIENT DASHBOARD</h1>
-              <p className="text-xs text-white/40">{profile?.company_name || 'Welcome'}</p>
-            </div>
+            <button
+              onClick={signOut}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold transition-all"
+            >
+              Sign Out
+            </button>
           </div>
-          <button
-            onClick={signOut}
-            className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold transition-all"
-          >
-            Sign Out
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className="px-4 py-2 bg-[#FF6B35] rounded-lg text-sm font-bold"
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActiveTab('integrations')}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold transition-all"
+            >
+              Integrations
+            </button>
+          </div>
         </div>
       </header>
 

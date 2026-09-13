@@ -102,6 +102,39 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
+-- Integrations (client ad accounts & social platforms)
+create table if not exists public.integrations (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.users(id) on delete cascade,
+  provider text not null,
+  status text default 'disconnected',
+  access_token text,
+  refresh_token text,
+  token_expires_at timestamptz,
+  account_id text,
+  account_name text,
+  metadata jsonb default '{}',
+  connected_at timestamptz,
+  last_sync_at timestamptz,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique(user_id, provider)
+);
+
+alter table public.integrations enable row level security;
+
+create policy "Users can view own integrations" on public.integrations
+  for select using (auth.uid() = user_id);
+
+create policy "Users can manage own integrations" on public.integrations
+  for all using (auth.uid() = user_id);
+
+-- Service role can read all integrations (for CORTEX workers)
+create policy "Service role can read all integrations" on public.integrations
+  for select using (
+    current_setting('request.jwt.claims', true)::json->>'role' = 'service_role'
+  );
+
 -- Job Types by Tier
 -- Builder: 'logo', 'landing_page', 'instagram_setup', 'brand_voice'
 -- Starter: 'content_post', 'caption_gen', 'basic_report'
