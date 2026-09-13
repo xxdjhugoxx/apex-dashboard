@@ -96,19 +96,41 @@ export const PRICING_TIERS = [
   }
 ]
 
+// ─── Pricing Utilities ─────────────────────────────────────────────────────
+
+/**
+ * Calculate annual pricing (80% of monthly price, billed annually)
+ * @param {number} monthlyPrice - Monthly price in dollars
+ * @returns {number} Annual monthly equivalent
+ */
 export function getAnnualPrice(monthlyPrice) {
   return Math.round(monthlyPrice * 0.8)
 }
 
+/**
+ * Get tier by name (case-insensitive)
+ * @param {string} tierName - Name of the tier
+ * @returns {object|null} Tier object or null if not found
+ */
 export function getTierByName(tierName) {
   const normalized = tierName.toLowerCase()
   return PRICING_TIERS.find(tier => tier.name.toLowerCase() === normalized) || null
 }
 
+/**
+ * Get tier ID from tier name (for database/API references)
+ * @param {string} tierName - Name of the tier
+ * @returns {string} Lowercase tier ID (e.g., 'builder', 'starter', 'growth')
+ */
 export function getTierId(tierName) {
   return tierName.toLowerCase()
 }
 
+/**
+ * Map legacy job types to current tier IDs (if needed for backward compatibility)
+ * @param {string} jobType - Legacy job type identifier
+ * @returns {string} Current tier ID
+ */
 export function mapJobTypeToTier(jobType) {
   const mapping = {
     'builder': 'builder',
