@@ -38,6 +38,7 @@
 - `users` - Client profiles
 - `user_tiers` - Subscription tracking
 - `work_requests` - Job queue (CORTEX workers read from here)
+- `integrations` - Ad accounts & social platforms (NEW)
 
 ---
 
@@ -110,10 +111,15 @@ Visit: https://xxdjhugoxx.github.io/apex-dashboard/
    - Job Type: "Social Media Post"
    - Title: "Instagram launch post"
    - Description: "Announce our new product"
-6. **Verify**:
+6. **Integrations Tab** → Click "Integrations" button
+   - See Meta Ads, Google Ads, Instagram cards
+   - Click "Connect" (shows "Coming soon" message)
+   - Note: "Ad spend is billed to YOUR ad account"
+7. **Verify**:
    - Request shows with "queued" status
    - Go to Supabase → Table Editor → `work_requests`
    - See your request in the table
+   - Check `integrations` table (empty until OAuth set up)
 
 ---
 
