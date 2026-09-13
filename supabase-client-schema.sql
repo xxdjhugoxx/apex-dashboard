@@ -66,6 +66,26 @@ create policy "Users can create own work requests" on public.work_requests
 create policy "Users can update own work requests" on public.work_requests
   for update using (auth.uid() = user_id);
 
+-- ============================================================
+-- WORKER POLICIES — Allow service role to manage work queue
+-- ============================================================
+-- These policies allow CORTEX workers (using service_role key) to:
+-- 1. Read queued work requests across all users
+-- 2. Update status (queued → in_progress → completed)
+-- 3. Write results back to result_data
+
+-- Service role can read all work requests
+create policy "Service role can read all work requests" on public.work_requests
+  for select using (
+    current_setting('request.jwt.claims', true)::json->>'role' = 'service_role'
+  );
+
+-- Service role can update work requests (status, result_data)
+create policy "Service role can update work requests" on public.work_requests
+  for update using (
+    current_setting('request.jwt.claims', true)::json->>'role' = 'service_role'
+  );
+
 -- Function: Create user profile on signup
 create or replace function public.handle_new_user()
 returns trigger as $$
