@@ -73,7 +73,7 @@ insert into public.work_requests (user_id, job_type, status, input_data, priorit
 on conflict do nothing;
 
 -- Comments for documentation
-comment on table public.user_tiers is 'Subscription tiers for users (Simple, Pro, Ads Lite, Enterprise)';
+comment on table public.user_tiers is 'Subscription tiers for users (Builder, Starter, Focus, Growth, Pro, Agency) — synced from apexhq.cloud';
 comment on table public.work_requests is 'Job queue for AI agent work requests (logo, post_image, caption, dm_reply, ad_creative)';
 
 comment on column public.work_requests.input_data is 'Job-specific input parameters as JSON (e.g., brand_name, style, colors for logo)';
