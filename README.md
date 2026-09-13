@@ -73,7 +73,39 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173)
 
-### 4. GitHub Pages Deployment
+### 4. Deployment Options
+
+#### Option A: Cloudflare Pages (Recommended)
+
+**Dashboard Configuration:**
+- **Build command:** `npm run build`
+- **Build output directory:** `dist`
+- **Root directory:** (leave empty)
+- **Build comments:** Enabled (optional)
+- **Branch deployments:** All branches (optional)
+
+**Via Cloudflare Dashboard:**
+1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com/)
+2. Navigate to **Workers & Pages** → **Create application** → **Pages**
+3. Connect your GitHub repository (`xxdjhugoxx/apex-dashboard`)
+4. Configure the build settings above
+5. Click **Save and Deploy**
+
+**Via Wrangler CLI (Alternative):**
+```bash
+# Install wrangler globally (first time only)
+npm install -g wrangler
+
+# Build the project
+npm run build
+
+# Deploy to Cloudflare Pages
+npx wrangler pages deploy dist --project-name=apex-dashboard
+```
+
+**Note:** The project includes `wrangler.toml` with SPA routing configuration. No interactive prompts required.
+
+#### Option B: GitHub Pages
 
 1. Update `package.json` homepage field:
 ```json
