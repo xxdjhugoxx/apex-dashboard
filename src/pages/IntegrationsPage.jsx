@@ -9,6 +9,7 @@ const INTEGRATIONS = [
     description: 'Facebook & Instagram ad campaigns',
     icon: '📘',
     color: '#1877F2',
+    hasAds: true,
     setupInstructions: 'Connect your Meta Business Manager to run Facebook and Instagram ad campaigns. APEX will create and manage campaigns using YOUR ad account.'
   },
   {
@@ -17,6 +18,7 @@ const INTEGRATIONS = [
     description: 'Search, Display, and YouTube ads',
     icon: '🔎',
     color: '#4285F4',
+    hasAds: true,
     setupInstructions: 'Connect your Google Ads account to run search, display, and YouTube campaigns. APEX will manage campaigns using YOUR ad account.'
   },
   {
@@ -25,6 +27,7 @@ const INTEGRATIONS = [
     description: 'Automated posting & engagement',
     icon: '📸',
     color: '#E4405F',
+    hasAds: false,
     setupInstructions: 'Connect your Instagram Business account to enable automated posting. APEX will post on your behalf (no manual work required).'
   }
 ]
@@ -33,6 +36,8 @@ export function IntegrationsPage() {
   const { user } = useAuth()
   const [integrations, setIntegrations] = useState({})
   const [loading, setLoading] = useState(true)
+  const [expandedIntegration, setExpandedIntegration] = useState(null)
+  const [settings, setSettings] = useState({})
 
   useEffect(() => {
     if (user) {
@@ -50,10 +55,19 @@ export function IntegrationsPage() {
       if (error) throw error
 
       const mapped = {}
+      const settingsMap = {}
       data?.forEach(integration => {
         mapped[integration.provider] = integration
+        settingsMap[integration.provider] = {
+          daily_budget: integration.metadata?.daily_budget || '',
+          lifetime_budget: integration.metadata?.lifetime_budget || '',
+          enable_ads: integration.metadata?.enable_ads ?? true,
+          enable_dm_replies: integration.metadata?.enable_dm_replies ?? true,
+          enable_lead_routing: integration.metadata?.enable_lead_routing ?? true
+        }
       })
       setIntegrations(mapped)
+      setSettings(settingsMap)
     } catch (err) {
       console.error('Error loading integrations:', err)
     } finally {
@@ -63,6 +77,45 @@ export function IntegrationsPage() {
 
   async function handleConnect(providerId) {
     alert('OAuth setup coming soon!\n\nOnce App IDs are configured, you\'ll be redirected to connect your ' + INTEGRATIONS.find(i => i.id === providerId).name + ' account.')
+    setExpandedIntegration(providerId)
+  }
+
+  async function handleSaveSettings(providerId) {
+    try {
+      const integrationSettings = settings[providerId] || {}
+      
+      const { error } = await supabase
+        .from('integrations')
+        .update({
+          metadata: {
+            daily_budget: integrationSettings.daily_budget,
+            lifetime_budget: integrationSettings.lifetime_budget,
+            enable_ads: integrationSettings.enable_ads,
+            enable_dm_replies: integrationSettings.enable_dm_replies,
+            enable_lead_routing: integrationSettings.enable_lead_routing
+          },
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .eq('provider', providerId)
+
+      if (error) throw error
+
+      alert('Settings saved!')
+      await loadIntegrations()
+    } catch (err) {
+      alert('Failed to save settings: ' + err.message)
+    }
+  }
+
+  function updateSetting(providerId, key, value) {
+    setSettings(prev => ({
+      ...prev,
+      [providerId]: {
+        ...(prev[providerId] || {}),
+        [key]: value
+      }
+    }))
   }
 
   async function handleDisconnect(providerId) {
@@ -186,34 +239,165 @@ export function IntegrationsPage() {
 
                 {!isConnected && (
                   <div className="bg-white/5 border border-white/10 rounded-lg p-4 mt-4">
-                    <p className="text-xs text-white/60 leading-relaxed">
-                      {integration.setupInstructions}
-                    </p>
-                    <div className="mt-3 text-xs text-white/40">
-                      <strong>Coming soon:</strong> OAuth flow will be enabled once App IDs are configured. 
-                      For now, the connect button shows where you'll authenticate.
+                    <h4 className="text-sm font-bold text-white mb-3">Setup Steps:</h4>
+                    <div className="space-y-3 text-xs text-white/80">
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 rounded-full bg-[#FF6B35]/20 text-[#FF6B35] flex items-center justify-center font-bold flex-shrink-0">1</div>
+                        <div>
+                          <strong className="text-white">Connect your {integration.name} account</strong>
+                          <p className="text-white/60 mt-1">{integration.setupInstructions}</p>
+                        </div>
+                      </div>
+                      
+                      {integration.hasAds && (
+                        <>
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 rounded-full bg-[#FF6B35]/20 text-[#FF6B35] flex items-center justify-center font-bold flex-shrink-0">2</div>
+                            <div>
+                              <strong className="text-white">Set your budget in {integration.name} Manager</strong>
+                              <p className="text-white/60 mt-1">
+                                <strong>APEX does not charge or hold ad spend.</strong> You'll set daily/lifetime budgets 
+                                directly in your {integration.name} account. APEX workers will create ads within the limits you set.
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 rounded-full bg-[#FF6B35]/20 text-[#FF6B35] flex items-center justify-center font-bold flex-shrink-0">3</div>
+                            <div>
+                              <strong className="text-white">Tell APEX your recommended budget</strong>
+                              <p className="text-white/60 mt-1">
+                                After connecting, you can specify recommended daily/lifetime budgets. 
+                                This helps APEX workers know what limits you've set in your ad account.
+                              </p>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 rounded-full bg-[#FF6B35]/20 text-[#FF6B35] flex items-center justify-center font-bold flex-shrink-0">{integration.hasAds ? '4' : '2'}</div>
+                        <div>
+                          <strong className="text-white">Enable APEX worker features</strong>
+                          <p className="text-white/60 mt-1">
+                            Choose what APEX can do: create/boost ads, reply to DMs, route leads to your dashboard.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t border-white/10 text-xs text-white/40">
+                      <strong>Coming soon:</strong> OAuth flow will be enabled once App IDs are configured.
                     </div>
                   </div>
                 )}
 
                 {isConnected && integrations[integration.id] && (
-                  <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 mt-4">
-                    <div className="grid grid-cols-2 gap-3 text-xs">
-                      <div>
-                        <div className="text-white/40 mb-1">Account ID</div>
-                        <div className="font-mono text-green-200">
-                          {integrations[integration.id].account_id || 'N/A'}
+                  <div className="space-y-4 mt-4">
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                      <div className="grid grid-cols-2 gap-3 text-xs">
+                        <div>
+                          <div className="text-white/40 mb-1">Account ID</div>
+                          <div className="font-mono text-green-200">
+                            {integrations[integration.id].account_id || 'N/A'}
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <div className="text-white/40 mb-1">Connected</div>
-                        <div className="text-green-200">
-                          {integrations[integration.id].connected_at
-                            ? new Date(integrations[integration.id].connected_at).toLocaleDateString()
-                            : 'N/A'}
+                        <div>
+                          <div className="text-white/40 mb-1">Connected</div>
+                          <div className="text-green-200">
+                            {integrations[integration.id].connected_at
+                              ? new Date(integrations[integration.id].connected_at).toLocaleDateString()
+                              : 'N/A'}
+                          </div>
                         </div>
                       </div>
                     </div>
+
+                    {integration.hasAds && (
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                        <h4 className="text-sm font-bold mb-3">Budget Guidance (Set in {integration.name} Manager)</h4>
+                        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-4 text-xs text-yellow-200">
+                          💡 These are recommended amounts YOU will set in your {integration.name} account. 
+                          APEX does not charge or hold these funds. Your ad platform bills you directly.
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs text-white/60 mb-1 block">Daily Budget (USD)</label>
+                            <input
+                              type="number"
+                              value={settings[integration.id]?.daily_budget || ''}
+                              onChange={(e) => updateSetting(integration.id, 'daily_budget', e.target.value)}
+                              placeholder="e.g., 50"
+                              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm focus:outline-none focus:border-[#FF6B35]"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-white/60 mb-1 block">Lifetime Budget (USD)</label>
+                            <input
+                              type="number"
+                              value={settings[integration.id]?.lifetime_budget || ''}
+                              onChange={(e) => updateSetting(integration.id, 'lifetime_budget', e.target.value)}
+                              placeholder="e.g., 1000"
+                              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm focus:outline-none focus:border-[#FF6B35]"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                      <h4 className="text-sm font-bold mb-3">APEX Worker Features</h4>
+                      <div className="space-y-3">
+                        {integration.hasAds && (
+                          <label className="flex items-center justify-between cursor-pointer">
+                            <div>
+                              <div className="text-sm font-medium">Enable Worker Ads</div>
+                              <div className="text-xs text-white/60">APEX workers can create, boost, and manage ads</div>
+                            </div>
+                            <input
+                              type="checkbox"
+                              checked={settings[integration.id]?.enable_ads ?? true}
+                              onChange={(e) => updateSetting(integration.id, 'enable_ads', e.target.checked)}
+                              className="w-5 h-5"
+                            />
+                          </label>
+                        )}
+                        
+                        <label className="flex items-center justify-between cursor-pointer">
+                          <div>
+                            <div className="text-sm font-medium">Enable DM Replies</div>
+                            <div className="text-xs text-white/60">APEX workers can reply to direct messages</div>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={settings[integration.id]?.enable_dm_replies ?? true}
+                            onChange={(e) => updateSetting(integration.id, 'enable_dm_replies', e.target.checked)}
+                            className="w-5 h-5"
+                          />
+                        </label>
+                        
+                        <label className="flex items-center justify-between cursor-pointer">
+                          <div>
+                            <div className="text-sm font-medium">Enable Lead Routing</div>
+                            <div className="text-xs text-white/60">Route ad leads and inquiries to your dashboard</div>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={settings[integration.id]?.enable_lead_routing ?? true}
+                            onChange={(e) => updateSetting(integration.id, 'enable_lead_routing', e.target.checked)}
+                            className="w-5 h-5"
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleSaveSettings(integration.id)}
+                      className="w-full py-3 bg-[#FF6B35] hover:bg-[#FF8855] rounded-lg font-bold transition-all"
+                    >
+                      Save Settings
+                    </button>
                   </div>
                 )}
 
