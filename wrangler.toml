@@ -1,0 +1,19 @@
+name = "apex-dashboard"
+compatibility_date = "2026-09-01"
+
+# Pages configuration for SPA deployment
+pages_build_output_dir = "dist"
+
+# Serve as a static SPA with client-side routing
+[[pages.headers]]
+for = "/*"
+[pages.headers.values]
+X-Content-Type-Options = "nosniff"
+X-Frame-Options = "DENY"
+X-XSS-Protection = "1; mode=block"
+
+# SPA fallback - serve index.html for all routes
+[[pages.redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
