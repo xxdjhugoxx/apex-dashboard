@@ -1,0 +1,254 @@
+═══════════════════════════════════════════════════════════════
+  🔌 INTEGRATIONS: ENHANCED WITH SETUP STEPS & TOGGLES ✅
+═══════════════════════════════════════════════════════════════
+
+Hugo's Final Confirmation:
+  ✅ After OAuth, CLIENTS fund ads in their platforms
+  ✅ APEX workers create ads, post/boost, reply to DMs/leads
+  ✅ APEX NEVER collects or holds ad money
+  ✅ Budgets are set by client in Meta/Google (not payment to APEX)
+
+───────────────────────────────────────────────────────────────
+  📋 NEW: SETUP STEPS UI
+───────────────────────────────────────────────────────────────
+
+Each integration card now shows numbered steps:
+
+STEP 1: Connect Your Account
+  → OAuth flow (coming once App IDs configured)
+  → "Connect your [Platform] account"
+
+STEP 2: Set Your Budget in Platform Manager
+  → "APEX does not charge or hold ad spend"
+  → Client sets daily/lifetime budgets in their ad account
+  → Platform bills client directly
+
+STEP 3: Tell APEX Your Recommended Budget
+  → Input fields: daily budget, lifetime budget
+  → Stored as guidance for workers (not payment)
+  → Helps workers know limits client set
+
+STEP 4: Enable APEX Worker Features
+  → Toggle: Enable worker ads
+  → Toggle: Enable DM replies
+  → Toggle: Enable lead routing into dashboard
+
+───────────────────────────────────────────────────────────────
+  💰 BUDGET GUIDANCE SECTION
+───────────────────────────────────────────────────────────────
+
+When integration is connected:
+
+Budget Guidance (Set in Meta Ads Manager)
+┌─────────────────────────────────────────────────────────┐
+│ 💡 These are recommended amounts YOU will set in your   │
+│    Meta Ads account. APEX does not charge or hold      │
+│    these funds. Your ad platform bills you directly.   │
+├─────────────────────────────────────────────────────────┤
+│ Daily Budget (USD):    [____50____]                    │
+│ Lifetime Budget (USD): [___1000___]                    │
+└─────────────────────────────────────────────────────────┘
+
+Stored in integration metadata:
+  • daily_budget: "50"
+  • lifetime_budget: "1000"
+
+Workers read these to know what limits client set.
+
+───────────────────────────────────────────────────────────────
+  🎛️ WORKER FEATURE TOGGLES
+───────────────────────────────────────────────────────────────
+
+APEX Worker Features
+┌─────────────────────────────────────────────────────────┐
+│ [✓] Enable Worker Ads                                  │
+│     APEX workers can create, boost, and manage ads     │
+│                                                         │
+│ [✓] Enable DM Replies                                  │
+│     APEX workers can reply to direct messages          │
+│                                                         │
+│ [✓] Enable Lead Routing                                │
+│     Route ad leads and inquiries to your dashboard     │
+└─────────────────────────────────────────────────────────┘
+
+Stored in integration metadata:
+  • enable_ads: true/false
+  • enable_dm_replies: true/false
+  • enable_lead_routing: true/false
+
+All default to enabled.
+
+───────────────────────────────────────────────────────────────
+  🔄 HOW IT WORKS
+───────────────────────────────────────────────────────────────
+
+CLIENT SETUP:
+  1. Client connects Meta Ads via OAuth
+  2. Client goes to Meta Ads Manager
+  3. Client sets daily budget: $50 in Meta Ads Manager
+  4. Client tells APEX: "I set $50 daily budget"
+  5. Client enables worker features
+
+WORKER EXECUTION:
+  1. Worker picks up work_request: "Run Meta Ads campaign"
+  2. Worker reads integrations table for this user
+  3. Worker sees: daily_budget = "50", enable_ads = true
+  4. Worker uses client's Meta Ads access token
+  5. Worker creates campaign with $50 daily budget
+  6. Meta Ads charges CLIENT'S payment method
+  7. Worker updates work_request: completed
+
+AD SPEND FLOW:
+  Meta/Google → Charges CLIENT directly
+  APEX → Never touches money, only creates campaigns
+
+───────────────────────────────────────────────────────────────
+  💡 KEY COPY THROUGHOUT UI
+───────────────────────────────────────────────────────────────
+
+Banner (top of page):
+  "Ad spend is billed to YOUR ad account. APEX never pays
+   or invoices ad spend."
+
+Setup Step 2:
+  "APEX does not charge or hold ad spend. You'll set budgets
+   directly in your [Platform] account."
+
+Budget Guidance Box:
+  "These are recommended amounts YOU will set in your [Platform]
+   account. APEX does not charge or hold these funds."
+
+This is repeated 3+ times so clients CANNOT miss it.
+
+───────────────────────────────────────────────────────────────
+  📊 DATABASE STORAGE
+───────────────────────────────────────────────────────────────
+
+integrations.metadata (JSONB):
+{
+  "daily_budget": "50",
+  "lifetime_budget": "1000",
+  "enable_ads": true,
+  "enable_dm_replies": true,
+  "enable_lead_routing": true
+}
+
+Workers read this to know:
+  • What budget limits client set
+  • Which features are enabled
+  • Client's preferences
+
+───────────────────────────────────────────────────────────────
+  ✅ VERIFICATION CHECKLIST
+───────────────────────────────────────────────────────────────
+
+UI Enhancements:
+  [x] Numbered setup steps (1-4) on each card
+  [x] Step 2 emphasizes "APEX does not charge/hold"
+  [x] Budget guidance fields (daily, lifetime)
+  [x] Yellow banner warning about billing
+  [x] 3 worker feature toggles
+  [x] Save settings button
+  [x] Settings persist to database
+
+Database:
+  [x] Budget stored in metadata.daily_budget
+  [x] Budget stored in metadata.lifetime_budget
+  [x] Toggles stored in metadata.enable_*
+  [x] Workers can read via service_role
+
+Copy:
+  [x] "APEX does not charge or hold ad spend" (3+ places)
+  [x] "Your ad platform bills you directly"
+  [x] "Set in [Platform] Manager"
+  [x] Clear that budgets are guidance, not payment
+
+Build:
+  [x] Build passes (1.11s)
+  [x] No TypeScript errors
+  [x] All dependencies installed
+
+───────────────────────────────────────────────────────────────
+  🎯 WHAT CLIENT SEES (FLOW)
+───────────────────────────────────────────────────────────────
+
+BEFORE CONNECTION:
+  → See 4 numbered setup steps
+  → Step 2: "Set your budget in Meta Ads Manager"
+  → Clear that APEX doesn't charge ad spend
+  → Click "Connect" (OAuth coming soon)
+
+AFTER CONNECTION:
+  → See green "Connected" badge
+  → See account ID and connection date
+  → Budget Guidance section appears
+  → Enter daily budget: $50
+  → Enter lifetime budget: $1000
+  → See 3 feature toggles (all enabled by default)
+  → Click "Save Settings"
+  → Settings stored to database
+
+WORKER PERSPECTIVE:
+  → Worker reads integration metadata
+  → Knows client set $50 daily budget in Meta
+  → Knows ads are enabled
+  → Knows DM replies are enabled
+  → Knows lead routing is enabled
+  → Uses client's token to create campaign
+  → Stays within client's budget limits
+
+───────────────────────────────────────────────────────────────
+  🚀 DEPLOYMENT STATUS
+───────────────────────────────────────────────────────────────
+
+Code:          ✅ Pushed to cursor/client-mvp-fc0c
+Build:         ✅ Passing (1.11s)
+PR:            ✅ #3 (ready to update)
+Free Stack:    ✅ No paid APIs
+Documentation: ✅ All guides updated
+
+Ready for:
+  1. Hugo's morning activation
+  2. Test integrations setup flow
+  3. See numbered steps
+  4. Enter budget guidance
+  5. Toggle worker features
+
+───────────────────────────────────────────────────────────────
+  📚 FILES CHANGED
+───────────────────────────────────────────────────────────────
+
+src/pages/IntegrationsPage.jsx:
+  • Added numbered setup steps (1-4)
+  • Added budget guidance fields
+  • Added worker feature toggles
+  • Added save settings functionality
+  • Enhanced copy throughout
+
+supabase-client-schema.sql:
+  • metadata JSONB stores all settings
+  • No schema changes needed (already flexible)
+
+Documentation:
+  • This file (INTEGRATIONS_FINAL.txt)
+  • PR will be updated
+
+═══════════════════════════════════════════════════════════════
+  INTEGRATIONS ENHANCEMENT: COMPLETE ✅
+═══════════════════════════════════════════════════════════════
+
+Standing Order: Keep shipping full free-stack MVP
+Product Clarity: APEX is a SYSTEM. Clients fund their own ads.
+Feature: Setup steps + budget guidance + worker toggles
+Status: Build passing, ready to merge
+
+Hugo: Test the enhanced integrations UI after activation.
+  1. Sign in
+  2. Go to Integrations tab
+  3. See numbered setup steps
+  4. Connect (OAuth stub)
+  5. Enter budget guidance
+  6. Toggle worker features
+  7. Save settings
+
+🚀 Enhanced integrations shipped.
