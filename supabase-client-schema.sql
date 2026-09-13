@@ -10,6 +10,7 @@ create table if not exists public.users (
   logo_url text,
   bio text,
   tier_id text default 'starter',
+  stripe_customer_id text unique,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -22,6 +23,8 @@ create table if not exists public.user_tiers (
   monthly_price numeric not null,
   is_annual boolean default false,
   status text default 'active',
+  stripe_subscription_id text unique,
+  stripe_price_id text,
   started_at timestamptz default now(),
   expires_at timestamptz,
   created_at timestamptz default now()

@@ -7,7 +7,8 @@ AI-powered marketing automation platform with client onboarding and work request
 ### Client-Facing MVP
 - ✅ **Plans Page** - 6 pricing tiers synced from apexhq.cloud
 - ✅ **Authentication** - Email/password signup via Supabase Auth
-- ✅ **Onboarding Flow** - Tier selection → Company info → Logo upload → Brand bio
+- ✅ **Stripe Payments** - Full subscription & one-time payment flow with webhooks
+- ✅ **Onboarding Flow** - Sign up → Verify → Choose plan → Pay → Setup profile
 - ✅ **Client Dashboard** - View tier, brand profile, and manage work requests
 - ✅ **Work Requests** - Create and track jobs (status: queued, in_progress, completed)
 - ✅ **Tier-Based Job Types** - Each tier unlocks specific job types
@@ -20,8 +21,9 @@ AI-powered marketing automation platform with client onboarding and work request
 
 - **Frontend**: React 18 + Vite
 - **Styling**: Tailwind CSS
-- **Database**: Supabase (PostgreSQL + Auth + Storage)
-- **Hosting**: GitHub Pages (static site)
+- **Database**: Supabase (PostgreSQL + Auth + Storage + Edge Functions)
+- **Payments**: Stripe Checkout + Webhooks
+- **Hosting**: Cloudflare Pages (recommended) or GitHub Pages
 - **Icons**: Lucide React
 
 ## Setup Instructions
@@ -41,6 +43,7 @@ npm install
 3. Go to **Settings → API** and copy:
    - Project URL
    - Anon/Public Key
+   - Service Role Key (needed for Stripe webhooks)
 
 4. Update `src/lib/config.js` with your credentials:
 ```javascript
@@ -52,7 +55,7 @@ export const SUPABASE_ANON_KEY = 'your-anon-key-here'
 ```bash
 # Copy and run each SQL file in Supabase SQL Editor:
 # 1. supabase-schema.sql (agent tables - already exists)
-# 2. supabase-client-schema.sql (NEW: client tables)
+# 2. supabase-client-schema.sql (client tables with Stripe fields)
 ```
 
 6. Enable Email Auth:
@@ -71,7 +74,28 @@ export const SUPABASE_ANON_KEY = 'your-anon-key-here'
    - Create public bucket: `client-assets`
    - Enable public access for logo uploads
 
-### 3. Local Development
+### 3. Stripe Payment Setup
+
+**⚠️ Required for accepting payments and managing subscriptions**
+
+See **[STRIPE_SETUP.md](./STRIPE_SETUP.md)** for complete step-by-step instructions including:
+- Creating Stripe products and prices
+- Getting API keys and Price IDs
+- Deploying Supabase Edge Functions
+- Configuring webhooks
+- Testing payment flow
+- Going live
+
+**Quick setup:**
+1. Create Stripe account at [stripe.com](https://stripe.com)
+2. Create 6 products (Builder, Starter, Focus, Growth, Pro, Agency)
+3. Copy Price IDs and API keys
+4. Deploy Edge Functions: `supabase functions deploy`
+5. Add secrets: `supabase secrets set STRIPE_SECRET_KEY=...`
+6. Configure webhook in Stripe Dashboard
+7. Update `.env` with your Price IDs
+
+### 4. Local Development
 
 ```bash
 npm run dev
@@ -79,7 +103,12 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173)
 
-### 4. Deployment Options
+**Note:** For full payment testing locally, you'll need to:
+1. Deploy Supabase Edge Functions (they run on Supabase, not locally)
+2. Configure Stripe webhook to point to your deployed function URL
+3. Use Stripe test mode and test card numbers
+
+### 5. Deployment Options
 
 #### Option A: Cloudflare Pages (Recommended)
 
@@ -199,16 +228,15 @@ Annual billing: 20% off (monthly * 0.8)
 
 ## What's NOT Included (MVP Scope)
 
-This MVP focuses on the core client signup path with free infrastructure:
+This MVP focuses on the core client signup and payment path:
 
 ❌ **Meta/Google OAuth** - Email/password only
 ❌ **Real Instagram Posting** - Jobs are queued but workers not connected
 ❌ **Paid AI APIs** - No Gemini/GPT calls in client flow
-❌ **Stripe Integration** - Tier selection is UI-only (no billing)
-❌ **Email Notifications** - Would need paid SMTP service
+❌ **Email Notifications** - Would need paid SMTP service (uses Supabase Auth emails only)
 ❌ **Real-time Updates** - Polling-based, not WebSocket
 
-These can be added post-MVP when budget/infrastructure is ready.
+These can be added when needed.
 
 ## Test Plan
 
@@ -217,7 +245,7 @@ These can be added post-MVP when budget/infrastructure is ready.
 1. **Auth Flow**
    - [ ] Sign up with email/password
    - [ ] Enter 6-digit OTP code from email
-   - [ ] Verify OTP and proceed to onboarding
+   - [ ] Verify OTP and proceed to plans page
    - [ ] Test resend code functionality
    - [ ] Sign in with existing account
    - [ ] Sign out
@@ -226,34 +254,65 @@ These can be added post-MVP when budget/infrastructure is ready.
    - [ ] View all 6 pricing tiers
    - [ ] Toggle monthly/annual billing
    - [ ] See 20% discount on annual
+   - [ ] Click plan button to start checkout
 
-3. **Onboarding**
+3. **Payment Flow (Stripe Test Mode)**
+   - [ ] Redirect to Stripe Checkout
+   - [ ] Use test card: 4242 4242 4242 4242
+   - [ ] Complete payment successfully
+   - [ ] Return to app with payment success
+   - [ ] Webhook fires and updates database
+
+4. **Onboarding (Post-Payment)**
    - [ ] Step 1: Enter company name
    - [ ] Step 2: Upload logo (or see Builder note)
    - [ ] Step 3: Enter brand bio
-   - [ ] Complete setup
+   - [ ] Complete setup and land on dashboard
 
-4. **Client Dashboard**
+5. **Return Sign-In Flow**
+   - [ ] Sign out from dashboard
+   - [ ] Sign in again with same account
+   - [ ] Should go **directly to dashboard** (skip plans page)
+   - [ ] Verify no plan selection prompt
+
+6. **Client Dashboard**
    - [ ] View brand profile card
-   - [ ] See work requests (0 initially)
+   - [ ] See selected tier displayed
    - [ ] Create new work request
    - [ ] View request with "queued" status
    - [ ] See tier-appropriate job types
 
-5. **Database**
-   - [ ] Check `users` table has profile
-   - [ ] Check `user_tiers` table has subscription
+7. **Database Verification**
+   - [ ] Check `users` table has profile + `stripe_customer_id`
+   - [ ] Check `user_tiers` table has subscription with `status='active'`
+   - [ ] Check `stripe_subscription_id` and `stripe_price_id` populated
    - [ ] Check `work_requests` table has job
 
 ## Deployment Checklist
 
+### Supabase
 - [ ] Supabase project created
-- [ ] Client schema SQL run
+- [ ] Client schema SQL run (with Stripe fields)
 - [ ] Storage bucket created
 - [ ] Auth provider enabled
-- [ ] Config updated with real keys
+- [ ] Email templates configured for OTP
+
+### Stripe
+- [ ] Stripe account created
+- [ ] Products and prices created (6 tiers, monthly + annual)
+- [ ] Price IDs copied to `.env`
+- [ ] API keys obtained (publishable + secret)
+- [ ] Edge Functions deployed (`create-checkout-session`, `stripe-webhook`)
+- [ ] Secrets configured in Supabase
+- [ ] Webhook endpoint created in Stripe Dashboard
+- [ ] Webhook secret added to Supabase secrets
+
+### Deployment
+- [ ] Environment variables configured
 - [ ] Build tested locally
-- [ ] GitHub Pages enabled
+- [ ] Deployed to Cloudflare Pages or GitHub Pages
+- [ ] Production environment variables set
+- [ ] Payment flow tested end-to-end
 - [ ] Custom domain configured (optional)
 
 ## Support
