@@ -5,6 +5,7 @@ import { PlansPage } from './pages/PlansPage'
 import { OnboardingPage } from './pages/OnboardingPage'
 import { ClientDashboard } from './pages/ClientDashboard'
 import { supabase } from './lib/supabase'
+import { hasActiveSubscription } from './lib/stripe'
 
 function OtpConfirmationPage({ email, onSuccess, onBack }) {
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
@@ -195,44 +196,78 @@ function ClientRouter() {
   const [view, setView] = useState('auth')
   const [emailConfirmationPending, setEmailConfirmationPending] = useState(false)
   const [pendingEmail, setPendingEmail] = useState('')
+  const [checkingSubscription, setCheckingSubscription] = useState(false)
 
   useEffect(() => {
-    if (loading) return
+    async function checkRouting() {
+      if (loading) return
 
-    if (!user) {
-      const pendingConfirm = localStorage.getItem('apex_email_pending')
-      const pendingPlanSelection = localStorage.getItem('apex_pending_plan_selection')
-      
-      if (pendingConfirm === 'true') {
-        setEmailConfirmationPending(true)
-        setView('email_confirmation')
-      } else if (pendingPlanSelection === 'true') {
-        setView('auth')
-      } else {
+      const urlParams = new URLSearchParams(window.location.search)
+      const paymentStatus = urlParams.get('payment')
+
+      if (paymentStatus === 'success') {
+        window.history.replaceState({}, '', window.location.pathname)
+        if (user && profile?.company_name) {
+          setView('dashboard')
+          return
+        }
+      } else if (paymentStatus === 'cancelled') {
+        window.history.replaceState({}, '', window.location.pathname)
         setView('plans')
+        return
       }
-    } else if (!profile?.company_name) {
+
+      if (!user) {
+        const pendingConfirm = localStorage.getItem('apex_email_pending')
+        const pendingPlanSelection = localStorage.getItem('apex_pending_plan_selection')
+        
+        if (pendingConfirm === 'true') {
+          setEmailConfirmationPending(true)
+          setView('email_confirmation')
+        } else if (pendingPlanSelection === 'true') {
+          setView('auth')
+        } else {
+          setView('plans')
+        }
+        return
+      }
+
+      setCheckingSubscription(true)
+      const hasSubscription = await hasActiveSubscription(user.id)
+      setCheckingSubscription(false)
+
       localStorage.removeItem('apex_email_pending')
       localStorage.removeItem('apex_pending_plan_selection')
-      if (!selectedTier) {
-        setView('plans')
+
+      if (hasSubscription) {
+        if (!profile?.company_name) {
+          setView('onboarding')
+        } else {
+          localStorage.removeItem('apex_selected_tier')
+          setView('dashboard')
+        }
       } else {
-        setView('onboarding')
+        if (!profile?.company_name) {
+          if (!selectedTier) {
+            setView('plans')
+          } else {
+            setView('onboarding')
+          }
+        } else {
+          setView('plans')
+        }
       }
-    } else {
-      localStorage.removeItem('apex_email_pending')
-      localStorage.removeItem('apex_pending_plan_selection')
-      localStorage.removeItem('apex_selected_tier')
-      setView('dashboard')
     }
+
+    checkRouting()
   }, [user, profile, loading, selectedTier])
 
-  if (loading) {
+  if (loading || checkingSubscription) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <div className="text-white text-center">
           <div className="w-16 h-16 border-4 border-[#FF6B35] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-white/60">Loading APEX...</p>
+          <p className="text-white/60">{checkingSubscription ? 'Checking subscription...' : 'Loading APEX...'}</p>
         </div>
       </div>
     )

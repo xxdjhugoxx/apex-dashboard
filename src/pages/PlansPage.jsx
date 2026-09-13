@@ -1,10 +1,34 @@
 import React, { useState } from 'react'
 import { PRICING_TIERS, getAnnualPrice } from '../lib/pricing'
 import { useAuth } from '../lib/auth'
+import { createCheckoutSession } from '../lib/stripe'
 
 export function PlansPage({ onSelectPlan }) {
   const [billingCycle, setBillingCycle] = useState('monthly')
+  const [loading, setLoading] = useState(null)
+  const [error, setError] = useState('')
   const { user } = useAuth()
+
+  const handleSelectPlan = async (tier) => {
+    if (!user) {
+      onSelectPlan(tier)
+      return
+    }
+
+    setLoading(tier.name)
+    setError('')
+
+    try {
+      const isAnnual = billingCycle === 'annual' && !tier.oneTime
+      const { url } = await createCheckoutSession(tier.name, isAnnual, user)
+      
+      window.location.href = url
+    } catch (err) {
+      console.error('Checkout error:', err)
+      setError(err.message || 'Failed to start checkout. Please try again.')
+      setLoading(null)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#111118] to-[#0a0a0f] text-white">
@@ -39,10 +63,17 @@ export function PlansPage({ onSelectPlan }) {
           </button>
         </div>
 
+        {error && (
+          <div className="max-w-2xl mx-auto mb-8 bg-red-500/20 border border-red-500/50 text-red-200 px-6 py-4 rounded-xl">
+            {error}
+          </div>
+        )}
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {PRICING_TIERS.map((tier) => {
             const isAnnual = billingCycle === 'annual' && !tier.oneTime
             const displayPrice = isAnnual ? getAnnualPrice(tier.price) : tier.price
+            const isLoading = loading === tier.name
 
             return (
               <div
@@ -82,14 +113,24 @@ export function PlansPage({ onSelectPlan }) {
                 </ul>
 
                 <button
-                  onClick={() => onSelectPlan(tier)}
-                  className={`w-full py-3 rounded-xl font-bold transition-all ${
+                  onClick={() => handleSelectPlan(tier)}
+                  disabled={loading !== null}
+                  className={`w-full py-3 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                     tier.popular
                       ? 'bg-[#FF6B35] hover:bg-[#FF8855] text-white'
                       : 'bg-white/10 hover:bg-white/20 text-white'
                   }`}
                 >
-                  {user ? tier.cta : 'Sign Up to Get Started'}
+                  {isLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Processing...
+                    </span>
+                  ) : user ? (
+                    tier.cta
+                  ) : (
+                    'Sign Up to Get Started'
+                  )}
                 </button>
               </div>
             )
