@@ -1,399 +1,201 @@
-# Stripe Payment Integration Setup Guide
+# Stripe Integration Setup Guide
 
-This guide walks you through setting up Stripe payments for the APEX Dashboard subscription flow.
-
-## Prerequisites
-
-- A Stripe account (free to create at [stripe.com](https://stripe.com))
-- A Supabase project with the client schema installed
-- The APEX Dashboard repository cloned locally
+This guide will help you configure Stripe Checkout and webhooks for APEX HQ subscriptions.
 
 ## Overview
 
-The payment flow works as follows:
+The integration uses **LIVE Stripe products** that already exist in your account. **Do not create new products.**
 
-1. **User Journey**: Sign up → Email verification → Choose plan → **Pay via Stripe Checkout** → Onboarding → Dashboard
-2. **On return sign-in**: If active subscription exists → Dashboard (skips plan selection)
-3. **Webhook Updates**: Stripe webhooks automatically update subscription status in `user_tiers` table
+### Price IDs (Already Configured in Code)
 
-## Step 1: Create Stripe Products & Prices
+| Tier | Monthly Price ID | Annual Price ID |
+|------|-----------------|-----------------|
+| Builder (one-time) | `price_1TUdCZDGWTAZtT1dO17v7Cru` | N/A |
+| Starter | `price_1TUdDLDGWTAZtT1dCJZytHz2` | `price_1TUdEHDGWTAZtT1dakZye0Mj` |
+| Focus | `price_1TUdFHDGWTAZtT1dv3Uv3jWQ` | `price_1TUdFHDGWTAZtT1d5VEQcWve` |
+| Growth | `price_1TUdFwDGWTAZtT1d50weXHKG` | `price_1TUdFwDGWTAZtT1dim8fS0bP` |
+| Pro | `price_1TUdGvDGWTAZtT1dEoPsEi2R` | `price_1TUdGvDGWTAZtT1dYQ5vVNEu` |
+| Agency | `price_1TUdHeDGWTAZtT1dR6yC38Yc` | `price_1TUdHeDGWTAZtT1djjrd8fov` |
 
-### 1.1 Log into Stripe Dashboard
+---
 
-Go to [dashboard.stripe.com](https://dashboard.stripe.com) and navigate to **Products**.
+## Step 1: Get Your Stripe Secret Key
 
-### 1.2 Create Products
+1. Go to [Stripe Dashboard → API Keys](https://dashboard.stripe.com/apikeys)
+2. Copy your **Secret key** (starts with `sk_live_...`)
+3. Keep this safe — you'll add it to Supabase in Step 3
 
-Create the following products with their prices:
+---
 
-#### Builder (One-time Payment)
-- Product Name: `APEX Builder`
-- Price: `$300` (one-time payment)
-- Copy the **Price ID** (starts with `price_`)
+## Step 2: Run Database Migration
 
-#### Starter Plan
-- Product Name: `APEX Starter`
-- Monthly Price: `$149/month` (recurring)
-- Annual Price: `$119/month` billed annually ($1,428/year - 20% off)
-- Copy both **Price IDs**
+Run this SQL in your Supabase SQL Editor to add Stripe fields to the `user_tiers` table:
 
-#### Focus Plan
-- Product Name: `APEX Focus`
-- Monthly Price: `$297/month` (recurring)
-- Annual Price: `$238/month` billed annually ($2,856/year - 20% off)
-- Copy both **Price IDs**
+```sql
+-- See supabase-schema-stripe.sql
+```
 
-#### Growth Plan
-- Product Name: `APEX Growth`
-- Monthly Price: `$697/month` (recurring)
-- Annual Price: `$558/month` billed annually ($6,696/year - 20% off)
-- Copy both **Price IDs**
+Or run via Supabase CLI:
 
-#### Pro Plan
-- Product Name: `APEX Pro`
-- Monthly Price: `$1,497/month` (recurring)
-- Annual Price: `$1,198/month` billed annually ($14,376/year - 20% off)
-- Copy both **Price IDs**
+```bash
+supabase db push --include-all
+```
 
-#### Agency Plan
-- Product Name: `APEX Agency`
-- Monthly Price: `$2,997/month` (recurring)
-- Annual Price: `$2,398/month` billed annually ($28,776/year - 20% off)
-- Copy both **Price IDs**
-
-### 1.3 Note Your Price IDs
-
-Keep all Price IDs handy. You'll need them for environment variables.
-
-## Step 2: Get Stripe API Keys
-
-### 2.1 Get Publishable Key
-
-1. Go to **Developers → API Keys**
-2. Copy the **Publishable key** (starts with `pk_test_` or `pk_live_`)
-3. This will be `VITE_STRIPE_PUBLISHABLE_KEY`
-
-### 2.2 Get Secret Key
-
-1. On the same page, copy the **Secret key** (starts with `sk_test_` or `sk_live_`)
-2. This will be `STRIPE_SECRET_KEY`
-3. **⚠️ NEVER commit this key to git**
+---
 
 ## Step 3: Deploy Supabase Edge Functions
 
-### 3.1 Install Supabase CLI
+### A. Install Supabase CLI (if not already installed)
 
 ```bash
 npm install -g supabase
 ```
 
-### 3.2 Login to Supabase
+### B. Link Your Project
 
 ```bash
-supabase login
+supabase link --project-ref YOUR_PROJECT_REF
 ```
 
-### 3.3 Link Your Project
+Get your project ref from [Supabase Dashboard → Settings → General](https://supabase.com/dashboard/project/_/settings/general).
+
+### C. Set Secrets in Supabase
+
+Add your Stripe secret key and webhook secret (you'll get the webhook secret in Step 4):
 
 ```bash
-supabase link --project-ref cfwbqzktltxgllqdhaug
+supabase secrets set STRIPE_SECRET_KEY=sk_live_YOUR_SECRET_KEY
+# You'll set STRIPE_WEBHOOK_SECRET after Step 4
 ```
 
-### 3.4 Set Edge Function Secrets
+### D. Deploy Edge Functions
 
 ```bash
-# Set Stripe Secret Key
-supabase secrets set STRIPE_SECRET_KEY=sk_test_your_actual_secret_key_here
-
-# Set Supabase Service Role Key (from Supabase Dashboard → Settings → API)
-supabase secrets set SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
-
-# Note: STRIPE_WEBHOOK_SECRET will be set after creating the webhook in Step 5
-```
-
-### 3.5 Deploy Functions
-
-```bash
-# Deploy checkout session function
 supabase functions deploy create-checkout-session
-
-# Deploy webhook handler
 supabase functions deploy stripe-webhook
 ```
 
-### 3.6 Verify Deployment
-
-After deployment, you'll get URLs like:
-- `https://cfwbqzktltxgllqdhaug.supabase.co/functions/v1/create-checkout-session`
-- `https://cfwbqzktltxgllqdhaug.supabase.co/functions/v1/stripe-webhook`
-
-Test the create-checkout-session endpoint is live:
-```bash
-curl https://cfwbqzktltxgllqdhaug.supabase.co/functions/v1/create-checkout-session
+After deploying, note the webhook URL:
+```
+https://YOUR_PROJECT_REF.supabase.co/functions/v1/stripe-webhook
 ```
 
-## Step 4: Update Database Schema
+---
 
-### 4.1 Run Migration Script
+## Step 4: Configure Stripe Webhook
 
-In Supabase Dashboard → SQL Editor, run:
-
-```sql
--- Copy contents from supabase-stripe-migration.sql
-```
-
-This adds:
-- `stripe_customer_id` to `users` table
-- `stripe_subscription_id` and `stripe_price_id` to `user_tiers` table
-
-## Step 5: Configure Stripe Webhook
-
-### 5.1 Create Webhook Endpoint
-
-1. Go to **Developers → Webhooks** in Stripe Dashboard
+1. Go to [Stripe Dashboard → Developers → Webhooks](https://dashboard.stripe.com/webhooks)
 2. Click **Add endpoint**
-3. Endpoint URL: `https://cfwbqzktltxgllqdhaug.supabase.co/functions/v1/stripe-webhook`
-4. Description: `APEX Dashboard Subscriptions`
-
-### 5.2 Select Events to Listen For
-
-Add these events:
-- `checkout.session.completed`
-- `customer.subscription.created`
-- `customer.subscription.updated`
-- `customer.subscription.deleted`
-- `invoice.payment_succeeded`
-- `invoice.payment_failed`
-
-### 5.3 Copy Webhook Signing Secret
-
-1. After creating the webhook, click to view details
-2. Copy the **Signing secret** (starts with `whsec_`)
-3. Add it to Supabase secrets:
+3. Paste your webhook URL: `https://YOUR_PROJECT_REF.supabase.co/functions/v1/stripe-webhook`
+4. Under **Select events to listen to**, add these events:
+   - `checkout.session.completed`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+5. Click **Add endpoint**
+6. Copy the **Signing secret** (starts with `whsec_...`)
+7. Add it to Supabase:
 
 ```bash
-supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_your_webhook_signing_secret_here
+supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_YOUR_SIGNING_SECRET
 ```
 
-### 5.4 Redeploy Webhook Function
+8. **Redeploy the webhook function** to pick up the new secret:
 
 ```bash
 supabase functions deploy stripe-webhook
 ```
 
-## Step 6: Configure Local Environment
+---
 
-### 6.1 Create .env File
+## Step 5: Add Stripe Publishable Key to Frontend (Optional)
 
-```bash
-cp .env.example .env
-```
-
-### 6.2 Update .env with Your Values
-
-```env
-# Supabase (from Dashboard → Settings → API)
-VITE_SUPABASE_URL=https://cfwbqzktltxgllqdhaug.supabase.co
-VITE_SUPABASE_ANON_KEY=your_anon_key_here
-
-# Stripe Publishable Key (safe to commit)
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
-
-# Stripe Price IDs (paste the IDs you copied from Step 1)
-VITE_STRIPE_PRICE_BUILDER=price_xxxxx
-VITE_STRIPE_PRICE_STARTER_MONTHLY=price_xxxxx
-VITE_STRIPE_PRICE_STARTER_ANNUAL=price_xxxxx
-VITE_STRIPE_PRICE_FOCUS_MONTHLY=price_xxxxx
-VITE_STRIPE_PRICE_FOCUS_ANNUAL=price_xxxxx
-VITE_STRIPE_PRICE_GROWTH_MONTHLY=price_xxxxx
-VITE_STRIPE_PRICE_GROWTH_ANNUAL=price_xxxxx
-VITE_STRIPE_PRICE_PRO_MONTHLY=price_xxxxx
-VITE_STRIPE_PRICE_PRO_ANNUAL=price_xxxxx
-VITE_STRIPE_PRICE_AGENCY_MONTHLY=price_xxxxx
-VITE_STRIPE_PRICE_AGENCY_ANNUAL=price_xxxxx
-```
-
-## Step 7: Build and Deploy
-
-### 7.1 Build for Production
+If you want to use Stripe.js in the frontend (not currently needed), add your publishable key to `.env`:
 
 ```bash
-npm run build
+VITE_STRIPE_PUBLISHABLE_KEY=pk_live_YOUR_PUBLISHABLE_KEY
 ```
 
-### 7.2 Deploy to Cloudflare Pages
+---
 
-**Via Cloudflare Dashboard:**
+## Step 6: Test the Integration
 
-1. Go to **Workers & Pages** → **Create application** → **Pages**
-2. Connect to your GitHub repository
-3. Build settings:
-   - Build command: `npm run build`
-   - Build output directory: `dist`
-4. Environment variables (add in Cloudflare Pages settings):
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-   - `VITE_STRIPE_PUBLISHABLE_KEY`
-   - All `VITE_STRIPE_PRICE_*` variables
+### Test with Stripe Test Mode (Recommended First)
 
-**Via Wrangler CLI:**
+Before going live, test with Stripe test keys:
 
-```bash
-npx wrangler pages deploy dist --project-name=apex-dashboard
-```
+1. Switch to test mode in Stripe Dashboard (toggle in top-right)
+2. Create test products/prices with the same structure
+3. Update `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` with test keys (`sk_test_...` and `whsec_test_...`)
+4. Redeploy functions
+5. Use test card: `4242 4242 4242 4242` (any future expiry, any CVC)
 
-## Step 8: Test the Payment Flow
+### Test Live Mode
 
-### 8.1 Test Checkout (Test Mode)
+1. Sign up for a new test account on your APEX site
+2. Choose a plan
+3. Complete checkout with a real card (or use Stripe CLI to trigger test webhook events)
+4. Verify:
+   - User is redirected to onboarding
+   - `user_tiers` table has a new row with `status = 'active'`
+   - Next sign-in skips plan picker and goes to dashboard
 
-1. Go to your deployed app: `https://app.apexhq.cloud`
-2. Sign up with a new account
-3. Verify email with OTP code
-4. Choose a plan (e.g., "Starter - Monthly")
-5. Click the plan button to start checkout
-
-### 8.2 Use Stripe Test Cards
-
-Use these test card numbers (any future expiry, any CVC):
-
-- **Success**: `4242 4242 4242 4242`
-- **Decline**: `4000 0000 0000 0002`
-- **3D Secure**: `4000 0027 6000 3184`
-
-### 8.3 Verify Success Flow
-
-After successful payment:
-1. Should redirect back to app with `?payment=success`
-2. Should see onboarding page (enter company details)
-3. Complete onboarding
-4. Should land on dashboard
-
-### 8.4 Test Return Sign-In
-
-1. Sign out from dashboard
-2. Sign in again with same credentials
-3. Should go **directly to dashboard** (not plans page)
-
-### 8.5 Check Database
-
-In Supabase → Table Editor:
-
-**`user_tiers` table should have:**
-- `user_id`: your user UUID
-- `tier_name`: "Starter" (or whichever you selected)
-- `status`: "active"
-- `stripe_subscription_id`: sub_xxxxx
-- `stripe_price_id`: price_xxxxx
-- `expires_at`: future date for subscriptions
-
-**`users` table should have:**
-- `stripe_customer_id`: cus_xxxxx
-
-## Step 9: Monitor Webhooks
-
-### 9.1 View Webhook Events
-
-Go to **Developers → Webhooks** in Stripe Dashboard → Click your endpoint
-
-You should see events being sent:
-- `checkout.session.completed` when payment completes
-- `customer.subscription.created` when subscription starts
-- `invoice.payment_succeeded` for recurring payments
-
-### 9.2 Debugging
-
-If webhooks fail:
-1. Check webhook event details in Stripe Dashboard
-2. View Edge Function logs in Supabase Dashboard → Edge Functions → Logs
-3. Common issues:
-   - Missing secrets (STRIPE_WEBHOOK_SECRET)
-   - Incorrect signature verification
-   - Database RLS policies blocking updates
-
-## Step 10: Switch to Live Mode
-
-When ready for production:
-
-### 10.1 In Stripe Dashboard
-
-1. Toggle from **Test mode** to **Live mode** (top right)
-2. Recreate products and prices in live mode
-3. Get new live API keys (`pk_live_...` and `sk_live_...`)
-4. Create new webhook endpoint with live mode URL
-
-### 10.2 Update Environment Variables
-
-Replace all `sk_test_` and `pk_test_` keys with `sk_live_` and `pk_live_` versions in:
-- Supabase Edge Function secrets
-- Cloudflare Pages environment variables
-- Local `.env` (if testing production mode)
-
-### 10.3 Update Price IDs
-
-Replace all test Price IDs with live Price IDs in environment variables.
+---
 
 ## Troubleshooting
 
-### Error: "Stripe is not configured"
+### Checkout session creation fails
 
-**Cause**: Missing or placeholder Stripe Price IDs in environment variables
+- **Check Edge Function logs:** `supabase functions logs create-checkout-session`
+- **Verify secrets are set:** `supabase secrets list`
+- **Check Stripe Dashboard → Logs** for API errors
 
-**Fix**: 
-1. Ensure all `VITE_STRIPE_PRICE_*` variables are set in `.env`
-2. Verify Price IDs are actual Stripe IDs (start with `price_`)
-3. Rebuild the app after updating `.env`
+### Webhook not receiving events
 
-### Error: "Failed to create checkout session"
+- **Verify webhook URL is correct** in Stripe Dashboard
+- **Check webhook secret is set:** `supabase secrets list`
+- **Check Edge Function logs:** `supabase functions logs stripe-webhook`
+- **Test webhook manually:** Stripe Dashboard → Webhooks → Send test webhook
 
-**Cause**: Edge Function not deployed or secrets missing
+### User redirected to plans after paying
 
-**Fix**:
-1. Verify function is deployed: `supabase functions list`
-2. Check secrets are set: `supabase secrets list`
-3. Test function directly with curl
+- **Check `user_tiers` table** for the user's row
+- **Verify `status = 'active'`** (not `pending` or `cancelled`)
+- **Check webhook logs** to ensure `checkout.session.completed` was processed
 
-### Webhook Events Not Firing
+### Subscription updates not reflected
 
-**Cause**: Webhook endpoint URL incorrect or signature mismatch
+- **Check webhook is receiving `customer.subscription.updated` events**
+- **Check Edge Function logs** for errors
+- **Verify `stripe_subscription_id` in `user_tiers` matches Stripe**
 
-**Fix**:
-1. Verify webhook URL in Stripe Dashboard matches your function URL
-2. Ensure `STRIPE_WEBHOOK_SECRET` is set correctly
-3. Check webhook logs in Stripe Dashboard for error details
+---
 
-### Subscription Status Not Updating
+## Security Checklist
 
-**Cause**: Database RLS policies or webhook handler error
+- [ ] `STRIPE_SECRET_KEY` is set in Supabase secrets (never committed to git)
+- [ ] `STRIPE_WEBHOOK_SECRET` is set in Supabase secrets
+- [ ] Webhook endpoint is deployed and receiving events
+- [ ] `.env` file is in `.gitignore`
+- [ ] Row Level Security (RLS) is enabled on `user_tiers` table
+- [ ] Edge Functions validate user authentication before creating checkout sessions
 
-**Fix**:
-1. Check Edge Function logs in Supabase
-2. Verify `SUPABASE_SERVICE_ROLE_KEY` is set (bypasses RLS)
-3. Check database schema has Stripe fields added
-
-## Security Notes
-
-- ✅ **DO commit**: Publishable keys (`pk_*`), Price IDs
-- ❌ **NEVER commit**: Secret keys (`sk_*`), webhook secrets (`whsec_*`), service role keys
-- Use Supabase secrets for Edge Functions
-- Use Cloudflare Pages environment variables for frontend vars
-- Keep `.env` in `.gitignore`
+---
 
 ## Support
 
-For issues:
-- Check Edge Function logs in Supabase Dashboard
-- Check webhook events in Stripe Dashboard
-- Review database updates in Supabase Table Editor
-- Test each step independently
+If you encounter issues:
+
+1. Check Supabase Edge Function logs: `supabase functions logs <function-name>`
+2. Check Stripe Dashboard → Developers → Logs for API errors
+3. Check Stripe Dashboard → Webhooks for webhook delivery status
+
+---
 
 ## Summary
 
-Once setup is complete, the flow is fully automated:
-
-1. User selects plan → Stripe Checkout opens
-2. User pays → Stripe sends webhook to Supabase Edge Function
-3. Edge Function updates `user_tiers` table with subscription
-4. User returns to app → onboarding or dashboard
-5. On next sign-in → app checks `user_tiers` status → routes to dashboard if active
-
-No manual intervention required after initial setup!
+✅ **Live Stripe products configured** (no new products needed)  
+✅ **Edge Functions deployed** (`create-checkout-session`, `stripe-webhook`)  
+✅ **Webhook configured** in Stripe Dashboard  
+✅ **Database schema updated** with Stripe fields  
+✅ **Frontend integrated** with checkout flow  
+✅ **Auth gate** skips plan picker for active subscriptions
