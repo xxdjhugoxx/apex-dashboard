@@ -234,6 +234,22 @@ function ClientRouter() {
   useEffect(() => {
     if (loading || checkingSubscription) return
 
+    // Handle payment callback URLs
+    const urlParams = new URLSearchParams(window.location.search)
+    const paymentStatus = urlParams.get('payment')
+
+    if (paymentStatus === 'success') {
+      window.history.replaceState({}, '', window.location.pathname)
+      if (user && profile?.company_name) {
+        setView('dashboard')
+        return
+      }
+    } else if (paymentStatus === 'cancelled') {
+      window.history.replaceState({}, '', window.location.pathname)
+      setView('plans')
+      return
+    }
+
     if (!user) {
       const pendingConfirm = localStorage.getItem('apex_email_pending')
       const pendingPlanSelection = localStorage.getItem('apex_pending_plan_selection')
@@ -276,7 +292,7 @@ function ClientRouter() {
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <div className="text-white text-center">
           <div className="w-16 h-16 border-4 border-[#FF6B35] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-white/60">Loading APEX...</p>
+          <p className="text-white/60">{checkingSubscription ? 'Checking subscription...' : 'Loading APEX...'}</p>
         </div>
       </div>
     )

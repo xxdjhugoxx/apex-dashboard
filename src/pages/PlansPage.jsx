@@ -30,8 +30,8 @@ export function PlansPage({ onSelectPlan }) {
           body: {
             tier_id: tierId,
             billing_interval: billingInterval,
-            success_url: `${window.location.origin}/onboarding`,
-            cancel_url: `${window.location.origin}/plans`,
+            success_url: `${window.location.origin}/?payment=success`,
+            cancel_url: `${window.location.origin}/?payment=cancelled`,
           },
         }
       )
@@ -93,6 +93,7 @@ export function PlansPage({ onSelectPlan }) {
           {PRICING_TIERS.map((tier) => {
             const isAnnual = billingCycle === 'annual' && !tier.oneTime
             const displayPrice = isAnnual ? getAnnualPrice(tier.price) : tier.price
+            const isLoading = loading === tier.name
 
             return (
               <div
@@ -133,18 +134,23 @@ export function PlansPage({ onSelectPlan }) {
 
                 <button
                   onClick={() => handleSelectPlan(tier)}
-                  disabled={loading === tier.name}
+                  disabled={loading !== null}
                   className={`w-full py-3 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                     tier.popular
                       ? 'bg-[#FF6B35] hover:bg-[#FF8855] text-white'
                       : 'bg-white/10 hover:bg-white/20 text-white'
                   }`}
                 >
-                  {loading === tier.name
-                    ? 'Loading...'
-                    : user
-                    ? tier.cta
-                    : 'Sign Up to Get Started'}
+                  {isLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Processing...
+                    </span>
+                  ) : user ? (
+                    tier.cta
+                  ) : (
+                    'Sign Up to Get Started'
+                  )}
                 </button>
               </div>
             )
