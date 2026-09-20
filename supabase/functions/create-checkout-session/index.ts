@@ -76,6 +76,7 @@ serve(async (req) => {
       cancel_url: cancel_url || `${req.headers.get('origin')}/plans`,
       customer_email: userEmail,
       client_reference_id: user.id,
+      allow_promotion_codes: true,
       metadata: {
         user_id: user.id,
         tier_id,

@@ -13,6 +13,10 @@ export function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState(null)
   const [showGrantTier, setShowGrantTier] = useState(false)
   const [showCreateCoupon, setShowCreateCoupon] = useState(false)
+  const [showRefundDialog, setShowRefundDialog] = useState(false)
+  const [refundUserId, setRefundUserId] = useState(null)
+  const [refundAmount, setRefundAmount] = useState('')
+  const [refundReason, setRefundReason] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -112,6 +116,49 @@ export function AdminDashboard() {
     } finally {
       setActionLoading(false)
     }
+  }
+
+  async function handleRefund(userId) {
+    const amount = refundAmount ? parseFloat(refundAmount) : null
+
+    if (!confirm(`Are you sure you want to refund this user${amount ? ` $${amount}` : ' (full amount)'}?`)) {
+      return
+    }
+
+    try {
+      setActionLoading(true)
+      setError('')
+      setSuccess('')
+
+      const { data, error } = await supabase.functions.invoke('admin-refund', {
+        body: {
+          userId,
+          amount,
+          reason: refundReason || 'Admin refund',
+        },
+      })
+
+      if (error) throw error
+
+      setSuccess(data.message || 'Refund processed successfully')
+      await loadUsers()
+      setShowRefundDialog(false)
+      setRefundUserId(null)
+      setRefundAmount('')
+      setRefundReason('')
+    } catch (err) {
+      console.error('Error processing refund:', err)
+      setError(err.message || 'Failed to process refund')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  function openRefundDialog(userId) {
+    setRefundUserId(userId)
+    setRefundAmount('')
+    setRefundReason('')
+    setShowRefundDialog(true)
   }
 
   const filteredUsers = users.filter(u => 
@@ -282,6 +329,13 @@ export function AdminDashboard() {
                       <div className="flex flex-wrap gap-2">
                         {isActive && (
                           <>
+                            <button
+                              onClick={() => openRefundDialog(user.id)}
+                              disabled={actionLoading}
+                              className="px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg text-sm font-bold transition-all disabled:opacity-50"
+                            >
+                              💸 Refund
+                            </button>
                             <button
                               onClick={() => handleAction('cancel', user.id)}
                               disabled={actionLoading}
@@ -614,6 +668,60 @@ export function AdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Refund Dialog */}
+      {showRefundDialog && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-6 z-50">
+          <div className="bg-[#1a1a24] border border-white/10 rounded-2xl p-8 max-w-lg w-full">
+            <h2 className="text-2xl font-bold mb-4">Issue Refund</h2>
+            <p className="text-white/60 mb-6">
+              Process a refund for this user. Leave amount blank for a full refund.
+            </p>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-bold mb-2">Refund Amount (optional)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={refundAmount}
+                  onChange={(e) => setRefundAmount(e.target.value)}
+                  placeholder="Leave blank for full refund"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-[#FF6B35]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold mb-2">Reason (optional)</label>
+                <textarea
+                  value={refundReason}
+                  onChange={(e) => setRefundReason(e.target.value)}
+                  rows={3}
+                  placeholder="Why is this refund being issued?"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-[#FF6B35] resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowRefundDialog(false)}
+                className="flex-1 py-3 bg-white/10 hover:bg-white/20 rounded-lg font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleRefund(refundUserId)}
+                disabled={actionLoading}
+                className="flex-1 py-3 bg-red-500 hover:bg-red-600 rounded-lg font-bold disabled:opacity-50"
+              >
+                {actionLoading ? 'Processing...' : 'Confirm Refund'}
+              </button>
+            </div>
           </div>
         </div>
       )}

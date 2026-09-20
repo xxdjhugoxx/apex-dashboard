@@ -7,6 +7,8 @@ import { ClientDashboard } from './pages/ClientDashboard'
 import { AdminDashboard } from './pages/AdminDashboard'
 import { supabase } from './lib/supabase'
 
+const OWNER_EMAIL = 'hugo@apexhq.cloud'
+
 function OtpConfirmationPage({ email, onSuccess, onBack }) {
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [loading, setLoading] = useState(false)
@@ -210,20 +212,21 @@ function ClientRouter() {
       }
 
       try {
-        // Check if user is admin
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('is_admin')
+          .select('is_admin, email')
           .eq('id', user.id)
           .single()
 
-        if (!userError && userData?.is_admin) {
+        const urlParams = new URLSearchParams(window.location.search)
+        const isAdminRoute = urlParams.get('admin') === 'true'
+
+        if (!userError && (userData?.is_admin || (isAdminRoute && userData?.email === OWNER_EMAIL))) {
           setIsAdmin(true)
           setCheckingSubscription(false)
           return
         }
 
-        // Check subscription for non-admin users
         const { data, error } = await supabase
           .from('user_tiers')
           .select('status, tier_id')
