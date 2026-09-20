@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.5.0?target=deno'
+import { STRIPE_PRICE_IDS } from '../_shared/stripe-prices.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -48,36 +49,11 @@ serve(async (req) => {
       throw new Error('Missing required fields: tier_id, billing_interval')
     }
 
-    // Map tier_id and billing_interval to Stripe price ID
-    const STRIPE_PRICE_IDS: Record<string, Record<string, string>> = {
-      builder: {
-        one_time: 'price_1TUdCZDGWTAZtT1dO17v7Cru',
-      },
-      starter: {
-        monthly: 'price_1TUdDLDGWTAZtT1dCJZytHz2',
-        annual: 'price_1TUdEHDGWTAZtT1dakZye0Mj',
-      },
-      focus: {
-        monthly: 'price_1TUdFHDGWTAZtT1dv3Uv3jWQ',
-        annual: 'price_1TUdFHDGWTAZtT1d5VEQcWve',
-      },
-      growth: {
-        monthly: 'price_1TUdFwDGWTAZtT1d50weXHKG',
-        annual: 'price_1TUdFwDGWTAZtT1dim8fS0bP',
-      },
-      pro: {
-        monthly: 'price_1TUdGvDGWTAZtT1dEoPsEi2R',
-        annual: 'price_1TUdGvDGWTAZtT1dYQ5vVNEu',
-      },
-      agency: {
-        monthly: 'price_1TUdHeDGWTAZtT1dR6yC38Yc',
-        annual: 'price_1TUdHeDGWTAZtT1djjrd8fov',
-      },
-    }
+    // Get price ID from shared constants (now using correct LIVE price IDs)
+    const tierPrices = STRIPE_PRICE_IDS[tier_id as keyof typeof STRIPE_PRICE_IDS]
+    const priceId = tierPrices?.[billing_interval as keyof typeof tierPrices]
 
-    const priceId = STRIPE_PRICE_IDS[tier_id]?.[billing_interval]
-
-    if (!priceId) {
+    if (!priceId || typeof priceId !== 'string') {
       throw new Error(`Invalid tier_id (${tier_id}) or billing_interval (${billing_interval})`)
     }
 

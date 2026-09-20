@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.5.0?target=deno'
+import { getMonthlyPriceFromPriceId, getTierNameFromPriceId } from '../_shared/stripe-prices.ts'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2023-10-16',
@@ -47,6 +48,13 @@ serve(async (req) => {
           break
         }
 
+        // Get price ID from session line items
+        const priceId = session.line_items?.data?.[0]?.price?.id || 
+                       (subscriptionId ? (await stripe.subscriptions.retrieve(subscriptionId)).items.data[0]?.price.id : null)
+        
+        // Calculate monthly_price from price ID
+        const monthlyPrice = priceId ? getMonthlyPriceFromPriceId(priceId) : 0
+
         // Determine status based on payment status
         const status = session.payment_status === 'paid' ? 'active' : 'pending'
 
@@ -57,10 +65,13 @@ serve(async (req) => {
             {
               user_id: userId,
               tier_id: tierId,
+              tier_name: tierId, // tier_name = tier_id as requested
               status,
               billing_interval: billingInterval,
+              monthly_price: monthlyPrice,
               stripe_customer_id: customerId,
               stripe_subscription_id: subscriptionId,
+              stripe_price_id: priceId,
               started_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             },
@@ -93,13 +104,32 @@ serve(async (req) => {
           tierStatus = 'expired'
         }
 
+        // Get price ID from subscription
+        const priceId = subscription.items.data[0]?.price.id
+        const monthlyPrice = priceId ? getMonthlyPriceFromPriceId(priceId) : undefined
+        const tierName = priceId ? getTierNameFromPriceId(priceId) : undefined
+
         // Update user_tiers by stripe_subscription_id
+        const updateData: any = {
+          status: tierStatus,
+          updated_at: new Date().toISOString(),
+        }
+        
+        if (monthlyPrice !== undefined) {
+          updateData.monthly_price = monthlyPrice
+        }
+        
+        if (tierName !== null && tierName !== undefined) {
+          updateData.tier_name = tierName
+        }
+        
+        if (priceId) {
+          updateData.stripe_price_id = priceId
+        }
+
         const { error: updateError } = await supabaseAdmin
           .from('user_tiers')
-          .update({
-            status: tierStatus,
-            updated_at: new Date().toISOString(),
-          })
+          .update(updateData)
           .eq('stripe_subscription_id', subscriptionId)
 
         if (updateError) {
