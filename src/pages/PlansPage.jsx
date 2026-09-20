@@ -1,13 +1,23 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { PRICING_TIERS, getAnnualPrice } from '../lib/pricing'
 import { useAuth } from '../lib/auth'
 import { createCheckoutSession } from '../lib/stripe'
 
-export function PlansPage({ onSelectPlan }) {
+export function PlansPage({ onSelectPlan, recommendedTierName }) {
   const [billingCycle, setBillingCycle] = useState('monthly')
   const [loading, setLoading] = useState(null)
   const [error, setError] = useState('')
   const { user } = useAuth()
+
+  // Sort tiers to put recommended one at the top
+  const sortedTiers = useMemo(() => {
+    if (!recommendedTierName) return PRICING_TIERS
+    
+    const recommended = PRICING_TIERS.find(t => t.name === recommendedTierName)
+    const others = PRICING_TIERS.filter(t => t.name !== recommendedTierName)
+    
+    return recommended ? [recommended, ...others] : PRICING_TIERS
+  }, [recommendedTierName])
 
   const handleSelectPlan = async (tier) => {
     if (!user) {
@@ -70,21 +80,29 @@ export function PlansPage({ onSelectPlan }) {
         )}
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {PRICING_TIERS.map((tier) => {
+          {sortedTiers.map((tier) => {
             const isAnnual = billingCycle === 'annual' && !tier.oneTime
             const displayPrice = isAnnual ? getAnnualPrice(tier.price) : tier.price
             const isLoading = loading === tier.name
+            const isRecommended = recommendedTierName && tier.name === recommendedTierName
 
             return (
               <div
                 key={tier.name}
                 className={`relative rounded-2xl p-8 border-2 transition-all hover:scale-105 ${
-                  tier.popular
+                  isRecommended
+                    ? 'border-[#4ade80] bg-gradient-to-br from-[#4ade80]/20 to-transparent'
+                    : tier.popular
                     ? 'border-[#FF6B35] bg-gradient-to-br from-[#FF6B35]/20 to-transparent'
                     : 'border-white/10 bg-white/5'
                 }`}
               >
-                {tier.popular && (
+                {isRecommended && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#4ade80] text-black px-4 py-1 rounded-full text-sm font-bold">
+                    ✓ RECOMMENDED FOR YOU
+                  </div>
+                )}
+                {!isRecommended && tier.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#FF6B35] text-white px-4 py-1 rounded-full text-sm font-bold">
                     MOST POPULAR
                   </div>

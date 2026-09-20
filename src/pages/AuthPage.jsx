@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { useAuth } from '../lib/auth'
 
-export function AuthPage({ onSuccess, onEmailConfirmationRequired }) {
-  const [mode, setMode] = useState('signin')
+export function AuthPage({ initialMode = 'signin', onSignInSuccess, onSignUpSuccess, onEmailConfirmationRequired }) {
+  const [mode, setMode] = useState(initialMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -17,7 +17,7 @@ export function AuthPage({ onSuccess, onEmailConfirmationRequired }) {
     try {
       if (mode === 'signin') {
         await signIn(email, password)
-        onSuccess?.()
+        onSignInSuccess?.()
       } else {
         const result = await signUp(email, password)
         
@@ -25,7 +25,7 @@ export function AuthPage({ onSuccess, onEmailConfirmationRequired }) {
           localStorage.setItem('apex_email_pending', 'true')
           onEmailConfirmationRequired?.(email)
         } else {
-          onSuccess?.()
+          onSignUpSuccess?.()
         }
       }
     } catch (err) {
@@ -47,28 +47,35 @@ export function AuthPage({ onSuccess, onEmailConfirmationRequired }) {
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
-          <div className="flex gap-2 mb-6">
-            <button
-              onClick={() => setMode('signin')}
-              className={`flex-1 py-2 rounded-lg font-bold transition-all ${
-                mode === 'signin'
-                  ? 'bg-[#FF6B35] text-white'
-                  : 'bg-white/10 text-white/60 hover:bg-white/20'
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => setMode('signup')}
-              className={`flex-1 py-2 rounded-lg font-bold transition-all ${
-                mode === 'signup'
-                  ? 'bg-[#FF6B35] text-white'
-                  : 'bg-white/10 text-white/60 hover:bg-white/20'
-              }`}
-            >
-              Sign Up
-            </button>
-          </div>
+          {mode === 'signin' && (
+            <div className="mb-6">
+              <h2 className="text-xl font-bold mb-2">Sign In</h2>
+              <p className="text-sm text-white/60">
+                Don't have an account?{' '}
+                <button
+                  onClick={() => setMode('signup')}
+                  className="text-[#FF6B35] hover:text-[#FF8855] font-bold transition-colors"
+                >
+                  Sign up here
+                </button>
+              </p>
+            </div>
+          )}
+
+          {mode === 'signup' && (
+            <div className="mb-6">
+              <h2 className="text-xl font-bold mb-2">Create Account</h2>
+              <p className="text-sm text-white/60">
+                Already have an account?{' '}
+                <button
+                  onClick={() => setMode('signin')}
+                  className="text-[#FF6B35] hover:text-[#FF8855] font-bold transition-colors"
+                >
+                  Sign in here
+                </button>
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
