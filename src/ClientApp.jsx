@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { AuthProvider, useAuth } from './lib/auth'
 import { AuthPage } from './pages/AuthPage'
+import { NeedsIntakePage } from './pages/NeedsIntakePage'
 import { PlansPage } from './pages/PlansPage'
 import { OnboardingPage } from './pages/OnboardingPage'
 import { ClientDashboard } from './pages/ClientDashboard'
 import { AdminDashboard } from './pages/AdminDashboard'
 import { supabase } from './lib/supabase'
+import { recommendTier } from './lib/recommendation'
 
 const OWNER_EMAIL = 'hugo@apexhq.cloud'
 
@@ -201,6 +203,8 @@ function ClientRouter() {
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
   const [checkingSubscription, setCheckingSubscription] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [recommendedTierName, setRecommendedTierName] = useState(null)
+  const [authMode, setAuthMode] = useState('signin') // 'signin' or 'signup'
 
   useEffect(() => {
     if (loading) return
@@ -271,15 +275,20 @@ function ClientRouter() {
 
     if (!user) {
       const pendingConfirm = localStorage.getItem('apex_email_pending')
-      const pendingPlanSelection = localStorage.getItem('apex_pending_plan_selection')
+      const pendingAfterSignup = localStorage.getItem('apex_after_signup')
       
       if (pendingConfirm === 'true') {
         setEmailConfirmationPending(true)
         setView('email_confirmation')
-      } else if (pendingPlanSelection === 'true') {
+      } else if (pendingAfterSignup === 'true') {
+        // After signup, show auth page in signup mode
+        localStorage.removeItem('apex_after_signup')
         setView('auth')
+        setAuthMode('signup')
       } else {
-        setView('plans')
+        // Default: show sign in
+        setView('auth')
+        setAuthMode('signin')
       }
     } else if (isAdmin) {
       // Admin users go straight to admin dashboard
@@ -299,14 +308,33 @@ function ClientRouter() {
     } else if (!profile?.company_name && !hasActiveSubscription) {
       localStorage.removeItem('apex_email_pending')
       localStorage.removeItem('apex_pending_plan_selection')
+      localStorage.removeItem('apex_after_signup')
       if (!selectedTier) {
         setView('plans')
       } else {
         setView('onboarding')
       }
+    } else if (!hasActiveSubscription) {
+      // No subscription yet - check if needs intake is complete
+      localStorage.removeItem('apex_email_pending')
+      localStorage.removeItem('apex_pending_plan_selection')
+      localStorage.removeItem('apex_after_signup')
+      
+      const hasNeeds = profile?.needs_json && Object.keys(profile.needs_json).length > 0
+      
+      if (!hasNeeds) {
+        // No needs intake completed → show intake
+        setView('needs_intake')
+      } else {
+        // Needs completed → calculate recommendation and show plans
+        const recommended = recommendTier(profile.needs_json)
+        setRecommendedTierName(recommended)
+        setView('plans')
+      }
     } else {
       localStorage.removeItem('apex_email_pending')
       localStorage.removeItem('apex_pending_plan_selection')
+      localStorage.removeItem('apex_after_signup')
       localStorage.removeItem('apex_selected_tier')
       setView('dashboard')
     }
@@ -326,11 +354,35 @@ function ClientRouter() {
   if (view === 'auth') {
     return (
       <AuthPage
-        onSuccess={() => setView('plans')}
+        initialMode={authMode}
+        onSignInSuccess={() => {
+          // After sign in, let the routing logic decide where to go
+          window.location.reload()
+        }}
+        onSignUpSuccess={() => {
+          // After sign up (account created), mark it and reload
+          localStorage.setItem('apex_after_signup', 'true')
+          window.location.reload()
+        }}
         onEmailConfirmationRequired={(email) => {
           setPendingEmail(email)
           setEmailConfirmationPending(true)
           setView('email_confirmation')
+        }}
+      />
+    )
+  }
+
+  if (view === 'needs_intake') {
+    return (
+      <NeedsIntakePage
+        onComplete={(needsData) => {
+          // Calculate recommendation and show plans
+          if (needsData) {
+            const recommended = recommendTier(needsData)
+            setRecommendedTierName(recommended)
+          }
+          setView('plans')
         }}
       />
     )
@@ -357,12 +409,13 @@ function ClientRouter() {
   if (view === 'plans') {
     return (
       <PlansPage
+        recommendedTierName={recommendedTierName}
         onSelectPlan={(tier) => {
           setSelectedTier(tier)
           localStorage.setItem('apex_selected_tier', JSON.stringify(tier))
           
           if (!user) {
-            localStorage.setItem('apex_pending_plan_selection', 'true')
+            setAuthMode('signup')
             setView('auth')
           } else {
             setView('onboarding')
