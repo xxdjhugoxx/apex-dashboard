@@ -6,7 +6,6 @@ import { OnboardingPage } from './pages/OnboardingPage'
 import { ClientDashboard } from './pages/ClientDashboard'
 import { AdminDashboard } from './pages/AdminDashboard'
 import { supabase } from './lib/supabase'
-import { hasActiveSubscription } from './lib/stripe'
 
 const OWNER_EMAIL = 'hugo@apexhq.cloud'
 
@@ -199,77 +198,119 @@ function ClientRouter() {
   const [view, setView] = useState('auth')
   const [emailConfirmationPending, setEmailConfirmationPending] = useState(false)
   const [pendingEmail, setPendingEmail] = useState('')
-  const [checkingSubscription, setCheckingSubscription] = useState(false)
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
+  const [checkingSubscription, setCheckingSubscription] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    async function checkRouting() {
-      if (loading) return
+    if (loading) return
 
-      const urlParams = new URLSearchParams(window.location.search)
-      const paymentStatus = urlParams.get('payment')
-      const isAdminRoute = urlParams.get('admin') === 'true'
-
-      if (isAdminRoute && user && profile?.email === OWNER_EMAIL) {
-        setView('admin')
+    async function checkSubscription() {
+      if (!user) {
+        setCheckingSubscription(false)
         return
       }
 
-      if (paymentStatus === 'success') {
-        window.history.replaceState({}, '', window.location.pathname)
-        if (user && profile?.company_name) {
-          setView('dashboard')
+      try {
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('is_admin, email')
+          .eq('id', user.id)
+          .single()
+
+        const urlParams = new URLSearchParams(window.location.search)
+        const isAdminRoute = urlParams.get('admin') === 'true'
+
+        if (!userError && (userData?.is_admin || (isAdminRoute && userData?.email === OWNER_EMAIL))) {
+          setIsAdmin(true)
+          setCheckingSubscription(false)
           return
         }
-      } else if (paymentStatus === 'cancelled') {
-        window.history.replaceState({}, '', window.location.pathname)
-        setView('plans')
-        return
-      }
 
-      if (!user) {
-        const pendingConfirm = localStorage.getItem('apex_email_pending')
-        const pendingPlanSelection = localStorage.getItem('apex_pending_plan_selection')
-        
-        if (pendingConfirm === 'true') {
-          setEmailConfirmationPending(true)
-          setView('email_confirmation')
-        } else if (pendingPlanSelection === 'true') {
-          setView('auth')
+        const { data, error } = await supabase
+          .from('user_tiers')
+          .select('status, tier_id')
+          .eq('user_id', user.id)
+          .in('status', ['active', 'trialing'])
+          .single()
+
+        if (!error && data) {
+          setHasActiveSubscription(true)
         } else {
-          setView('plans')
+          setHasActiveSubscription(false)
         }
-        return
-      }
-
-      setCheckingSubscription(true)
-      const hasSubscription = await hasActiveSubscription(user.id)
-      setCheckingSubscription(false)
-
-      localStorage.removeItem('apex_email_pending')
-      localStorage.removeItem('apex_pending_plan_selection')
-
-      if (hasSubscription) {
-        if (!profile?.company_name) {
-          setView('onboarding')
-        } else {
-          localStorage.removeItem('apex_selected_tier')
-          setView('dashboard')
-        }
-      } else {
-        if (!profile?.company_name) {
-          if (!selectedTier) {
-            setView('plans')
-          } else {
-            setView('onboarding')
-          }
-        } else {
-          setView('plans')
-        }
+      } catch (err) {
+        console.error('Error checking subscription:', err)
+        setHasActiveSubscription(false)
+      } finally {
+        setCheckingSubscription(false)
       }
     }
 
-    checkRouting()
-  }, [user, profile, loading, selectedTier])
+    checkSubscription()
+  }, [user, loading])
+
+  useEffect(() => {
+    if (loading || checkingSubscription) return
+
+    // Handle payment callback URLs
+    const urlParams = new URLSearchParams(window.location.search)
+    const paymentStatus = urlParams.get('payment')
+
+    if (paymentStatus === 'success') {
+      window.history.replaceState({}, '', window.location.pathname)
+      if (user && profile?.company_name) {
+        setView('dashboard')
+        return
+      }
+    } else if (paymentStatus === 'cancelled') {
+      window.history.replaceState({}, '', window.location.pathname)
+      setView('plans')
+      return
+    }
+
+    if (!user) {
+      const pendingConfirm = localStorage.getItem('apex_email_pending')
+      const pendingPlanSelection = localStorage.getItem('apex_pending_plan_selection')
+      
+      if (pendingConfirm === 'true') {
+        setEmailConfirmationPending(true)
+        setView('email_confirmation')
+      } else if (pendingPlanSelection === 'true') {
+        setView('auth')
+      } else {
+        setView('plans')
+      }
+    } else if (isAdmin) {
+      // Admin users go straight to admin dashboard
+      localStorage.removeItem('apex_email_pending')
+      localStorage.removeItem('apex_pending_plan_selection')
+      localStorage.removeItem('apex_selected_tier')
+      setView('admin')
+    } else if (hasActiveSubscription && profile?.company_name) {
+      localStorage.removeItem('apex_email_pending')
+      localStorage.removeItem('apex_pending_plan_selection')
+      localStorage.removeItem('apex_selected_tier')
+      setView('dashboard')
+    } else if (hasActiveSubscription && !profile?.company_name) {
+      localStorage.removeItem('apex_email_pending')
+      localStorage.removeItem('apex_pending_plan_selection')
+      setView('onboarding')
+    } else if (!profile?.company_name && !hasActiveSubscription) {
+      localStorage.removeItem('apex_email_pending')
+      localStorage.removeItem('apex_pending_plan_selection')
+      if (!selectedTier) {
+        setView('plans')
+      } else {
+        setView('onboarding')
+      }
+    } else {
+      localStorage.removeItem('apex_email_pending')
+      localStorage.removeItem('apex_pending_plan_selection')
+      localStorage.removeItem('apex_selected_tier')
+      setView('dashboard')
+    }
+  }, [user, profile, loading, selectedTier, hasActiveSubscription, checkingSubscription, isAdmin])
 
   if (loading || checkingSubscription) {
     return (

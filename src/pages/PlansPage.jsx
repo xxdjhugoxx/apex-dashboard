@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import { PRICING_TIERS, getAnnualPrice } from '../lib/pricing'
+import { PRICING_TIERS, getAnnualPrice, getTierId } from '../lib/pricing'
 import { useAuth } from '../lib/auth'
-import { createCheckoutSession } from '../lib/stripe'
+import { supabase } from '../lib/supabase'
+import { getBillingInterval } from '../lib/stripe-prices'
 
 export function PlansPage({ onSelectPlan }) {
   const [billingCycle, setBillingCycle] = useState('monthly')
@@ -9,9 +10,9 @@ export function PlansPage({ onSelectPlan }) {
   const [error, setError] = useState('')
   const { user } = useAuth()
 
-  const handleSelectPlan = async (tier) => {
+  async function handleSelectPlan(tier) {
     if (!user) {
-      onSelectPlan(tier)
+      onSelectPlan?.(tier)
       return
     }
 
@@ -19,10 +20,29 @@ export function PlansPage({ onSelectPlan }) {
     setError('')
 
     try {
+      const tierId = getTierId(tier.name)
       const isAnnual = billingCycle === 'annual' && !tier.oneTime
-      const { url } = await createCheckoutSession(tier.name, isAnnual, user)
-      
-      window.location.href = url
+      const billingInterval = getBillingInterval(tierId, isAnnual)
+
+      const { data, error: functionError } = await supabase.functions.invoke(
+        'create-checkout-session',
+        {
+          body: {
+            tier_id: tierId,
+            billing_interval: billingInterval,
+            success_url: `${window.location.origin}/?payment=success`,
+            cancel_url: `${window.location.origin}/?payment=cancelled`,
+          },
+        }
+      )
+
+      if (functionError) throw functionError
+
+      if (data?.url) {
+        window.location.href = data.url
+      } else {
+        throw new Error('No checkout URL returned')
+      }
     } catch (err) {
       console.error('Checkout error:', err)
       setError(err.message || 'Failed to start checkout. Please try again.')
@@ -38,6 +58,12 @@ export function PlansPage({ onSelectPlan }) {
             Choose Your APEX Plan
           </h1>
           <p className="text-xl text-white/60">AI-powered marketing automation for every stage</p>
+          
+          {error && (
+            <div className="mt-4 max-w-md mx-auto bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-center gap-4 mb-12">
@@ -62,12 +88,6 @@ export function PlansPage({ onSelectPlan }) {
             Annual <span className="text-green-400 ml-2">Save 20%</span>
           </button>
         </div>
-
-        {error && (
-          <div className="max-w-2xl mx-auto mb-8 bg-red-500/20 border border-red-500/50 text-red-200 px-6 py-4 rounded-xl">
-            {error}
-          </div>
-        )}
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {PRICING_TIERS.map((tier) => {

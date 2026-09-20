@@ -56,12 +56,24 @@ export function OnboardingPage({ selectedTier, onComplete }) {
         tier_id: getTierId(selectedTier.name)
       })
 
-      await supabase.from('user_tiers').insert({
-        user_id: user.id,
-        tier_name: selectedTier.name,
-        monthly_price: selectedTier.price,
-        is_annual: false
-      })
+      // Check if user_tiers record already exists (from Stripe checkout)
+      const { data: existingTier } = await supabase
+        .from('user_tiers')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+
+      // Only create user_tiers record if it doesn't exist
+      // (Stripe webhook creates it automatically after payment)
+      if (!existingTier && selectedTier) {
+        await supabase.from('user_tiers').insert({
+          user_id: user.id,
+          tier_id: getTierId(selectedTier.name),
+          status: 'active',
+          started_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+      }
 
       onComplete?.()
     } catch (err) {
