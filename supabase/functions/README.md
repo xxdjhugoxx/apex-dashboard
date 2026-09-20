@@ -190,3 +190,123 @@ supabase functions logs --follow
 - Verify `SUPABASE_SERVICE_ROLE_KEY` is set (for webhook function)
 - Check RLS policies on `user_tiers` table
 - View function logs for detailed error messages
+
+---
+
+## Admin Functions
+
+### `admin-list-users`
+
+Lists all users with subscription information (admin only).
+
+**Endpoint:** `POST /functions/v1/admin-list-users`
+
+**Auth:** User JWT + `is_admin = true`
+
+**Request Body:** `{}`
+
+**Response:**
+```json
+{
+  "users": [
+    {
+      "id": "uuid",
+      "email": "user@example.com",
+      "company_name": "Company Inc",
+      "created_at": "2024-01-01T00:00:00Z",
+      "is_admin": false,
+      "active_subscription": {
+        "tier_name": "Starter",
+        "status": "active",
+        "monthly_price": 199,
+        "stripe_customer_id": "cus_xxx",
+        "admin_granted": false
+      }
+    }
+  ]
+}
+```
+
+### `admin-manage-subscription`
+
+Manage user subscriptions (admin only).
+
+**Endpoint:** `POST /functions/v1/admin-manage-subscription`
+
+**Auth:** User JWT + `is_admin = true`
+
+**Actions:**
+
+1. Cancel subscription:
+```json
+{ "action": "cancel", "user_id": "uuid" }
+```
+
+2. Delete/revoke access:
+```json
+{ "action": "delete", "user_id": "uuid" }
+```
+
+3. Grant tier (comp):
+```json
+{
+  "action": "grant",
+  "user_id": "uuid",
+  "tier_id": "starter",
+  "tier_name": "Starter",
+  "monthly_price": 199,
+  "billing_interval": "monthly",
+  "admin_notes": "Partner deal"
+}
+```
+
+4. Change tier:
+```json
+{
+  "action": "change",
+  "user_id": "uuid",
+  "tier_name": "Growth",
+  "monthly_price": 899,
+  "admin_notes": "Upgraded"
+}
+```
+
+### `admin-manage-coupons`
+
+Manage Stripe coupons and promo codes (admin only).
+
+**Endpoint:** `POST /functions/v1/admin-manage-coupons`
+
+**Auth:** User JWT + `is_admin = true`
+
+**Actions:**
+
+1. List coupons: `{ "action": "list_coupons" }`
+2. List promo codes: `{ "action": "list_promo_codes" }`
+3. Create coupon:
+```json
+{
+  "action": "create_coupon",
+  "name": "SAVE20",
+  "percent_off": 20,
+  "duration": "once",
+  "max_redemptions": 100
+}
+```
+4. Create promo code:
+```json
+{
+  "action": "create_promo_code",
+  "coupon_id": "coup_xxx",
+  "code": "PROMO20"
+}
+```
+
+**Deploy admin functions:**
+```bash
+supabase functions deploy admin-list-users
+supabase functions deploy admin-manage-subscription
+supabase functions deploy admin-manage-coupons
+```
+
+See `ADMIN_DEPLOY.md` for full admin panel setup guide.

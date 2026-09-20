@@ -4,6 +4,7 @@ import { AuthPage } from './pages/AuthPage'
 import { PlansPage } from './pages/PlansPage'
 import { OnboardingPage } from './pages/OnboardingPage'
 import { ClientDashboard } from './pages/ClientDashboard'
+import { AdminDashboard } from './pages/AdminDashboard'
 import { supabase } from './lib/supabase'
 
 function OtpConfirmationPage({ email, onSuccess, onBack }) {
@@ -197,6 +198,7 @@ function ClientRouter() {
   const [pendingEmail, setPendingEmail] = useState('')
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
   const [checkingSubscription, setCheckingSubscription] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     if (loading) return
@@ -208,6 +210,20 @@ function ClientRouter() {
       }
 
       try {
+        // Check if user is admin
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single()
+
+        if (!userError && userData?.is_admin) {
+          setIsAdmin(true)
+          setCheckingSubscription(false)
+          return
+        }
+
+        // Check subscription for non-admin users
         const { data, error } = await supabase
           .from('user_tiers')
           .select('status, tier_id')
@@ -262,6 +278,12 @@ function ClientRouter() {
       } else {
         setView('plans')
       }
+    } else if (isAdmin) {
+      // Admin users go straight to admin dashboard
+      localStorage.removeItem('apex_email_pending')
+      localStorage.removeItem('apex_pending_plan_selection')
+      localStorage.removeItem('apex_selected_tier')
+      setView('admin')
     } else if (hasActiveSubscription && profile?.company_name) {
       localStorage.removeItem('apex_email_pending')
       localStorage.removeItem('apex_pending_plan_selection')
@@ -285,7 +307,7 @@ function ClientRouter() {
       localStorage.removeItem('apex_selected_tier')
       setView('dashboard')
     }
-  }, [user, profile, loading, selectedTier, hasActiveSubscription, checkingSubscription])
+  }, [user, profile, loading, selectedTier, hasActiveSubscription, checkingSubscription, isAdmin])
 
   if (loading || checkingSubscription) {
     return (
@@ -357,6 +379,10 @@ function ClientRouter() {
         }}
       />
     )
+  }
+
+  if (view === 'admin') {
+    return <AdminDashboard />
   }
 
   return <ClientDashboard />
