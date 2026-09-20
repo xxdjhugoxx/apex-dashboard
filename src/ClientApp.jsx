@@ -4,8 +4,11 @@ import { AuthPage } from './pages/AuthPage'
 import { PlansPage } from './pages/PlansPage'
 import { OnboardingPage } from './pages/OnboardingPage'
 import { ClientDashboard } from './pages/ClientDashboard'
+import { AdminDashboard } from './pages/AdminDashboard'
 import { supabase } from './lib/supabase'
 import { hasActiveSubscription } from './lib/stripe'
+
+const OWNER_EMAIL = 'hugo@apexhq.cloud'
 
 function OtpConfirmationPage({ email, onSuccess, onBack }) {
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
@@ -204,6 +207,12 @@ function ClientRouter() {
 
       const urlParams = new URLSearchParams(window.location.search)
       const paymentStatus = urlParams.get('payment')
+      const isAdminRoute = urlParams.get('admin') === 'true'
+
+      if (isAdminRoute && user && profile?.email === OWNER_EMAIL) {
+        setView('admin')
+        return
+      }
 
       if (paymentStatus === 'success') {
         window.history.replaceState({}, '', window.location.pathname)
@@ -332,6 +341,10 @@ function ClientRouter() {
         }}
       />
     )
+  }
+
+  if (view === 'admin') {
+    return <AdminDashboard />
   }
 
   return <ClientDashboard />

@@ -39,6 +39,7 @@ serve(async (req) => {
       cancel_url: cancelUrl,
       customer_email: userEmail,
       client_reference_id: userId,
+      allow_promotion_codes: true,
       metadata: {
         tier_name: tierName,
         is_annual: isAnnual ? 'true' : 'false',
