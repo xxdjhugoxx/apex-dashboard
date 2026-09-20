@@ -189,9 +189,9 @@ git subtree push --prefix dist origin gh-pages
 
 1. User makes request with auth token in header
 2. Function extracts and verifies JWT token
-3. Looks up user email from database
-4. Compares with `OWNER_EMAIL` environment variable
-5. Returns 403 Forbidden if not owner
+3. Looks up user `is_admin` field from database
+4. Checks if `is_admin === true`
+5. Returns 403 Forbidden if not admin
 
 ### Refund Flow
 

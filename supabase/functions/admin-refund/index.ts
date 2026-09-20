@@ -36,12 +36,11 @@ serve(async (req) => {
 
     const { data: adminUser, error: userError } = await supabase
       .from('users')
-      .select('email')
+      .select('is_admin')
       .eq('id', user.id)
       .single()
 
-    const OWNER_EMAIL = Deno.env.get('OWNER_EMAIL') || 'hugo@apexhq.cloud'
-    if (!adminUser || adminUser.email !== OWNER_EMAIL) {
+    if (userError || !adminUser || !adminUser.is_admin) {
       throw new Error('Forbidden: Admin access required')
     }
 
@@ -61,15 +60,15 @@ serve(async (req) => {
       throw new Error('User not found')
     }
 
-    const activeTiers = (targetUser.user_tiers || []).filter(
-      (t: any) => t.status === 'active' || t.status === 'past_due'
+    const refundableTiers = (targetUser.user_tiers || []).filter(
+      (t: any) => t.status === 'active' || t.status === 'past_due' || t.status === 'refunded'
     )
 
-    if (activeTiers.length === 0) {
-      throw new Error('No active subscription or payment found for this user')
+    if (refundableTiers.length === 0) {
+      throw new Error('No active or refundable subscription found for this user')
     }
 
-    const tier = activeTiers[0]
+    const tier = refundableTiers[0]
     let refund = null
     let refundedAmount = 0
 
